@@ -25,20 +25,21 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- CONFIGURAÇÃO DA IA (DA SUA V10) ---
+# --- CONFIGURAÇÃO DA IA (CORREÇÃO DE NUVEM) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
-    # Voltamos ao comando simples da v10 que você enviou
+    # O SEGREDO: Usar o nome puro do modelo sem o prefixo "models/"
     model = genai.GenerativeModel('gemini-1.5-flash')
 except:
     st.error("📡 Aether Network: Aguardando conexão...")
 
-# Função de Exportação (Sua v10 corrigida para nuvem)
+# Função de Exportação
 def gerar_docx(texto):
     doc = Document()
     doc.add_heading('AETHER AUDIT - RELATÓRIO DE INTELIGÊNCIA', 0)
-    doc.add_paragraph(texto)
+    for linha in texto.split('\n'):
+        doc.add_paragraph(linha)
     buffer = io.BytesIO()
     doc.save(buffer)
     buffer.seek(0)
@@ -67,7 +68,6 @@ with col2:
         if pergunta:
             with st.spinner("Conectando ao Cérebro Global..."):
                 try:
-                    # Delay humano da sua v10
                     time.sleep(random.uniform(1.0, 2.5))
                     
                     dados_ia = []
@@ -79,16 +79,15 @@ with col2:
                             conteudo = arquivo_subido.read().decode("utf-8", errors="ignore")
                             dados_ia = [f"CONTEÚDO: {conteudo}"]
 
-                    # Super Prompt da v10
+                    # Prompt Estruturado
                     prompt_mestre = f"""
                     Atue como AUDITOR SUPREMO GLOBAL (AETHER AUDIT). 
-                    Se o conteúdo estiver em outro idioma, traduza para o Português do Brasil.
                     Instrução do Usuário: {pergunta}
                     
                     ESTRUTURA DE RESPOSTA:
-                    1. 📝 TRADUÇÃO/RESUMO DOS DADOS
+                    1. 📝 SUMÁRIO EXECUTIVO
                     2. 🔍 ANÁLISE TÉCNICA E ERROS
-                    3. ✅ RESPOSTA MESTRE FINAL (VEREDITO)
+                    3. ✅ VEREDITO FINAL
                     """
                     
                     if dados_ia:
@@ -110,4 +109,4 @@ with col2:
         else:
             st.warning("Insira uma pergunta ou instrução!")
 
-st.sidebar.caption("AETHER AUDIT v26.0 | Base Estável v10")
+st.sidebar.caption("AETHER AUDIT v26.1 | Cloud Optimized")
