@@ -6,77 +6,113 @@ import io
 import time
 import random
 
-# --- CONFIGURAÇÃO SUPREMA ---
+# --- CONFIGURAÇÃO SUPREMA (SOLUÇÃO PARA ERRO 404 NA NUVEM) ---
 try:
+    # Busca a chave nos Secrets do Streamlit
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
-except:
-    st.error("Configure sua GOOGLE_API_KEY nos Secrets do Streamlit.")
+except Exception as e:
+    st.error("Erro: Configure sua GOOGLE_API_KEY nos 'Secrets' do Streamlit.")
 
-# FUNÇÃO VACINA: Tenta achar o modelo certo na nuvem
-def conectar_ia():
-    for nome in ['gemini-1.5-flash', 'models/gemini-1.5-flash', 'gemini-pro']:
+# Função para conectar ao modelo sem erro de caminho
+def conectar_ia_nuvem():
+    # Lista de nomes que o Google aceita na nuvem (sem o prefixo models/ que causa 404)
+    modelos_para_testar = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']
+    
+    for nome in modelos_para_testar:
         try:
-            m = genai.GenerativeModel(nome)
-            # Teste rápido de conexão
+            # O segredo é usar o parâmetro model_name direto
+            m = genai.GenerativeModel(model_name=nome)
             return m
         except:
             continue
-    return genai.GenerativeModel('gemini-pro')
+    return genai.GenerativeModel('gemini-1.5-flash')
 
-model = conectar_ia()
+model = conectar_ia_nuvem()
 
+# --- FUNÇÃO PARA GERAR RELATÓRIO WORD ---
 def preparar_download(texto_final):
     doc = Document()
-    doc.add_heading('AUDITORIA SUPREMA - RELATÓRIO', 0)
+    doc.add_heading('AUDITORIA SUPREMA - RELATÓRIO CLOUD', 0)
     for linha in texto_final.split('\n'):
         doc.add_paragraph(linha)
+    
     buffer = io.BytesIO()
     doc.save(buffer)
     buffer.seek(0)
     return buffer
 
-# --- INTERFACE ---
+# --- INTERFACE RESPONSIVA ---
 st.set_page_config(page_title="Auditor Supremo Online", layout="wide")
-st.title("🛡️ Supremo v16.0 - Cloud Edition")
+st.title("🛡️ Supremo v16.1 - Cloud Edition")
 
 with st.sidebar:
-    st.header("📂 Entrada")
-    arquivo = st.file_uploader("Subir Arquivo/Foto", type=["txt", "pdf", "png", "jpg", "jpeg"])
-    st.success("🔒 Sistema Online")
+    st.header("📂 Entrada de Dados")
+    arquivo = st.file_uploader("Subir Documento ou Foto", type=["txt", "pdf", "png", "jpg", "jpeg"])
+    st.divider()
+    st.success("✅ Conexão Segura e Ativa")
+    st.info("Sistema operando via Google Cloud Brain.")
 
-# LÓGICA
-input_data = []
+# LÓGICA DE PROCESSAMENTO DE ARQUIVOS
+dados_ia = []
 if arquivo:
     if arquivo.type.startswith("image"):
         img = Image.open(arquivo)
-        st.image(img, width=300)
-        input_data = [img]
+        st.image(img, caption="Imagem Carregada", use_column_width=True)
+        dados_ia = [img]
     else:
-        texto = arquivo.read().decode("utf-8", errors="ignore")
-        input_data = [f"CONTEÚDO: {texto}"]
+        # Se for texto ou PDF
+        try:
+            texto_extraido = arquivo.read().decode("utf-8", errors="ignore")
+            dados_ia = [f"CONTEÚDO DO DOCUMENTO: {texto_extraido}"]
+        except:
+            dados_ia = [f"Documento anexado: {arquivo.name}"]
 
-comando = st.text_area("Instruções:", height=100)
+# CAMPO DE PERGUNTA
+comando = st.text_area("Instruções para a Auditoria:", 
+                       placeholder="Ex: Analise esta imagem/texto e aponte erros...",
+                       height=120)
 
 if st.button("🚀 EXECUTAR AUDITORIA"):
     if comando:
-        with st.spinner("Analisando..."):
+        with st.spinner("Consultando rede neural na nuvem..."):
             try:
-                prompt = f"Atue como um Auditor Supremo. Analise e corrija: {comando}"
+                # Super Prompt Multi-IA
+                prompt_mestre = f"""
+                Atue como um Auditor Supremo e Consultor de Elite. 
+                Instrução do Usuário: {comando}
                 
-                if input_data:
-                    response = model.generate_content([prompt, *input_data])
+                FORMATO DE RESPOSTA:
+                1. 🔍 ANÁLISE DE FALHAS (Ética e Técnica)
+                2. ✍️ VERSÃO CORRIGIDA E SUGESTÕES
+                3. ✅ VEREDITO FINAL DO AUDITOR
+                """
+                
+                # Chamada da IA (Texto + Imagem se houver)
+                if dados_ia:
+                    response = model.generate_content([prompt_mestre, *dados_ia])
                 else:
-                    response = model.generate_content(prompt)
+                    response = model.generate_content(prompt_mestre)
                 
+                resultado_texto = response.text
+                
+                # Exibição do Resultado
                 st.markdown("---")
-                st.markdown(response.text)
+                st.markdown(resultado_texto)
                 
+                # Opção de Download
+                st.divider()
                 st.download_button(
-                    label="📥 BAIXAR EM WORD",
-                    data=preparar_download(response.text),
-                    file_name="Auditoria.docx",
+                    label="📥 BAIXAR RELATÓRIO EM WORD (.DOCX)",
+                    data=preparar_download(resultado_texto),
+                    file_name="Auditoria_Suprema_Nuvem.docx",
                     mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 )
+                st.balloons()
+                
             except Exception as e:
-                st.error(f"Erro: {e}")
+                st.error(f"Erro no processamento: {e}")
+    else:
+        st.warning("Por favor, digite uma pergunta ou instrução!")
+
+st.sidebar.caption("v16.1 - Edição Global Conectada")
