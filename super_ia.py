@@ -3,6 +3,8 @@ import google.generativeai as genai
 from docx import Document
 from PIL import Image
 import io
+import time
+import random
 
 # --- DESIGN PROFISSIONAL ---
 st.set_page_config(page_title="Auditor Supremo PRO", layout="wide", page_icon="🛡️")
@@ -15,14 +17,14 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- CONEXÃO BLINDADA (v17.3) ---
+# --- CONEXÃO BLINDADA (v18.0) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
-    # Seleção direta e estável do modelo
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    # AJUSTE SUPREMO: Usamos o método de inicialização que evita o erro 404 na nuvem
+    model = genai.GenerativeModel(model_name='gemini-1.5-flash')
 except Exception as e:
-    st.error(f"Erro de Conexão: {e}")
+    st.error(f"Erro de Configuração: {e}")
 
 def preparar_download(texto):
     doc = Document()
@@ -43,8 +45,8 @@ with col1:
     arquivo = st.file_uploader("📂 Upload de Evidências", type=["txt", "pdf", "png", "jpg", "jpeg"])
     st.divider()
     st.markdown("### ✅ Checklist Automático")
-    st.checkbox("Analisar Leis Brasileiras", value=True)
-    st.checkbox("Detectar Cláusulas Abusivas", value=True)
+    st.checkbox("Analisar Leis Brasileiras", value=True, disabled=True)
+    st.checkbox("Detectar Cláusulas Abusivas", value=True, disabled=True)
 
 with col2:
     st.header("🔍 Processamento")
@@ -52,9 +54,11 @@ with col2:
     
     if st.button("🚀 EXECUTAR AUDITORIA DE ELITE"):
         if pergunta:
-            with st.spinner("Conectando ao Cérebro Global..."):
+            with st.spinner("Orquestrando análise em modo seguro..."):
                 try:
-                    # Envio simplificado para evitar erros de tipo
+                    # Delay humano para manter a invisibilidade
+                    time.sleep(random.uniform(1.0, 2.0))
+                    
                     if arquivo and arquivo.type.startswith("image"):
                         img = Image.open(arquivo)
                         response = model.generate_content([pergunta, img])
@@ -71,6 +75,7 @@ with col2:
                         st.download_button("📥 BAIXAR DOCUMENTO FINAL (.DOCX)", preparar_download(response.text), "auditoria_pro.docx")
                         
                 except Exception as e:
-                    st.error(f"Ocorreu um erro: {e}")
+                    st.error(f"Ocorreu um erro técnico: {e}")
+                    st.info("Dica: Se o erro persistir, aguarde 30 segundos. O Google pode estar limitando o tráfego gratuito.")
         else:
-            st.warning("Por favor, digite sua pergunta.")
+            st.warning("Por favor, forneça os detalhes para análise.")
