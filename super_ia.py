@@ -16,14 +16,18 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- CONEXÃO COM CAMINHO ABSOLUTO (FIM DO 404) ---
+# --- CONEXÃO COM AUTO-DETECÇÃO (MATA O ERRO 404) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
-    # AJUSTE MESTRE: Usando o nome completo do modelo para a nuvem
-    model = genai.GenerativeModel(model_name='models/gemini-1.5-flash-latest')
+    
+    # O PULO DO GATO: Ele lista os modelos disponíveis e escolhe o que funciona
+    modelos_disponiveis = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+    # Se ele achar o 1.5 flash na lista, usa ele, senão pega o primeiro que aparecer
+    modelo_final = next((m for m in modelos_disponiveis if 'gemini-1.5-flash' in m), modelos_disponiveis)
+    model = genai.GenerativeModel(modelo_final)
 except Exception as e:
-    st.error("Conectando ao cérebro central...")
+    st.error("Sincronizando com a rede neural do Google...")
 
 def preparar_download(texto):
     doc = Document()
@@ -53,11 +57,8 @@ with col2:
     
     if st.button("🚀 EXECUTAR AUDITORIA DE ELITE"):
         if pergunta:
-            with st.spinner("Navegando em modo seguro..."):
+            with st.spinner("Conectando ao Cérebro Global..."):
                 try:
-                    # Pequena pausa para garantir estabilidade
-                    time.sleep(1)
-                    
                     if arquivo and arquivo.type.startswith("image"):
                         response = model.generate_content([pergunta, Image.open(arquivo)])
                     else:
@@ -72,12 +73,6 @@ with col2:
                         st.download_button("📥 BAIXAR DOCUMENTO FINAL (.DOCX)", preparar_download(response.text), "auditoria_pro.docx")
                         
                 except Exception as e:
-                    # Se falhar o flash-latest, tenta o pro como última alternativa
-                    try:
-                        reserva = genai.GenerativeModel(model_name='models/gemini-pro')
-                        response = reserva.generate_content(pergunta)
-                        st.markdown(response.text)
-                    except:
-                        st.error(f"Erro de Conexão: {e}. Aguarde 30 segundos.")
+                    st.error(f"Erro técnico: {e}. Tente novamente em 10 segundos.")
         else:
             st.warning("Por favor, digite sua pergunta.")
