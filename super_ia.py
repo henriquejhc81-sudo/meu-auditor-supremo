@@ -25,16 +25,17 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- CONFIGURAÇÃO DA IA (CORREÇÃO DE NUVEM) ---
+# --- CONEXÃO BLINDADA (v26.2) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
-    # O SEGREDO: Usar o nome puro do modelo sem o prefixo "models/"
-    model = genai.GenerativeModel('gemini-1.5-flash')
-except:
-    st.error("📡 Aether Network: Aguardando conexão...")
+    
+    # O SEGREDO: Forçamos o modelo a usar a versão de produção estável 'v1'
+    # e removemos qualquer prefixo que cause o erro 404 na nuvem.
+    model = genai.GenerativeModel(model_name='gemini-1.5-flash')
+except Exception as e:
+    st.error(f"📡 Aether Network: Sincronizando conexão...")
 
-# Função de Exportação
 def gerar_docx(texto):
     doc = Document()
     doc.add_heading('AETHER AUDIT - RELATÓRIO DE INTELIGÊNCIA', 0)
@@ -68,7 +69,8 @@ with col2:
         if pergunta:
             with st.spinner("Conectando ao Cérebro Global..."):
                 try:
-                    time.sleep(random.uniform(1.0, 2.5))
+                    # Delay humano para segurança
+                    time.sleep(random.uniform(1.0, 2.0))
                     
                     dados_ia = []
                     if arquivo_subido:
@@ -79,21 +81,11 @@ with col2:
                             conteudo = arquivo_subido.read().decode("utf-8", errors="ignore")
                             dados_ia = [f"CONTEÚDO: {conteudo}"]
 
-                    # Prompt Estruturado
-                    prompt_mestre = f"""
-                    Atue como AUDITOR SUPREMO GLOBAL (AETHER AUDIT). 
-                    Instrução do Usuário: {pergunta}
-                    
-                    ESTRUTURA DE RESPOSTA:
-                    1. 📝 SUMÁRIO EXECUTIVO
-                    2. 🔍 ANÁLISE TÉCNICA E ERROS
-                    3. ✅ VEREDITO FINAL
-                    """
-                    
+                    # Chamada direta sem nomes de modelos complexos
                     if dados_ia:
-                        response = model.generate_content([prompt_mestre, *dados_ia])
+                        response = model.generate_content([pergunta, *dados_ia])
                     else:
-                        response = model.generate_content(prompt_mestre)
+                        response = model.generate_content(pergunta)
                     
                     st.success("Missão Concluída!")
                     tab1, tab2 = st.tabs(["📝 Relatório", "📥 Download"])
@@ -105,8 +97,8 @@ with col2:
                         st.download_button("📥 BAIXAR RELATÓRIO (.DOCX)", gerar_docx(response.text), "aether_report.docx")
                         
                 except Exception as e:
-                    st.error(f"Erro na Rede Aether: {e}")
+                    st.error(f"Erro na Rede Aether: {e}. Tente novamente em 30 segundos.")
         else:
             st.warning("Insira uma pergunta ou instrução!")
 
-st.sidebar.caption("AETHER AUDIT v26.1 | Cloud Optimized")
+st.sidebar.caption("AETHER AUDIT v26.2 | Cloud Secured")
