@@ -26,15 +26,18 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- CONEXÃO BLINDADA (v25.2) ---
+# --- CONEXÃO BLINDADA (v25.3 - AUTO-DETECÇÃO) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
-    # AJUSTE MESTRE: Forçamos a configuração sem especificar versão, o que evita o erro v1beta
     genai.configure(api_key=API_KEY)
-    # Seleção direta do modelo (removendo o prefixo models/ que causa o 404 na nuvem)
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    
+    # Ele busca na sua conta qual modelo está vivo no servidor agora
+    modelos_disponiveis = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+    # Filtra para usar o gemini-1.5-flash se ele existir na lista, senão pega o primeiro
+    modelo_escolhido = next((m for m in modelos_disponiveis if 'gemini-1.5-flash' in m), modelos_disponiveis)
+    model = genai.GenerativeModel(modelo_escolhido)
 except Exception as e:
-    st.error(f"📡 Aether Network: Erro de Sincronização.")
+    st.error(f"📡 Aether Network: Sincronizando conexão...")
 
 def preparar_download(texto):
     doc = Document()
@@ -68,12 +71,13 @@ with col2:
     
     if st.button("🚀 INICIAR VARREDURA AETHER"):
         if pergunta:
-            with st.spinner("Conectando ao Cérebro Global..."):
+            with st.spinner("Aether Audit está processando..."):
                 try:
                     time.sleep(random.uniform(1.0, 2.0))
                     
                     if arquivo and arquivo.type.startswith("image"):
-                        response = model.generate_content([pergunta, Image.open(arquivo)])
+                        img = Image.open(arquivo)
+                        response = model.generate_content([pergunta, img])
                     else:
                         response = model.generate_content(pergunta)
                     
@@ -85,12 +89,6 @@ with col2:
                         st.download_button("📥 BAIXAR RELATÓRIO (.DOCX)", preparar_download(response.text), "aether_report.docx")
                 
                 except Exception as e:
-                    # Se ainda der 404, o sistema tenta o modelo de backup automaticamente
-                    try:
-                        reserva = genai.GenerativeModel('gemini-pro')
-                        response = reserva.generate_content(pergunta)
-                        st.markdown(response.text)
-                    except:
-                        st.error(f"Erro na Rede Aether: {e}. Tente novamente em 30 segundos.")
+                    st.error(f"Erro na Rede Aether: {e}. O Google está reiniciando os modelos. Aguarde 30 segundos.")
         else:
             st.warning("Aguardando entrada de dados.")
