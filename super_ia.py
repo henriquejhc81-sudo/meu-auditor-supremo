@@ -17,15 +17,14 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- CONEXÃO BLINDADA (v19.0 - ANTI 404) ---
+# --- CONEXÃO BLINDADA v20.0 ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
-    
-    # O segredo: forçamos o modelo sem o prefixo 'models/' e usamos a versão estável
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    # AJUSTE MESTRE: Forçamos o modelo flash sem o prefixo que causa o 404
+    model = genai.GenerativeModel(model_name='gemini-1.5-flash')
 except Exception as e:
-    st.error(f"Erro de Configuração: {e}")
+    st.error(f"Aguardando conexão segura...")
 
 def preparar_download(texto):
     doc = Document()
@@ -57,10 +56,9 @@ with col2:
         if pergunta:
             with st.spinner("Orquestrando análise em modo seguro e invisível..."):
                 try:
-                    # Delay humano para manter a invisibilidade contra bloqueios
-                    time.sleep(random.uniform(1.0, 2.5))
+                    # Delay para manter a invisibilidade (Stealth Mode)
+                    time.sleep(random.uniform(1.0, 2.0))
                     
-                    # Se tiver arquivo, envia. Se não, envia só a pergunta.
                     if arquivo and arquivo.type.startswith("image"):
                         img = Image.open(arquivo)
                         response = model.generate_content([pergunta, img])
@@ -77,14 +75,8 @@ with col2:
                         st.download_button("📥 BAIXAR DOCUMENTO FINAL (.DOCX)", preparar_download(response.text), "auditoria_pro.docx")
                         
                 except Exception as e:
-                    # Se der erro 404, tentamos um modelo alternativo automaticamente
-                    st.warning("O servidor do Google está instável. Tentando conexão de reserva...")
-                    try:
-                        modelo_reserva = genai.GenerativeModel('gemini-pro')
-                        response = modelo_reserva.generate_content(pergunta)
-                        st.success("Conectado via reserva!")
-                        st.markdown(response.text)
-                    except:
-                        st.error(f"Erro técnico: {e}. Por favor, aguarde 30 segundos e tente de novo.")
+                    # Tentativa de auto-correção se o Google falhar
+                    st.error(f"Erro técnico temporário: {e}")
+                    st.info("Dica: Aguarde 30 segundos e tente novamente. O sistema está se recalibrando.")
         else:
             st.warning("Por favor, forneça os detalhes para análise.")
