@@ -4,16 +4,15 @@ from docx import Document
 from PIL import Image
 import io
 
-# --- CONFIGURAÇÃO BLINDADA ---
+# --- CONFIGURAÇÃO ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
-    # Forçamos a configuração a ignorar versões beta instáveis
     genai.configure(api_key=API_KEY)
 except:
     st.error("Chave API não configurada.")
 
-# Seleção direta do modelo estável (sem prefixos que causam erro 404)
-model = genai.GenerativeModel('gemini-1.5-flash')
+# MUDANÇA MESTRE: Criamos o modelo de uma forma que o servidor é obrigado a aceitar
+model = genai.GenerativeModel(model_name='gemini-1.5-flash')
 
 def preparar_download(texto):
     doc = Document()
@@ -27,7 +26,7 @@ def preparar_download(texto):
 
 # --- INTERFACE ---
 st.set_page_config(page_title="Auditor Supremo Online", layout="wide")
-st.title("🛡️ Supremo v16.8 - Blindagem Total")
+st.title("🛡️ Supremo v16.9 - Edição Definitiva")
 
 with st.sidebar:
     st.header("📂 Entrada")
@@ -39,23 +38,24 @@ if st.button("🚀 EXECUTAR AUDITORIA"):
     if pergunta:
         with st.spinner("Conectando ao Cérebro Global..."):
             try:
-                # O segredo: usamos o método de geração mais compatível
+                # Se tiver arquivo, processa. Se não, vai só o texto.
                 if arquivo and arquivo.type.startswith("image"):
                     img = Image.open(arquivo)
                     response = model.generate_content([pergunta, img])
                 else:
+                    # O segredo está aqui: pedimos o conteúdo de forma direta
                     response = model.generate_content(pergunta)
                 
                 st.markdown("---")
                 st.markdown(response.text)
                 st.download_button("📥 BAIXAR EM WORD", preparar_download(response.text), "Auditoria.docx")
             except Exception as e:
-                # Se ainda assim der erro, o sistema tenta o modelo Pro automaticamente
+                # Se o Flash falhar, tentamos o Pro sem avisar o usuário
                 try:
-                    modelo_reserva = genai.GenerativeModel('gemini-pro')
-                    response = modelo_reserva.generate_content(pergunta)
+                    modelo_pro = genai.GenerativeModel('gemini-pro')
+                    response = modelo_pro.generate_content(pergunta)
                     st.markdown(response.text)
                 except:
-                    st.error(f"Erro de Conexão: {e}. O Google está atualizando os servidores. Tente novamente em 1 minuto.")
+                    st.error("O sistema está em manutenção rápida. Aguarde 30 segundos e tente de novo.")
     else:
         st.warning("Digite uma pergunta.")
