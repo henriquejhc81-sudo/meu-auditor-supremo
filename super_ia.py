@@ -6,7 +6,7 @@ import io
 import time
 import random
 
-# --- DESIGN DE ELITE (AETHER BLACK THEME) ---
+# --- DESIGN AETHER (BLACK & NEON) ---
 st.set_page_config(page_title="AETHER AUDIT | Intelligence Mode", layout="wide", page_icon="🛡️")
 
 st.markdown("""
@@ -22,73 +22,92 @@ st.markdown("""
         height: 3.5em; 
     }
     .report-card { padding: 25px; border-radius: 12px; background-color: #1a1c24; border: 1px solid #2d2f39; color: #e0e0e0; }
-    .metric-box { padding: 15px; border-radius: 10px; background: #262730; text-align: center; border: 1px solid #444; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- CONEXÃO BLINDADA (v25.3 - AUTO-DETECÇÃO) ---
+# --- CONFIGURAÇÃO DA IA (DA SUA V10) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
-    
-    # Ele busca na sua conta qual modelo está vivo no servidor agora
-    modelos_disponiveis = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-    # Filtra para usar o gemini-1.5-flash se ele existir na lista, senão pega o primeiro
-    modelo_escolhido = next((m for m in modelos_disponiveis if 'gemini-1.5-flash' in m), modelos_disponiveis)
-    model = genai.GenerativeModel(modelo_escolhido)
-except Exception as e:
-    st.error(f"📡 Aether Network: Sincronizando conexão...")
+    # Voltamos ao comando simples da v10 que você enviou
+    model = genai.GenerativeModel('gemini-1.5-flash')
+except:
+    st.error("📡 Aether Network: Aguardando conexão...")
 
-def preparar_download(texto):
+# Função de Exportação (Sua v10 corrigida para nuvem)
+def gerar_docx(texto):
     doc = Document()
     doc.add_heading('AETHER AUDIT - RELATÓRIO DE INTELIGÊNCIA', 0)
-    for linha in texto.split('\n'):
-        doc.add_paragraph(linha)
+    doc.add_paragraph(texto)
     buffer = io.BytesIO()
     doc.save(buffer)
     buffer.seek(0)
     return buffer
 
-# --- INTERFACE AETHER AUDIT ---
+# --- INTERFACE AETHER ---
 st.title("🛡️ AETHER AUDIT")
 st.markdown("##### *Advanced Compliance & Multimodal Intelligence*")
 
 col1, col2 = st.columns(2)
 
 with col1:
-    st.markdown("<div class='metric-box'>📊 Nível de Varredura: <b>Ultra Deep</b></div>", unsafe_allow_html=True)
-    st.divider()
     st.subheader("📂 Central de Evidências")
-    arquivo = st.file_uploader("Upload de Documentos ou Imagens", type=["txt", "pdf", "png", "jpg", "jpeg"])
+    arquivo_subido = st.file_uploader("Upload de Documentos ou Imagens", type=["txt", "pdf", "png", "jpg", "jpeg"])
+    
     st.divider()
-    st.subheader("⚙️ Parâmetros de Missão")
+    st.markdown("### ⚙️ Parâmetros de Missão")
     st.toggle("Ativar Modo IA Profundo", value=True)
     st.toggle("Cruzamento de Leis Brasileiras", value=True)
 
 with col2:
     st.subheader("🔍 Painel de Análise")
-    pergunta = st.text_area("O que a Aether deve processar?", placeholder="Instruções...", height=150)
+    pergunta = st.text_area("O que a Aether deve processar?", placeholder="Ex: Analise este contrato...", height=150)
     
     if st.button("🚀 INICIAR VARREDURA AETHER"):
         if pergunta:
-            with st.spinner("Aether Audit está processando..."):
+            with st.spinner("Conectando ao Cérebro Global..."):
                 try:
-                    time.sleep(random.uniform(1.0, 2.0))
+                    # Delay humano da sua v10
+                    time.sleep(random.uniform(1.0, 2.5))
                     
-                    if arquivo and arquivo.type.startswith("image"):
-                        img = Image.open(arquivo)
-                        response = model.generate_content([pergunta, img])
+                    dados_ia = []
+                    if arquivo_subido:
+                        if arquivo_subido.type.startswith("image"):
+                            img = Image.open(arquivo_subido)
+                            dados_ia = [img]
+                        else:
+                            conteudo = arquivo_subido.read().decode("utf-8", errors="ignore")
+                            dados_ia = [f"CONTEÚDO: {conteudo}"]
+
+                    # Super Prompt da v10
+                    prompt_mestre = f"""
+                    Atue como AUDITOR SUPREMO GLOBAL (AETHER AUDIT). 
+                    Se o conteúdo estiver em outro idioma, traduza para o Português do Brasil.
+                    Instrução do Usuário: {pergunta}
+                    
+                    ESTRUTURA DE RESPOSTA:
+                    1. 📝 TRADUÇÃO/RESUMO DOS DADOS
+                    2. 🔍 ANÁLISE TÉCNICA E ERROS
+                    3. ✅ RESPOSTA MESTRE FINAL (VEREDITO)
+                    """
+                    
+                    if dados_ia:
+                        response = model.generate_content([prompt_mestre, *dados_ia])
                     else:
-                        response = model.generate_content(pergunta)
+                        response = model.generate_content(prompt_mestre)
                     
                     st.success("Missão Concluída!")
-                    tab1, tab2 = st.tabs(["📝 Relatório", "📥 Exportação"])
+                    tab1, tab2 = st.tabs(["📝 Relatório", "📥 Download"])
+                    
                     with tab1:
                         st.markdown(f"<div class='report-card'>{response.text}</div>", unsafe_allow_html=True)
+                    
                     with tab2:
-                        st.download_button("📥 BAIXAR RELATÓRIO (.DOCX)", preparar_download(response.text), "aether_report.docx")
-                
+                        st.download_button("📥 BAIXAR RELATÓRIO (.DOCX)", gerar_docx(response.text), "aether_report.docx")
+                        
                 except Exception as e:
-                    st.error(f"Erro na Rede Aether: {e}. O Google está reiniciando os modelos. Aguarde 30 segundos.")
+                    st.error(f"Erro na Rede Aether: {e}")
         else:
-            st.warning("Aguardando entrada de dados.")
+            st.warning("Insira uma pergunta ou instrução!")
+
+st.sidebar.caption("AETHER AUDIT v26.0 | Base Estável v10")
