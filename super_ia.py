@@ -15,14 +15,12 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- CONEXÃO INTELIGENTE (FIM DO ERRO 404) ---
+# --- CONEXÃO BLINDADA (v17.3) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
-    
-    # Ele busca na sua conta qual modelo está disponível agora
-    modelos = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-    model = genai.GenerativeModel(modelos) # Pega o primeiro da lista
+    # Seleção direta e estável do modelo
+    model = genai.GenerativeModel('gemini-1.5-flash')
 except Exception as e:
     st.error(f"Erro de Conexão: {e}")
 
@@ -56,8 +54,10 @@ with col2:
         if pergunta:
             with st.spinner("Conectando ao Cérebro Global..."):
                 try:
+                    # Envio simplificado para evitar erros de tipo
                     if arquivo and arquivo.type.startswith("image"):
-                        response = model.generate_content([pergunta, Image.open(arquivo)])
+                        img = Image.open(arquivo)
+                        response = model.generate_content([pergunta, img])
                     else:
                         response = model.generate_content(pergunta)
                     
@@ -71,6 +71,6 @@ with col2:
                         st.download_button("📥 BAIXAR DOCUMENTO FINAL (.DOCX)", preparar_download(response.text), "auditoria_pro.docx")
                         
                 except Exception as e:
-                    st.error(f"Ocorreu um erro no processamento: {e}")
+                    st.error(f"Ocorreu um erro: {e}")
         else:
-            st.warning("Por favor, forneça os detalhes para análise.")
+            st.warning("Por favor, digite sua pergunta.")
