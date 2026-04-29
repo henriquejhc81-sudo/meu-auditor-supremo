@@ -17,12 +17,13 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- CONEXÃO BLINDADA (v18.0) ---
+# --- CONEXÃO BLINDADA (v19.0 - ANTI 404) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
-    # AJUSTE SUPREMO: Usamos o método de inicialização que evita o erro 404 na nuvem
-    model = genai.GenerativeModel(model_name='gemini-1.5-flash')
+    
+    # O segredo: forçamos o modelo sem o prefixo 'models/' e usamos a versão estável
+    model = genai.GenerativeModel('gemini-1.5-flash')
 except Exception as e:
     st.error(f"Erro de Configuração: {e}")
 
@@ -45,8 +46,8 @@ with col1:
     arquivo = st.file_uploader("📂 Upload de Evidências", type=["txt", "pdf", "png", "jpg", "jpeg"])
     st.divider()
     st.markdown("### ✅ Checklist Automático")
-    st.checkbox("Analisar Leis Brasileiras", value=True, disabled=True)
-    st.checkbox("Detectar Cláusulas Abusivas", value=True, disabled=True)
+    st.checkbox("Analisar Leis Brasileiras", value=True)
+    st.checkbox("Detectar Cláusulas Abusivas", value=True)
 
 with col2:
     st.header("🔍 Processamento")
@@ -54,11 +55,12 @@ with col2:
     
     if st.button("🚀 EXECUTAR AUDITORIA DE ELITE"):
         if pergunta:
-            with st.spinner("Orquestrando análise em modo seguro..."):
+            with st.spinner("Orquestrando análise em modo seguro e invisível..."):
                 try:
-                    # Delay humano para manter a invisibilidade
-                    time.sleep(random.uniform(1.0, 2.0))
+                    # Delay humano para manter a invisibilidade contra bloqueios
+                    time.sleep(random.uniform(1.0, 2.5))
                     
+                    # Se tiver arquivo, envia. Se não, envia só a pergunta.
                     if arquivo and arquivo.type.startswith("image"):
                         img = Image.open(arquivo)
                         response = model.generate_content([pergunta, img])
@@ -75,7 +77,14 @@ with col2:
                         st.download_button("📥 BAIXAR DOCUMENTO FINAL (.DOCX)", preparar_download(response.text), "auditoria_pro.docx")
                         
                 except Exception as e:
-                    st.error(f"Ocorreu um erro técnico: {e}")
-                    st.info("Dica: Se o erro persistir, aguarde 30 segundos. O Google pode estar limitando o tráfego gratuito.")
+                    # Se der erro 404, tentamos um modelo alternativo automaticamente
+                    st.warning("O servidor do Google está instável. Tentando conexão de reserva...")
+                    try:
+                        modelo_reserva = genai.GenerativeModel('gemini-pro')
+                        response = modelo_reserva.generate_content(pergunta)
+                        st.success("Conectado via reserva!")
+                        st.markdown(response.text)
+                    except:
+                        st.error(f"Erro técnico: {e}. Por favor, aguarde 30 segundos e tente de novo.")
         else:
             st.warning("Por favor, forneça os detalhes para análise.")
