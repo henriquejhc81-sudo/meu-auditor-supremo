@@ -3,7 +3,6 @@ import google.generativeai as genai
 from docx import Document
 from PIL import Image
 import io
-import time
 
 # --- DESIGN PROFISSIONAL ---
 st.set_page_config(page_title="Auditor Supremo PRO", layout="wide", page_icon="🛡️")
@@ -16,13 +15,16 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- CONEXÃO ---
+# --- CONEXÃO INTELIGENTE (FIM DO ERRO 404) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
-    model = genai.GenerativeModel('gemini-1.5-flash')
-except:
-    st.error("Aguardando conexão com a chave API...")
+    
+    # Ele busca na sua conta qual modelo está disponível agora
+    modelos = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+    model = genai.GenerativeModel(modelos) # Pega o primeiro da lista
+except Exception as e:
+    st.error(f"Erro de Conexão: {e}")
 
 def preparar_download(texto):
     doc = Document()
@@ -34,14 +36,13 @@ def preparar_download(texto):
     buffer.seek(0)
     return buffer
 
-# --- INTERFACE CORRIGIDA ---
+# --- INTERFACE ---
 col1, col2 = st.columns(2)
 
 with col1:
     st.title("PRO Auditor")
     st.subheader("Painel de Controle")
     arquivo = st.file_uploader("📂 Upload de Evidências", type=["txt", "pdf", "png", "jpg", "jpeg"])
-    
     st.divider()
     st.markdown("### ✅ Checklist Automático")
     st.checkbox("Analisar Leis Brasileiras", value=True)
@@ -53,7 +54,7 @@ with col2:
     
     if st.button("🚀 EXECUTAR AUDITORIA DE ELITE"):
         if pergunta:
-            with st.spinner("Analisando com Inteligência Coletiva..."):
+            with st.spinner("Conectando ao Cérebro Global..."):
                 try:
                     if arquivo and arquivo.type.startswith("image"):
                         response = model.generate_content([pergunta, Image.open(arquivo)])
@@ -61,8 +62,6 @@ with col2:
                         response = model.generate_content(pergunta)
                     
                     st.success("Análise Concluída!")
-                    
-                    # Organização em Abas
                     aba1, aba2 = st.tabs(["📊 Relatório", "📥 Download"])
                     
                     with aba1:
@@ -72,4 +71,6 @@ with col2:
                         st.download_button("📥 BAIXAR DOCUMENTO FINAL (.DOCX)", preparar_download(response.text), "auditoria_pro.docx")
                         
                 except Exception as e:
-                    st.error(f"Erro: {e}")
+                    st.error(f"Ocorreu um erro no processamento: {e}")
+        else:
+            st.warning("Por favor, forneça os detalhes para análise.")
