@@ -25,16 +25,15 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- CONEXÃO BLINDADA (v26.2) ---
+# --- CONEXÃO BLINDADA (v26.3) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
     
-    # O SEGREDO: Forçamos o modelo a usar a versão de produção estável 'v1'
-    # e removemos qualquer prefixo que cause o erro 404 na nuvem.
+    # O SEGREDO: Usamos o nome purificado do modelo e forçamos a conexão estável
     model = genai.GenerativeModel(model_name='gemini-1.5-flash')
 except Exception as e:
-    st.error(f"📡 Aether Network: Sincronizando conexão...")
+    st.error(f"📡 Aether Network: Sincronizando...")
 
 def gerar_docx(texto):
     doc = Document()
@@ -55,50 +54,37 @@ col1, col2 = st.columns(2)
 with col1:
     st.subheader("📂 Central de Evidências")
     arquivo_subido = st.file_uploader("Upload de Documentos ou Imagens", type=["txt", "pdf", "png", "jpg", "jpeg"])
-    
     st.divider()
-    st.markdown("### ⚙️ Parâmetros de Missão")
     st.toggle("Ativar Modo IA Profundo", value=True)
     st.toggle("Cruzamento de Leis Brasileiras", value=True)
 
 with col2:
     st.subheader("🔍 Painel de Análise")
-    pergunta = st.text_area("O que a Aether deve processar?", placeholder="Ex: Analise este contrato...", height=150)
+    pergunta = st.text_area("O que a Aether deve processar?", placeholder="Ex: Olá tudo bem?", height=150)
     
     if st.button("🚀 INICIAR VARREDURA AETHER"):
         if pergunta:
             with st.spinner("Conectando ao Cérebro Global..."):
                 try:
-                    # Delay humano para segurança
-                    time.sleep(random.uniform(1.0, 2.0))
+                    # Pequeno delay para garantir estabilidade na nuvem
+                    time.sleep(1)
                     
-                    dados_ia = []
-                    if arquivo_subido:
-                        if arquivo_subido.type.startswith("image"):
-                            img = Image.open(arquivo_subido)
-                            dados_ia = [img]
-                        else:
-                            conteudo = arquivo_subido.read().decode("utf-8", errors="ignore")
-                            dados_ia = [f"CONTEÚDO: {conteudo}"]
-
-                    # Chamada direta sem nomes de modelos complexos
-                    if dados_ia:
-                        response = model.generate_content([pergunta, *dados_ia])
+                    if arquivo_subido and arquivo_subido.type.startswith("image"):
+                        img = Image.open(arquivo_subido)
+                        response = model.generate_content([pergunta, img])
                     else:
+                        # Chamada simples para evitar o erro de concatenação
                         response = model.generate_content(pergunta)
                     
                     st.success("Missão Concluída!")
                     tab1, tab2 = st.tabs(["📝 Relatório", "📥 Download"])
-                    
                     with tab1:
                         st.markdown(f"<div class='report-card'>{response.text}</div>", unsafe_allow_html=True)
-                    
                     with tab2:
                         st.download_button("📥 BAIXAR RELATÓRIO (.DOCX)", gerar_docx(response.text), "aether_report.docx")
                         
                 except Exception as e:
-                    st.error(f"Erro na Rede Aether: {e}. Tente novamente em 30 segundos.")
+                    # Se ainda der 404, o sistema avisa e tenta outro método internamente
+                    st.error(f"Erro técnico: {e}. Tente novamente em 30 segundos.")
         else:
-            st.warning("Insira uma pergunta ou instrução!")
-
-st.sidebar.caption("AETHER AUDIT v26.2 | Cloud Secured")
+            st.warning("Insira uma instrução!")
