@@ -4,7 +4,6 @@ from docx import Document
 from PIL import Image
 import io
 import time
-import random
 
 # --- DESIGN PROFISSIONAL ---
 st.set_page_config(page_title="Auditor Supremo PRO", layout="wide", page_icon="🛡️")
@@ -17,14 +16,14 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- CONEXÃO BLINDADA v20.0 ---
+# --- CONEXÃO COM CAMINHO ABSOLUTO (FIM DO 404) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
-    # AJUSTE MESTRE: Forçamos o modelo flash sem o prefixo que causa o 404
-    model = genai.GenerativeModel(model_name='gemini-1.5-flash')
+    # AJUSTE MESTRE: Usando o nome completo do modelo para a nuvem
+    model = genai.GenerativeModel(model_name='models/gemini-1.5-flash-latest')
 except Exception as e:
-    st.error(f"Aguardando conexão segura...")
+    st.error("Conectando ao cérebro central...")
 
 def preparar_download(texto):
     doc = Document()
@@ -54,14 +53,13 @@ with col2:
     
     if st.button("🚀 EXECUTAR AUDITORIA DE ELITE"):
         if pergunta:
-            with st.spinner("Orquestrando análise em modo seguro e invisível..."):
+            with st.spinner("Navegando em modo seguro..."):
                 try:
-                    # Delay para manter a invisibilidade (Stealth Mode)
-                    time.sleep(random.uniform(1.0, 2.0))
+                    # Pequena pausa para garantir estabilidade
+                    time.sleep(1)
                     
                     if arquivo and arquivo.type.startswith("image"):
-                        img = Image.open(arquivo)
-                        response = model.generate_content([pergunta, img])
+                        response = model.generate_content([pergunta, Image.open(arquivo)])
                     else:
                         response = model.generate_content(pergunta)
                     
@@ -70,13 +68,16 @@ with col2:
                     
                     with aba1:
                         st.markdown(f"<div class='report-box'>{response.text}</div>", unsafe_allow_html=True)
-                    
                     with aba2:
                         st.download_button("📥 BAIXAR DOCUMENTO FINAL (.DOCX)", preparar_download(response.text), "auditoria_pro.docx")
                         
                 except Exception as e:
-                    # Tentativa de auto-correção se o Google falhar
-                    st.error(f"Erro técnico temporário: {e}")
-                    st.info("Dica: Aguarde 30 segundos e tente novamente. O sistema está se recalibrando.")
+                    # Se falhar o flash-latest, tenta o pro como última alternativa
+                    try:
+                        reserva = genai.GenerativeModel(model_name='models/gemini-pro')
+                        response = reserva.generate_content(pergunta)
+                        st.markdown(response.text)
+                    except:
+                        st.error(f"Erro de Conexão: {e}. Aguarde 30 segundos.")
         else:
-            st.warning("Por favor, forneça os detalhes para análise.")
+            st.warning("Por favor, digite sua pergunta.")
