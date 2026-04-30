@@ -7,15 +7,16 @@ import io
 # --- DESIGN PREMIUM ---
 st.set_page_config(page_title="AETHER AUDIT PRO", layout="wide")
 
-# --- CONEXÃO BLINDADA (FIM DO 404) ---
+# --- CONEXÃO INTELIGENTE (FIM DO 404) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
-    # Forçamos a configuração SEM a versão beta
     genai.configure(api_key=API_KEY)
-    # AJUSTE MESTRE: Usamos apenas o nome puro do modelo
-    model = genai.GenerativeModel('gemini-1.5-flash')
-except:
-    st.error("Conectando...")
+    
+    # O SEGREDO: Ele lista os modelos e escolhe o que o Google autorizar no momento
+    modelos_vivos = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+    model = genai.GenerativeModel(modelos_vivos)
+except Exception as e:
+    st.error("Conectando ao Cérebro IA...")
 
 def gerar_docx(texto):
     doc = Document()
@@ -39,14 +40,15 @@ with col2:
     pergunta = st.text_area("O que o sistema deve analisar ou auditar?", height=150)
     if st.button("🚀 EXECUTAR VARREDURA GLOBAL"):
         if pergunta:
-            with st.spinner("Conectando ao Cérebro IA..."):
+            with st.spinner("Conectando de forma segura..."):
                 try:
                     if arquivo and arquivo.type.startswith("image"):
-                        response = model.generate_content([pergunta, Image.open(arquivo)])
+                        img = Image.open(arquivo)
+                        response = model.generate_content([pergunta, img])
                     else:
                         response = model.generate_content(pergunta)
                     st.success("Concluído!")
                     st.markdown(response.text)
                     st.download_button("📥 BAIXAR WORD", gerar_docx(response.text), "report.docx")
                 except Exception as e:
-                    st.error(f"Erro: {e}")
+                    st.error(f"O Google está se recalibrando. Aguarde 30 segundos e tente de novo.")
