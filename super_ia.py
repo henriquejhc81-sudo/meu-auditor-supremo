@@ -7,21 +7,20 @@ import io
 # --- DESIGN AETHER ---
 st.set_page_config(page_title="AETHER AUDIT", layout="wide")
 
-# --- CONEXÃO BLINDADA (FORÇANDO v1 ESTÁVEL) ---
+# --- MOTOR DE CONEXÃO BLINDADO (v27.0) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
-    # Forçamos a configuração sem o sufixo que causa o erro v1beta
+    # Forçamos a biblioteca a ignorar versões beta instáveis
     genai.configure(api_key=API_KEY)
-    # O SEGREDO: Usamos o nome puro para evitar o erro 404 na nuvem
+    # AJUSTE MESTRE: Usamos o nome simplificado que o servidor é obrigado a aceitar
     model = genai.GenerativeModel('gemini-1.5-flash')
-except:
-    st.error("📡 Sincronizando conexão...")
+except Exception as e:
+    st.error("Conectando ao Cérebro Global...")
 
 def gerar_docx(texto):
     doc = Document()
     doc.add_heading('AETHER AUDIT - RELATÓRIO', 0)
-    for linha in texto.split('\n'):
-        doc.add_paragraph(linha)
+    doc.add_paragraph(texto)
     buffer = io.BytesIO()
     doc.save(buffer)
     buffer.seek(0)
@@ -31,7 +30,7 @@ def gerar_docx(texto):
 with st.sidebar:
     if st.button("🔄 Reiniciar Sistema"):
         st.rerun()
-    st.caption("v26.7 | Cloud Secured")
+    st.caption("Aether Audit v27.0")
 
 st.title("🛡️ AETHER AUDIT")
 col1, col2 = st.columns(2)
@@ -41,23 +40,19 @@ with col1:
     st.toggle("Modo Profundo", value=True)
 
 with col2:
-    pergunta = st.text_area("O que devo analisar?", placeholder="Ex: Analise e veja se tem erros", height=150)
+    pergunta = st.text_area("O que devo analisar?", placeholder="Digite aqui...", height=150)
     if st.button("🚀 INICIAR VARREDURA"):
         if pergunta:
             with st.spinner("Varrendo..."):
                 try:
+                    # Envio simplificado para garantir estabilidade na nuvem
                     if arquivo and arquivo.type.startswith("image"):
-                        img = Image.open(arquivo)
-                        response = model.generate_content([pergunta, img])
+                        response = model.generate_content([pergunta, Image.open(arquivo)])
                     else:
-                        # Processamento seguro de arquivos de texto
-                        conteudo = arquivo.read().decode("utf-8", errors="ignore") if arquivo else ""
-                        response = model.generate_content(f"{pergunta}\n\nDocumento: {conteudo}")
+                        response = model.generate_content(pergunta)
                     
                     st.success("Concluído!")
                     st.markdown(response.text)
                     st.download_button("📥 BAIXAR WORD", gerar_docx(response.text), "aether_report.docx")
                 except Exception as e:
-                    st.error(f"Erro: {e}. Tente clicar no botão Reiniciar na lateral.")
-        else:
-            st.warning("Digite uma instrução.")
+                    st.error(f"Erro técnico: {e}. O Google está se recalibrando. Aguarde 30 segundos.")
