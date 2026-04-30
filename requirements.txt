@@ -1,2 +1,6 @@
+streamlit
+google-generativeai
+python-docx
 pandas
 openpyxl
+pillow
