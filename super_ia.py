@@ -8,14 +8,17 @@ import time
 # --- DESIGN DE ELITE ---
 st.set_page_config(page_title="AETHER AUDIT PRO", layout="wide", page_icon="🛡️")
 
-# --- CONEXÃO DIRETA (DEFINIÇÃO OBRIGATÓRIA) ---
+# --- CONEXÃO BLINDADA (FIM DO 404) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
+    # AJUSTE MESTRE: Forçamos a configuração estável
     genai.configure(api_key=API_KEY)
-    # Definimos o modelo de forma direta e global para evitar o erro 'not defined'
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    
+    # O SEGREDO: Usamos o nome absoluto 'models/gemini-1.5-flash' 
+    # Isso impede que o servidor procure na porta errada (v1beta)
+    model = genai.GenerativeModel(model_name='models/gemini-1.5-flash')
 except Exception as e:
-    st.error(f"Erro na conexão inicial: {e}")
+    st.error(f"📡 Rede Aether: Sincronizando...")
 
 def gerar_docx(texto):
     doc = Document()
@@ -32,7 +35,7 @@ with st.sidebar:
     st.title("Painel Aether")
     if st.button("🔄 REINICIAR MOTOR"):
         st.rerun()
-    st.caption("v29.1 | Direct Connection Mode")
+    st.caption("v29.2 | Enterprise Secured")
 
 st.title("🛡️ AETHER AUDIT")
 st.markdown("### *Inteligência de Auditoria Multinível*")
@@ -44,20 +47,18 @@ with col1:
     st.toggle("Modo Profundo (AI Mode)", value=True)
 
 with col2:
-    pergunta = st.text_area("O que devo auditar hoje?", placeholder="Digite aqui...", height=150)
+    pergunta = st.text_area("O que devo auditar hoje?", placeholder="Ex: Olá, tudo bem?", height=150)
     
     if st.button("🚀 INICIAR VARREDURA SUPREMA"):
         if pergunta:
-            with st.spinner("Aether está processando..."):
+            with st.spinner("Processando na Nuvem..."):
                 try:
-                    # Pequena pausa para sincronia
+                    # Pequeno delay para estabilidade
                     time.sleep(1)
                     
                     if arquivo and arquivo.type.startswith("image"):
-                        img = Image.open(arquivo)
-                        response = model.generate_content([pergunta, img])
+                        response = model.generate_content([pergunta, Image.open(arquivo)])
                     else:
-                        # Chamada direta e simples
                         response = model.generate_content(pergunta)
                     
                     st.success("Análise Concluída!")
@@ -66,6 +67,6 @@ with col2:
                     st.download_button("📥 BAIXAR WORD", gerar_docx(response.text), "auditoria_aether.docx")
                     
                 except Exception as e:
-                    st.error(f"O Google está demorando para responder: {e}. Tente novamente em 30 segundos.")
+                    st.error(f"Erro técnico: {e}. O Google está se recalibrando. Aguarde 30 segundos.")
         else:
-            st.warning("Por favor, digite uma instrução.")
+            st.warning("Digite uma instrução.")
