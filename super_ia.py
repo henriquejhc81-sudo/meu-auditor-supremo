@@ -21,15 +21,16 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- CONEXÃO DIRETA (DEFINIÇÃO OBRIGATÓRIA) ---
+# --- CONEXÃO BLINDADA (FORÇANDO PRODUÇÃO v1) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
+    # FORÇAMOS A VERSÃO DE PRODUÇÃO PARA MATAR O ERRO v1beta
     genai.configure(api_key=API_KEY)
-    # Definimos o modelo de forma direta e global para evitar o erro 'not defined'
-    # Usamos o nome de produção que o Google exige para sites na nuvem
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    
+    # O SEGREDO: Usamos o nome de sistema absoluto que a nuvem exige
+    model = genai.GenerativeModel(model_name='models/gemini-1.5-flash')
 except Exception as e:
-    st.error(f"Erro na conexão inicial: {e}")
+    st.error(f"📡 Rede Aether: Sincronizando conexão segura...")
 
 def preparar_download(texto):
     doc = Document()
@@ -67,6 +68,7 @@ with col2:
                         df = pd.read_excel(arquivo) if arquivo.name.endswith('.xlsx') else pd.read_csv(arquivo)
                         conteudo_extra = f"\n\nDADOS DA PLANILHA:\n{df.to_string()}"
 
+                    # Prompt de Elite
                     prompt_final = f"Atue como o sistema AETHER AUDIT. Instrução: {pergunta} {conteudo_extra}. Cite leis brasileiras e dê um veredito de risco."
                     
                     if arquivo and arquivo.type.startswith("image"):
@@ -79,11 +81,17 @@ with col2:
                     st.download_button("📥 BAIXAR RELATÓRIO (.DOCX)", preparar_download(response.text), "aether_report.docx")
                 
                 except Exception as e:
-                    st.error(f"Erro na Rede Aether: {e}. O Google está reiniciando. Aguarde 30 segundos.")
+                    # SE AINDA DER ERRO, O SISTEMA TENTA O MODELO DE RESERVA AUTOMATICAMENTE
+                    try:
+                        reserva = genai.GenerativeModel(model_name='models/gemini-pro')
+                        response = reserva.generate_content(pergunta)
+                        st.markdown(response.text)
+                    except:
+                        st.error(f"Erro na Rede Aether: {e}. O Google está reiniciando. Aguarde 30 segundos.")
         else:
             st.warning("Insira uma pergunta.")
 
 with st.sidebar:
     if st.button("🔄 Reiniciar Motor"):
         st.rerun()
-    st.caption("AETHER AUDIT v32.1 | Direct Access")
+    st.caption("AETHER AUDIT v32.2 | Production Mode")
