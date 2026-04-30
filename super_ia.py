@@ -8,12 +8,13 @@ import time
 # --- DESIGN PREMIUM ---
 st.set_page_config(page_title="AETHER AUDIT PRO", layout="wide", page_icon="🛡️")
 
-# --- CONEXÃO DIRETA (DEFINIÇÃO OBRIGATÓRIA) ---
+# --- CONEXÃO BLINDADA (FIM DO 404) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
-    # Definimos o modelo de forma direta e global
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    # AJUSTE MESTRE: Usamos o caminho absoluto 'models/gemini-1.5-flash'
+    # Isso impede que o servidor Streamlit tente usar a versão 'v1beta'
+    model = genai.GenerativeModel(model_name='models/gemini-1.5-flash')
 except Exception as e:
     st.error(f"Erro na conexão inicial: {e}")
 
@@ -43,7 +44,7 @@ with col2:
     
     if st.button("🚀 EXECUTAR VARREDURA GLOBAL"):
         if pergunta:
-            with st.spinner("Conectando ao Cérebro IA..."):
+            with st.spinner("Conectando ao Cérebro IA de Produção..."):
                 try:
                     time.sleep(1)
                     if arquivo and arquivo.type.startswith("image"):
@@ -56,6 +57,6 @@ with col2:
                     st.markdown(response.text)
                     st.download_button("📥 BAIXAR EM WORD", gerar_docx(response.text), "report.docx")
                 except Exception as e:
-                    st.error(f"Erro técnico: {e}. Desative o tradutor do Chrome e tente novamente.")
+                    st.error(f"Erro técnico: {e}. Desative o tradutor e aguarde 30 segundos.")
         else:
             st.warning("Insira uma pergunta.")
