@@ -21,18 +21,15 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- CONEXÃO INTELIGENTE (FIM DO ERRO 404) ---
+# --- CONEXÃO DIRETA (DEFINIÇÃO OBRIGATÓRIA) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
-    
-    # O PULO DO GATO: Ele lista os modelos ativos na sua conta e escolhe o que funciona
-    modelos_disponiveis = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-    # Filtra o gemini-1.5-flash se ele existir, senão pega o primeiro da lista
-    modelo_escolhido = next((m for m in modelos_disponiveis if 'gemini-1.5-flash' in m), modelos_disponiveis)
-    model = genai.GenerativeModel(modelo_escolhido)
+    # Definimos o modelo de forma direta e global para evitar o erro 'not defined'
+    # Usamos o nome de produção que o Google exige para sites na nuvem
+    model = genai.GenerativeModel('gemini-1.5-flash')
 except Exception as e:
-    st.error("📡 Rede Aether: Sincronizando conexão segura...")
+    st.error(f"Erro na conexão inicial: {e}")
 
 def preparar_download(texto):
     doc = Document()
@@ -89,4 +86,4 @@ with col2:
 with st.sidebar:
     if st.button("🔄 Reiniciar Motor"):
         st.rerun()
-    st.caption("AETHER AUDIT v32.0 | Deep Sincronization")
+    st.caption("AETHER AUDIT v32.1 | Direct Access")
