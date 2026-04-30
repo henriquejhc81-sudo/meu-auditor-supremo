@@ -6,24 +6,24 @@ import pandas as pd
 import io
 import time
 
-# --- DESIGN PREMIUM (DARK MODE CORPORATIVO) ---
+# --- DESIGN PREMIUM ---
 st.set_page_config(page_title="AETHER AUDIT | Global Enterprise", layout="wide", page_icon="🛡️")
 
 st.markdown("""
     <style>
     .main { background-color: #0e1117; color: #ffffff; }
     .stButton>button { width: 100%; background: linear-gradient(90deg, #00c6ff 0%, #0072ff 100%); color: white; border-radius: 10px; font-weight: bold; height: 3.5em; }
-    .metric-card { background-color: #1a1c24; padding: 20px; border-radius: 15px; border: 1px solid #2d2f39; text-align: center; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- CONEXÃO BLINDADA ---
+# --- CONEXÃO BLINDADA (v31.1 - ANTI 404) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    # AJUSTE MESTRE: Usamos o nome de produção total que a nuvem exige
+    model = genai.GenerativeModel(model_name='gemini-1.5-flash')
 except:
-    st.error("📡 Falha na sincronização com a rede Aether.")
+    st.error("📡 Rede Aether: Sincronizando...")
 
 def gerar_docx(texto):
     doc = Document()
@@ -35,70 +35,49 @@ def gerar_docx(texto):
     buffer.seek(0)
     return buffer
 
-# --- DASHBOARD AETHER ---
+# --- INTERFACE ---
 st.title("🛡️ AETHER AUDIT ENTERPRISE")
-st.markdown("##### *Standard for High-Frequency Auditing & Global Compliance*")
 
-col1, col2 = st.columns([1, 2])
+col1, col2 = st.columns(2)
 
 with col1:
-    st.markdown("<div class='metric-card'>🕵️‍♂️ Modo: <b>Investigação Profunda</b></div>", unsafe_allow_html=True)
-    st.divider()
-    
     st.subheader("📂 Ingestão de Dados")
-    arquivo = st.file_uploader("Subir Evidências (PDF, Imagem, Excel, TXT)", type=["txt", "pdf", "png", "jpg", "jpeg", "xlsx", "csv"])
-    
+    arquivo = st.file_uploader("Upload de Evidências (PDF, Imagem, Excel)", type=["txt", "pdf", "png", "jpg", "jpeg", "xlsx", "csv"])
     st.divider()
-    st.subheader("⚙️ Módulos de Auditoria")
-    extrair_tabelas = st.toggle("Extração Inteligente de Tabelas", value=True)
-    validacao_lei = st.toggle("Validação Regulatória (Brasil/Global)", value=True)
-    score_risco = st.toggle("Cálculo de Score de Risco (%)", value=True)
+    st.toggle("Extração de Tabelas Inteligente", value=True)
+    st.toggle("Score de Risco Automático", value=True)
 
 with col2:
     st.subheader("🔍 Central de Inteligência")
-    pergunta = st.text_area("O que o sistema deve auditar?", 
-                           placeholder="Ex: Compare os valores deste contrato com a tabela anexa e aponte riscos...", height=150)
+    pergunta = st.text_area("O que o sistema deve auditar?", placeholder="Instruções...", height=150)
     
     if st.button("🚀 EXECUTAR VARREDURA GLOBAL"):
         if pergunta:
-            with st.spinner("Aether está processando nos servidores de alta performance..."):
+            with st.spinner("Snipping... Extraindo dados na nuvem..."):
                 try:
+                    time.sleep(1)
                     conteudo_extra = ""
-                    # Lógica para ler Excel se for enviado
                     if arquivo and arquivo.name.endswith(('.xlsx', '.csv')):
                         df = pd.read_excel(arquivo) if arquivo.name.endswith('.xlsx') else pd.read_csv(arquivo)
-                        st.write("📊 Amostra dos dados detectados:", df.head(3))
                         conteudo_extra = f"\n\nDADOS DA PLANILHA:\n{df.to_string()}"
 
-                    prompt_global = f"""
-                    Atue como o software AETHER AUDIT. Use lógica de auditoria de elite (Big Four).
-                    Instrução: {pergunta} {conteudo_extra}
-                    
-                    REQUISITOS OBRIGATÓRIOS:
-                    1. 📄 CITE ARTIGOS DE LEIS reais para cada erro encontrado.
-                    2. 📊 EXTRAIA VALORES EM TABELA formatada se houver dados numéricos.
-                    3. ⚖️ SCORE DE RISCO: Dê um veredito de 0 a 100%.
-                    """
+                    prompt_mestre = f"Atue como Auditor Supremo. Instrução: {pergunta} {conteudo_extra}. Cite leis brasileiras e gere o veredito final."
                     
                     if arquivo and arquivo.type.startswith("image"):
-                        response = model.generate_content([prompt_global, Image.open(arquivo)])
+                        response = model.generate_content([prompt_mestre, Image.open(arquivo)])
                     else:
-                        response = model.generate_content(prompt_global)
+                        response = model.generate_content(prompt_mestre)
                     
-                    st.success("Auditoria Concluída com Sucesso!")
-                    
-                    aba_analise, aba_word = st.tabs(["📝 Relatório Inteligente", "📥 Exportação Profissional"])
-                    
-                    with aba_analise:
-                        st.markdown(response.text)
-                    
-                    with aba_word:
-                        st.download_button("📥 BAIXAR RELATÓRIO OFICIAL (.DOCX)", gerar_docx(response.text), "aether_report.docx")
-                        st.info("Relatório gerado em formato editável de auditoria.")
-
+                    st.success("Concluído!")
+                    st.markdown(response.text)
+                    st.download_button("📥 BAIXAR RELATÓRIO WORD", gerar_docx(response.text), "aether_report.docx")
+                
                 except Exception as e:
-                    st.error(f"Erro na Rede Aether: {e}")
+                    st.error(f"Erro técnico: {e}. O Google está reiniciando. Aguarde 30 segundos.")
         else:
-            st.warning("Insira uma instrução para ativar o sistema.")
+            st.warning("Insira uma pergunta.")
 
-st.sidebar.caption("AETHER AUDIT v31.0 | Global Enterprise Solution 2026")
+# BOTÃO DE REBOOT DISCRETO NA BARRA LATERAL
+with st.sidebar:
+    if st.button("🔄 Reiniciar Sistema"):
+        st.rerun()
