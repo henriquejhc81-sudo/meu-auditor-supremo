@@ -8,21 +8,18 @@ import time
 # --- DESIGN DE ELITE ---
 st.set_page_config(page_title="AETHER AUDIT PRO", layout="wide", page_icon="🛡️")
 
-# --- CONEXÃO INTELIGENTE (MATA O ERRO 404) ---
+# --- CONEXÃO DIRETA (DEFINIÇÃO OBRIGATÓRIA) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
-    
-    # Ele pergunta ao Google: "Quais modelos eu posso usar agora?"
-    modelos_validos = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-    # Ele escolhe o primeiro da lista que o Google autorizar
-    model = genai.GenerativeModel(modelos_validos)
+    # Definimos o modelo de forma direta e global para evitar o erro 'not defined'
+    model = genai.GenerativeModel('gemini-1.5-flash')
 except Exception as e:
-    st.error("Sincronizando com a rede neural global...")
+    st.error(f"Erro na conexão inicial: {e}")
 
 def gerar_docx(texto):
     doc = Document()
-    doc.add_heading('AETHER AUDIT - RELATÓRIO PROFISSIONAL', 0)
+    doc.add_heading('AETHER AUDIT - RELATÓRIO', 0)
     for linha in texto.split('\n'):
         doc.add_paragraph(linha)
     buffer = io.BytesIO()
@@ -35,7 +32,7 @@ with st.sidebar:
     st.title("Painel Aether")
     if st.button("🔄 REINICIAR MOTOR"):
         st.rerun()
-    st.caption("v29.0 | Auto-Selection Mode")
+    st.caption("v29.1 | Direct Connection Mode")
 
 st.title("🛡️ AETHER AUDIT")
 st.markdown("### *Inteligência de Auditoria Multinível*")
@@ -47,17 +44,20 @@ with col1:
     st.toggle("Modo Profundo (AI Mode)", value=True)
 
 with col2:
-    pergunta = st.text_area("O que devo auditar hoje?", placeholder="Digite sua pergunta aqui...", height=150)
+    pergunta = st.text_area("O que devo auditar hoje?", placeholder="Digite aqui...", height=150)
     
     if st.button("🚀 INICIAR VARREDURA SUPREMA"):
         if pergunta:
-            with st.spinner("Aether está varrendo as redes neurais..."):
+            with st.spinner("Aether está processando..."):
                 try:
+                    # Pequena pausa para sincronia
                     time.sleep(1)
+                    
                     if arquivo and arquivo.type.startswith("image"):
                         img = Image.open(arquivo)
                         response = model.generate_content([pergunta, img])
                     else:
+                        # Chamada direta e simples
                         response = model.generate_content(pergunta)
                     
                     st.success("Análise Concluída!")
@@ -66,6 +66,6 @@ with col2:
                     st.download_button("📥 BAIXAR WORD", gerar_docx(response.text), "auditoria_aether.docx")
                     
                 except Exception as e:
-                    st.error(f"Erro de Sincronização: {e}. Aguarde 30 segundos.")
+                    st.error(f"O Google está demorando para responder: {e}. Tente novamente em 30 segundos.")
         else:
             st.warning("Por favor, digite uma instrução.")
