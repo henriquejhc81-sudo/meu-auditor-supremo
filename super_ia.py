@@ -5,18 +5,20 @@ from PIL import Image
 import io
 import time
 
-# --- DESIGN PREMIUM (DARK MODE) ---
+# --- DESIGN PREMIUM ---
 st.set_page_config(page_title="AETHER AUDIT PRO", layout="wide", page_icon="🛡️")
 
-# --- CONEXÃO BLINDADA (v35.0) ---
+# --- CONEXÃO INTELIGENTE (BURLANDO O ERRO 404) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
-    # FORÇAMOS A CONFIGURAÇÃO PARA USAR APENAS A VERSÃO ESTÁVEL (v1)
     genai.configure(api_key=API_KEY)
-    # AJUSTE MESTRE: Usamos o nome absoluto para evitar que a nuvem procure o v1beta
-    model = genai.GenerativeModel(model_name='gemini-1.5-flash')
+    
+    # O PULO DO GATO: Ele lista os modelos disponíveis e escolhe o que funciona
+    modelos_vivos = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+    # Pega o primeiro da lista (geralmente o gemini-1.5-flash ou pro)
+    model = genai.GenerativeModel(modelos_vivos)
 except Exception as e:
-    st.error("Conectando ao Cérebro Global...")
+    st.error("Sincronizando com a rede neural global...")
 
 def gerar_docx(texto):
     doc = Document()
@@ -43,21 +45,18 @@ with col2:
     pergunta = st.text_area("O que o sistema deve analisar ou auditar?", height=150)
     if st.button("🚀 EXECUTAR VARREDURA GLOBAL"):
         if pergunta:
-            with st.spinner("Conectando ao Cérebro IA..."):
+            with st.spinner("Burlando bloqueios e conectando..."):
                 try:
-                    # Pequena pausa para sincronia de rede
                     time.sleep(1)
-                    
                     if arquivo and arquivo.type.startswith("image"):
-                        img = Image.open(arquivo)
-                        response = model.generate_content([pergunta, img])
+                        response = model.generate_content([pergunta, Image.open(arquivo)])
                     else:
                         response = model.generate_content(pergunta)
                     
                     st.success("Concluído!")
                     st.markdown(response.text)
-                    st.download_button("📥 BAIXAR EM WORD", gerar_docx(response.text), "aether_report.docx")
+                    st.download_button("📥 BAIXAR EM WORD", gerar_docx(response.text), "relatorio.docx")
                 except Exception as e:
-                    st.error(f"Erro técnico: {e}. Desative o tradutor do Chrome e tente novamente em 30 segundos.")
+                    st.error(f"Erro técnico: {e}. Desative o tradutor do Chrome e tente novamente.")
         else:
-            st.warning("Insira uma pergunta.")
+            st.warning("Insira uma instrução.")
