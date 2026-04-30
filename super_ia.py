@@ -8,17 +8,14 @@ import time
 # --- DESIGN PREMIUM ---
 st.set_page_config(page_title="AETHER AUDIT PRO", layout="wide", page_icon="🛡️")
 
-# --- CONEXÃO INTELIGENTE (BURLANDO O ERRO 404) ---
+# --- CONEXÃO DIRETA (DEFINIÇÃO OBRIGATÓRIA) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
-    
-    # O PULO DO GATO: Ele lista os modelos disponíveis e escolhe o que funciona
-    modelos_vivos = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-    # Pega o primeiro da lista (geralmente o gemini-1.5-flash ou pro)
-    model = genai.GenerativeModel(modelos_vivos)
+    # Definimos o modelo de forma direta e global
+    model = genai.GenerativeModel('gemini-1.5-flash')
 except Exception as e:
-    st.error("Sincronizando com a rede neural global...")
+    st.error(f"Erro na conexão inicial: {e}")
 
 def gerar_docx(texto):
     doc = Document()
@@ -43,20 +40,22 @@ with col1:
 
 with col2:
     pergunta = st.text_area("O que o sistema deve analisar ou auditar?", height=150)
+    
     if st.button("🚀 EXECUTAR VARREDURA GLOBAL"):
         if pergunta:
-            with st.spinner("Burlando bloqueios e conectando..."):
+            with st.spinner("Conectando ao Cérebro IA..."):
                 try:
                     time.sleep(1)
                     if arquivo and arquivo.type.startswith("image"):
-                        response = model.generate_content([pergunta, Image.open(arquivo)])
+                        img = Image.open(arquivo)
+                        response = model.generate_content([pergunta, img])
                     else:
                         response = model.generate_content(pergunta)
                     
                     st.success("Concluído!")
                     st.markdown(response.text)
-                    st.download_button("📥 BAIXAR EM WORD", gerar_docx(response.text), "relatorio.docx")
+                    st.download_button("📥 BAIXAR EM WORD", gerar_docx(response.text), "report.docx")
                 except Exception as e:
                     st.error(f"Erro técnico: {e}. Desative o tradutor do Chrome e tente novamente.")
         else:
-            st.warning("Insira uma instrução.")
+            st.warning("Insira uma pergunta.")
