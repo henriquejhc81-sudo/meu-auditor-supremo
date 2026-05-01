@@ -14,8 +14,8 @@ st.markdown("""
     <style>
     .main { background-color: #0e1117; color: #ffffff; }
     .stButton>button { width: 100%; background: linear-gradient(90deg, #00c6ff 0%, #0072ff 100%); color: white; border-radius: 8px; font-weight: bold; height: 3.5em; }
-    .report-card { padding: 20px; border-radius: 12px; background-color: #1a1c24; border: 1px solid #2d2f39; margin-bottom: 10px; }
-    .history-item { font-size: 12px; padding: 5px; border-bottom: 1px solid #333; }
+    .report-card { padding: 25px; border-radius: 12px; background-color: #1a1c24; border: 1px solid #2d2f39; color: #e0e0e0; }
+    .history-item { font-size: 12px; padding: 8px; border-bottom: 1px solid #333; color: #00c6ff; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -23,13 +23,14 @@ st.markdown("""
 if "historico" not in st.session_state:
     st.session_state.historico = []
 
-# --- CONEXÃO BLINDADA (ANTI-404) ---
+# --- CONEXÃO BLINDADA v37.3 (FIM DO 404) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
-    model = genai.GenerativeModel('gemini-1.5-flash')
-except:
-    st.error("📡 Sincronizando Rede Aether...")
+    # AJUSTE MESTRE: Usando o nome completo do modelo para a nuvem
+    model = genai.GenerativeModel(model_name='models/gemini-1.5-flash-latest')
+except Exception as e:
+    st.error("📡 Rede Aether: Sincronizando conexão segura...")
 
 def preparar_download(texto):
     doc = Document()
@@ -41,27 +42,22 @@ def preparar_download(texto):
     buffer.seek(0)
     return buffer
 
-# --- BARRA LATERAL: ARSENAL E HISTÓRICO ---
+# --- BARRA LATERAL ---
 with st.sidebar:
     st.title("🛡️ Painel Aether")
-    
     if st.button("🔄 Reiniciar Motor"):
         st.rerun()
-    
     st.divider()
-    
     with st.expander("🎯 ARSENAL SNIPER (Comandos)"):
-        st.info("Copie e cole os comandos abaixo:")
+        st.info("Copie e cole abaixo:")
         st.code("Aether, faça uma auditoria snip deste contrato e procure cláusulas abusivas ou erros de datas.")
         st.code("Compare estes dois documentos e crie uma tabela de divergências entre os valores citados.")
-        st.code("Audite esta planilha financeira e aponte os 5 maiores riscos de fraude ou erro de cálculo.")
-    
     st.divider()
     st.subheader("📜 Histórico de Missões")
     if not st.session_state.historico:
         st.caption("Nenhuma missão registrada.")
     for item in reversed(st.session_state.historico):
-        st.markdown(f"<div class='history-item'><b>{item['data']}</b>: {item['resumo']}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='history-item'>⏱️ {item['data']}<br>{item['resumo']}</div>", unsafe_allow_html=True)
 
 # --- INTERFACE PRINCIPAL ---
 st.title("🛡️ AETHER AUDIT - SUPREME")
@@ -78,37 +74,35 @@ with col1:
 
 with col2:
     st.subheader("🔍 Central Sniper")
-    # TEXTO AJUSTADO CONFORME SEU PEDIDO
     pergunta = st.text_area("O que a Aether deve confrontar, analisar ou auditar?", 
                            placeholder="Cole aqui seu comando do Arsenal...", height=150)
     
     if st.button("🚀 INICIAR VARREDURA"):
         if pergunta:
-            with st.spinner("Varrendo redes neurais..."):
+            with st.spinner("Processando em modo Sniper..."):
                 try:
                     time.sleep(1)
-                    # Lógica de processamento
-                    dados = [pergunta]
+                    # Preparação de conteúdo
+                    prompt_lista = [pergunta]
                     if arquivo_1:
-                        if arquivo_1.type.startswith("image"): dados.append(Image.open(arquivo_1))
-                        else: dados.append(f"Ref: {arquivo_1.name}")
+                        if arquivo_1.type.startswith("image"): prompt_lista.append(Image.open(arquivo_1))
+                        else: prompt_lista.append(f"Ref A: {arquivo_1.name}")
                     if arquivo_2:
-                        if arquivo_2.type.startswith("image"): dados.append(Image.open(arquivo_2))
-                        else: dados.append(f"Ref: {arquivo_2.name}")
+                        if arquivo_2.type.startswith("image"): prompt_lista.append(Image.open(arquivo_2))
+                        else: prompt_lista.append(f"Ref B: {arquivo_2.name}")
 
-                    response = model.generate_content(dados)
+                    response = model.generate_content(prompt_lista)
                     
-                    # SALVAR NO HISTÓRICO
-                    data_atual = datetime.now().strftime("%H:%M:%S")
+                    # Salvar histórico
+                    data_atual = datetime.now().strftime("%H:%M")
                     st.session_state.historico.append({"data": data_atual, "resumo": pergunta[:30] + "..."})
                     
                     st.success("Missão Concluída!")
                     st.markdown(f"<div class='report-card'>{response.text}</div>", unsafe_allow_html=True)
                     st.download_button("📥 Baixar Relatório", preparar_download(response.text), "aether_report.docx")
-                
                 except Exception as e:
-                    st.error(f"Erro técnico: {e}. Tente o Reboot na lateral.")
+                    st.error(f"Erro de Conexão: {e}. Tente novamente.")
         else:
             st.warning("Insira uma instrução.")
 
-st.sidebar.caption("v37.2 | Supreme Mode Active")
+st.sidebar.caption("v37.3 | Supreme Mode Active")
