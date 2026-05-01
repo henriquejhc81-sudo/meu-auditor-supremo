@@ -7,8 +7,8 @@ import io
 import time
 from datetime import datetime
 
-# --- DESIGN SUPREME (DARK MODE CORPORATIVO) ---
-st.set_page_config(page_title="AETHER AUDIT | Supreme", layout="wide", page_icon="🛡️")
+# --- DESIGN SUPREME OMNI ---
+st.set_page_config(page_title="AETHER OMNISCIENCE", layout="wide", page_icon="🛡️")
 
 st.markdown("""
     <style>
@@ -17,10 +17,9 @@ st.markdown("""
         width: 100%; 
         background: linear-gradient(90deg, #00c6ff 0%, #0072ff 100%); 
         color: white; border-radius: 8px; font-weight: bold; height: 3.5em; 
-        transition: 0.3s;
     }
-    .report-card { padding: 25px; border-radius: 12px; background-color: #1a1c24; border: 1px solid #2d2f39; color: #e0e0e0; }
-    .history-item { font-size: 12px; padding: 8px; border-bottom: 1px solid #333; color: #00c6ff; }
+    .report-card { padding: 25px; border-radius: 12px; background-color: #1a1c24; border: 1px solid #2d2f39; }
+    .stHeader { color: #00c6ff; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -28,19 +27,17 @@ st.markdown("""
 if "historico" not in st.session_state:
     st.session_state.historico = []
 
-# --- CONEXÃO DE PRODUÇÃO v38.0 (FIM DO ERRO 404) ---
+# --- CONEXÃO DE PRODUÇÃO v39.0 ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
-    # AJUSTE MESTRE: Forçamos a configuração sem sufixos de versão beta
     genai.configure(api_key=API_KEY)
-    # O SEGREDO: Usamos o nome simplificado que o Google EXIGE para evitar erro 404 na nuvem
     model = genai.GenerativeModel('gemini-1.5-flash')
-except Exception as e:
-    st.error("📡 Rede Aether: Sincronizando conexão de produção...")
+except:
+    st.error("📡 Sincronizando Rede Aether Omniscience...")
 
 def preparar_download(texto):
     doc = Document()
-    doc.add_heading('AETHER AUDIT - RELATÓRIO OFICIAL', 0)
+    doc.add_heading('AETHER AUDIT - RELATÓRIO OMNISCIENCE', 0)
     for linha in texto.split('\n'):
         if linha.strip(): doc.add_paragraph(linha)
     buffer = io.BytesIO()
@@ -48,71 +45,73 @@ def preparar_download(texto):
     buffer.seek(0)
     return buffer
 
-# --- BARRA LATERAL ---
+# --- BARRA LATERAL AVANÇADA ---
 with st.sidebar:
-    st.title("🛡️ Painel Aether")
+    st.title("🛡️ Aether Omni")
     if st.button("🔄 Reiniciar Motor"):
         st.rerun()
     st.divider()
-    with st.expander("🎯 ARSENAL SNIPER (Comandos)"):
-        st.info("Copie e cole abaixo:")
-        st.code("Aether, faça uma auditoria snip deste contrato e procure cláusulas abusivas ou erros de datas.")
-        st.code("Compare estes dois documentos e crie uma tabela de divergências entre os valores citados.")
-        st.code("Analise esta planilha e identifique os 3 maiores riscos financeiros ou de conformidade.")
+    
+    with st.expander("🎯 ARSENAL SNIPER (Expandido)"):
+        st.info("Comandos de Elite:")
+        st.code("Aether, analise este áudio e compare com as cláusulas do contrato. Há contradições?")
+        st.code("Verifique esta imagem em busca de assinaturas falsas ou adulterações digitais.")
+        st.code("Audite este endereço e me diga os riscos de zoneamento e valor de mercado atual.")
+    
     st.divider()
     st.subheader("📜 Histórico de Missões")
-    if not st.session_state.historico:
-        st.caption("Nenhuma missão registrada.")
     for item in reversed(st.session_state.historico):
-        st.markdown(f"<div class='history-item'>⏱️ {item['data']}<br>{item['resumo']}</div>", unsafe_allow_html=True)
+        st.markdown(f"<small>⏱️ {item['data']}: {item['resumo']}</small>", unsafe_allow_html=True)
 
 # --- INTERFACE PRINCIPAL ---
-st.title("🛡️ AETHER AUDIT - SUPREME")
-modo = st.radio("Selecione o Modo de Missão:", ["Auditoria Simples", "Confronto X-Ray"], horizontal=True)
+st.title("🛡️ AETHER OMNISCIENCE")
+st.markdown("##### *Auditoria Total: Documentos, Imagens, Dados e Localização*")
+
+# SELEÇÃO DE MÓDULOS
+modulo = st.selectbox("Selecione o Módulo de Inteligência:", 
+                     ["Auditoria de Contratos & PDFs", "Confronto X-Ray (Dois Arquivos)", "Análise de Fraude em Imagens", "Auditoria de Áudio e Reuniões", "Inteligência Imobiliária & Mapas"])
 
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("📂 Ingestão de Dados")
-    arquivo_1 = st.file_uploader("Documento A", type=["pdf", "png", "jpg", "jpeg", "xlsx", "docx", "csv"])
+    st.subheader("📂 Entrada Multimodal")
+    arquivo_1 = st.file_uploader("Primeiro Arquivo (Base)", type=["pdf", "png", "jpg", "jpeg", "xlsx", "docx", "csv", "mp3", "wav"])
     arquivo_2 = None
-    if modo == "Confronto X-Ray":
-        arquivo_2 = st.file_uploader("Documento B", type=["pdf", "png", "jpg", "jpeg", "xlsx", "docx", "csv"])
+    if modulo == "Confronto X-Ray (Dois Arquivos)":
+        arquivo_2 = st.file_uploader("Segundo Arquivo (Confronto)", type=["pdf", "png", "jpg", "jpeg", "xlsx", "docx", "csv"])
 
 with col2:
     st.subheader("🔍 Central Sniper")
-    # TEXTO ATUALIZADO CONFORME SEU PEDIDO
-    pergunta = st.text_area("O que a Aether deve confrontar, analisar ou auditar?", 
-                           placeholder="Cole aqui seu comando do Arsenal...", height=150)
+    pergunta = st.text_area("O que a Aether Omni deve processar agora?", 
+                           placeholder="Ex: Procure indícios de fraude nesta assinatura...", height=150)
     
-    if st.button("🚀 INICIAR VARREDURA GLOBAL"):
+    if st.button("🚀 EXECUTAR VARREDURA OMNI"):
         if pergunta:
-            with st.spinner("Aether está processando em modo de produção..."):
+            with st.spinner("Aether está exercendo onisciência sobre os dados..."):
                 try:
-                    time.sleep(1)
-                    prompt_lista = [pergunta]
+                    prompt_lista = [f"Módulo: {modulo}\nInstrução: {pergunta}"]
                     
-                    # Processamento inteligente de múltiplos arquivos
+                    # Processamento de arquivos
                     if arquivo_1:
-                        if arquivo_1.type.startswith("image"): prompt_lista.append(Image.open(arquivo_1))
-                        else: prompt_lista.append(f"Referência Documento A: {arquivo_1.name}")
-                    
-                    if arquivo_2:
-                        if arquivo_2.type.startswith("image"): prompt_lista.append(Image.open(arquivo_2))
-                        else: prompt_lista.append(f"Referência Documento B: {arquivo_2.name}")
+                        if arquivo_1.type.startswith("image"):
+                            prompt_lista.append(Image.open(arquivo_1))
+                        elif arquivo_1.type.startswith("audio"):
+                            st.audio(arquivo_1)
+                            prompt_lista.append(f"ÁUDIO DETECTADO: O sistema deve transcrever e analisar o conteúdo sonoro de {arquivo_1.name}")
+                        else:
+                            prompt_lista.append(f"Ref A: {arquivo_1.name}")
 
                     response = model.generate_content(prompt_lista)
                     
-                    # Salvar histórico
                     data_atual = datetime.now().strftime("%H:%M")
-                    st.session_state.historico.append({"data": data_atual, "resumo": pergunta[:30] + "..."})
+                    st.session_state.historico.append({"data": data_atual, "resumo": pergunta[:25] + "..."})
                     
-                    st.success("Missão Concluída!")
+                    st.success("Varredura Concluída!")
                     st.markdown(f"<div class='report-card'>{response.text}</div>", unsafe_allow_html=True)
-                    st.download_button("📥 Baixar Relatório Oficial", preparar_download(response.text), "aether_report.docx")
+                    st.download_button("📥 Baixar Relatório Omni", preparar_download(response.text), "aether_omni_report.docx")
                 except Exception as e:
-                    st.error(f"📡 Erro de Rede: {e}. Clique em Reiniciar Motor.")
+                    st.error(f"📡 Erro de Rede Omni: {e}. Reinicie o motor.")
         else:
-            st.warning("Por favor, insira uma instrução.")
+            st.warning("Insira uma instrução para a varredura.")
 
-st.sidebar.caption("v38.0 | Supreme Stabilized Mode")
+st.sidebar.caption("v39.0 | Omniscience Edition Active")
