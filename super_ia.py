@@ -31,7 +31,7 @@ try:
 except:
     st.error("🔄 Sincronizando conexão segura...")
 
-def preparar_docx(texto):
+def preparar_download(texto):
     doc = Document()
     doc.add_heading('AETHER OMNI - RELATÓRIO DE INTELIGÊNCIA', 0)
     for linha in texto.split('\n'):
@@ -41,30 +41,30 @@ def preparar_docx(texto):
     buffer.seek(0)
     return buffer
 
-# --- SIDEBAR COM BIBLIOTECA DE PERGUNTAS ---
+# --- SIDEBAR ---
 with st.sidebar:
     st.title("🛡️ Aether Omni")
     agente = st.selectbox("🎯 Agente Especialista", ["Auditor Geral", "Trabalhista", "Imobiliário", "Tributário", "LGPD"])
     
     st.divider()
-    # NOVA FUNÇÃO: BIBLIOTECA DE PERGUNTAS (BOTÃO ACIONADOR)
+    # CORREÇÃO DO ERRO: Nome da variável unificado
     ativar_biblioteca = st.toggle("📂 Abrir Biblioteca de Perguntas", value=False)
     
-    if activar_biblioteca:
+    if ativar_biblioteca:
         st.subheader("📋 Sugestões Sniper")
         if agente == "Auditor Geral":
             st.markdown("<div class='suggestion-card'><b>Geral:</b> Analise este contrato e aponte os 5 principais riscos financeiros e jurídicos.</div>", unsafe_allow_html=True)
             st.markdown("<div class='suggestion-card'><b>Geral:</b> Verifique se há cláusulas abusivas ou ambíguas neste documento.</div>", unsafe_allow_html=True)
         elif agente == "Trabalhista":
             st.markdown("<div class='suggestion-card'><b>Trabalhista:</b> Verifique se as multas rescisórias estão de acordo com a CLT.</div>", unsafe_allow_html=True)
-            st.markdown("<div class='suggestion-card'><b>Trabalhista:</b> Analise riscos de vínculo empregatício em contratos de prestação de serviço.</div>", unsafe_allow_html=True)
+            st.markdown("<div class='suggestion-card'><b>Trabalhista:</b> Analise riscos de vínculo empregatício neste contrato.</div>", unsafe_allow_html=True)
         elif agente == "Tributário":
-            st.markdown("<div class='suggestion-card'><b>Tributário:</b> Valide as alíquotas de impostos citadas nesta nota fiscal ou contrato.</div>", unsafe_allow_html=True)
+            st.markdown("<div class='suggestion-card'><b>Tributário:</b> Valide as alíquotas de impostos citadas nesta nota ou contrato.</div>", unsafe_allow_html=True)
         elif agente == "Imobiliário":
-            st.markdown("<div class='suggestion-card'><b>Imobiliário:</b> Verifique cláusulas de reajuste (IGP-M/IPCA) e penalidades por atraso.</div>", unsafe_allow_html=True)
+            st.markdown("<div class='suggestion-card'><b>Imobiliário:</b> Verifique cláusulas de reajuste e penalidades por atraso.</div>", unsafe_allow_html=True)
         elif agente == "LGPD":
-            st.markdown("<div class='suggestion-card'><b>LGPD:</b> Liste todas as cláusulas de tratamento de dados e veja se cumprem a lei atual.</div>", unsafe_allow_html=True)
-        st.caption("Pressione Ctrl+C para copiar e Ctrl+V na Central Sniper.")
+            st.markdown("<div class='suggestion-card'><b>LGPD:</b> Verifique se o tratamento de dados cumpre a LGPD atual.</div>", unsafe_allow_html=True)
+        st.caption("Selecione o texto acima para copiar.")
 
     st.divider()
     st.subheader("📂 Ingestão de Dados")
@@ -76,7 +76,7 @@ with st.sidebar:
 
 # --- CORPO CENTRAL ---
 st.title("🛡️ AETHER OMNI ENTERPRISE")
-st.caption(f"Agente Ativo: **{agente}** | Modo Sniper")
+st.caption(f"Status: **Operacional** | Agente: **{agente}**")
 
 pergunta = st.text_area("O que o sistema deve analisar ou auditar?", placeholder="Digite sua instrução ou use a biblioteca da lateral...", height=150)
 
@@ -92,12 +92,7 @@ if st.button("🚀 INICIAR VARREDURA OMNI"):
                             df = pd.read_excel(arq) if arq.name.endswith('.xlsx') else pd.read_csv(arq)
                             contexto_arquivos += f"\n\nDADOS DO ARQUIVO {arq.name}:\n{df.to_string()}"
 
-                prompt_final = f"""
-                Atue como um {agente} Sênior. 
-                Sua missão: {pergunta} {contexto_arquivos}
-                REQUISITOS: Resumo, Checklist de Compliance, Score de Risco (0-100%) e Sugestão de Redação Jurídica.
-                Cite leis brasileiras.
-                """
+                prompt_final = f"Atue como um {agente} Sênior. Sua missão: {pergunta} {contexto_arquivos}. Forneça checklist de compliance e score de risco."
                 
                 response = model.generate_content(prompt_final)
                 
@@ -105,12 +100,12 @@ if st.button("🚀 INICIAR VARREDURA OMNI"):
                 st.markdown(f"<div class='report-card'>{response.text}</div>", unsafe_allow_html=True)
                 
                 st.divider()
-                st.download_button("📥 Exportar para Word", preparar_docx(response.text), "aether_report.docx")
+                st.download_button("📥 Exportar para Word", preparar_download(response.text), "aether_report.docx")
                 st.balloons()
                 
             except Exception as e:
-                st.error(f"Erro de Rede Omni: {e}. Desative o tradutor do Chrome.")
+                st.error(f"Erro de Rede Omni: {e}. Desative o tradutor do navegador.")
     else:
-        st.warning("Insira uma pergunta para iniciar.")
+        st.warning("Insira uma pergunta.")
 
-st.sidebar.caption("v40.8 | Enterprise Command Center")
+st.sidebar.caption("v40.9 | Final Enterprise Edition")
