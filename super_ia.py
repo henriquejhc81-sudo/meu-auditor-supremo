@@ -6,7 +6,7 @@ import pandas as pd
 import io
 import time
 
-# --- DESIGN STEALTH GLOBAL (INSPIRADO EM HARVEY & IRONCLAD) ---
+# --- DESIGN STEALTH GLOBAL & UI CLEANING ---
 st.set_page_config(page_title="AETHER OMNI | Intelligence", layout="wide", page_icon="🛡️")
 
 if 'historico' not in st.session_state:
@@ -17,6 +17,11 @@ if 'show_history' not in st.session_state:
 st.markdown("""
     <style>
     @import url('https://googleapis.com');
+    
+    /* Esconder Menu Streamlit (Direita) e Footer */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
     
     html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
     
@@ -39,7 +44,7 @@ st.markdown("""
         border: 1px solid #00c6ff;
     }
 
-    /* Cartões de Relatório Estilo Glassmorphism */
+    /* Cartões de Relatório */
     .report-card { 
         padding: 30px; 
         border-radius: 12px; 
@@ -58,18 +63,15 @@ st.markdown("""
         margin-bottom: 8px; 
         font-size: 0.85em; 
     }
-
-    /* Sidebar Refinada */
-    .css-1d391kg { background-color: #11141b; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- CONEXÃO BLINDADA ---
+# --- CONEXÃO BLINDADA (LÓGICA DE OURO) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
     modelos = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-    model = genai.GenerativeModel(modelos[0] if modelos else 'gemini-1.5-flash')
+    model = genai.GenerativeModel(modelos if modelos else 'gemini-1.5-flash')
 except:
     st.error("📡 Erro de sincronização com o núcleo de inteligência.")
 
@@ -93,7 +95,7 @@ def preparar_docx(lista_resultados, unico=True):
 # --- PAINEL LATERAL ---
 with st.sidebar:
     st.title("🛡️ AETHER OMNI")
-    st.caption("v51.0 Global Intelligence")
+    st.caption("v51.2 Master Compliance")
     
     if st.button("📜 Histórico de Missões"):
         st.session_state['show_history'] = not st.session_state['show_history']
@@ -166,19 +168,20 @@ with col2:
                                 df = pd.read_excel(arq) if arq.name.endswith('.xlsx') else pd.read_csv(arq)
                                 conteudo_extra += f"\n\nDATASET {arq.name}:\n{df.to_string()}"
 
-                    # PROMPT BLINDADO (REMOÇÃO DO TOM DE IA)
+                    # PROMPT BLINDADO E LEGALMENTE SEGURO
                     prompt_final = f"""
-                    Atue como o sistema AETHER OMNI (Auditor e Advogado Sênior).
+                    Atue como o sistema AETHER OMNI (Auditor Forense e Consultor de Compliance Sênior).
                     MISSÃO: {tipo_missao}. 
                     AÇÃO: {acao_filtro}.
                     DADOS: {pergunta} {conteudo_extra}
                     
                     DIRETRIZES DE RESPOSTA:
-                    1. NÃO se identifique como IA ou modelo de linguagem.
-                    2. Responda com autoridade executiva, como um sócio de Big Four.
-                    3. Se o objetivo for CORREÇÃO, entregue o documento completo pronto para uso.
-                    4. Use terminologia jurídica e contábil brasileira rigorosa.
-                    5. Estrutura: Relatório de Erros -> Sugestão Técnica -> Veredito Final.
+                    1. NÃO use o termo 'Advogado'. Use 'Consultor Técnico' ou 'Auditor'.
+                    2. Responda com autoridade executiva e rigor técnico.
+                    3. Se o objetivo for CORREÇÃO, entregue o texto revisado com base nas normas e leis vigentes.
+                    4. Estrutura: Diagnóstico de Inconsistências -> Parecer Técnico -> Veredito.
+                    5. AO FINAL DE TUDO, adicione EXATAMENTE esta frase em destaque: 
+                       'NOTA: Este relatório é um parecer técnico gerado por inteligência artificial para auxílio na tomada de decisão, não substituindo a consultoria jurídica ou contábil individualizada.'
                     """
                     
                     response = model.generate_content([prompt_final, *imagens]) if imagens else model.generate_content(prompt_final)
