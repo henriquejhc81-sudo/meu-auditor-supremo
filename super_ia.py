@@ -21,14 +21,16 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- CONEXÃO BLINDADA (ESTABILIZAÇÃO V1) ---
+# --- CONEXÃO BLINDADA (FORÇANDO v1 ESTÁVEL) ---
 try:
-    API_KEY = st.secrets["GOOGLE_API_KEY"]
-    genai.configure(api_key=API_KEY)
-    # Forçamos o modelo estável v1 para ignorar o erro v1beta da sua imagem
-    model = genai.GenerativeModel('gemini-1.5-flash')
-except:
-    st.error("📡 Rede Aether: Sincronizando conexão segura...")
+    if "GOOGLE_API_KEY" not in st.secrets:
+        st.error("Chave API não encontrada nos Secrets do Streamlit!")
+    else:
+        genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+        # AQUI ESTÁ A CORREÇÃO: Forçamos o modelo sem o sufixo v1beta
+        model = genai.GenerativeModel('gemini-1.5-flash')
+except Exception as e:
+    st.error(f"Erro de Configuração: {e}")
 
 def preparar_download(texto, titulo):
     doc = Document()
@@ -41,7 +43,7 @@ def preparar_download(texto, titulo):
     return buffer
 
 # --- INTERFACE ---
-st.title("🛡️ AETHER AUDIT ENTERPRISE v45.2")
+st.title("🛡️ AETHER AUDIT ENTERPRISE v45.3")
 st.markdown("##### *Standard for High-Frequency Auditing & Global Intelligence*")
 
 col1, col2 = st.columns(2)
@@ -59,7 +61,7 @@ with col1:
 
 with col2:
     st.subheader("🔍 Central de Inteligência")
-    # BOTÃO DE FILTRO PARA PÓS-AUDITORIA
+    # FILTRO DE PÓS-AUDITORIA MANTIDO
     tipo_saida = st.selectbox("🎯 Ação Pós-Auditoria (Filtro)", [
         "Apenas Relatório de Auditoria", 
         "Auditoria + Gerar Contrato Corrigido", 
@@ -71,12 +73,13 @@ with col2:
     
     if st.button("🚀 EXECUTAR VARREDURA GLOBAL"):
         if pergunta:
-            with st.spinner("Aether está processando na nuvem..."):
+            with st.spinner("Conectando ao Arsenal Aether..."):
                 try:
                     conteudo_extra = ""
-                    if arquivo and arquivo.name.endswith(('.xlsx', '.csv')):
-                        df = pd.read_excel(arquivo) if arquivo.name.endswith('.xlsx') else pd.read_csv(arquivo)
-                        conteudo_extra = f"\n\nDADOS DA PLANILHA:\n{df.to_string()}"
+                    if arquivo:
+                        if arquivo.name.endswith(('.xlsx', '.csv')):
+                            df = pd.read_excel(arquivo) if arquivo.name.endswith('.xlsx') else pd.read_csv(arquivo)
+                            conteudo_extra = f"\n\nDADOS DA PLANILHA:\n{df.to_string()}"
 
                     prompt_final = f"""
                     Atue como AUDITOR SUPREMO e ADVOGADO SÊNIOR.
@@ -86,7 +89,7 @@ with col2:
                     REQUISITOS:
                     - Se 'Assinaturas' ativo: Verifique sinais de fraude ou montagem.
                     - Se 'Gerar Contrato/Processo': Redija o texto jurídico completo corrigindo os erros achados.
-                    - Cite leis brasileiras e dê Score de Risco.
+                    - Cite leis brasileiras e dê Score de Risco de 0 a 100%.
                     """
                     
                     if arquivo and arquivo.type.startswith("image"):
@@ -94,18 +97,18 @@ with col2:
                     else:
                         response = model.generate_content(prompt_final)
                     
-                    st.success("Missão Cumprida!")
+                    st.success("Análise Concluída com Sucesso!")
                     tab1, tab2 = st.tabs(["📝 Relatório Inteligente", "📥 Exportar"])
                     with tab1:
                         st.markdown(f"<div class='report-card'>{response.text}</div>", unsafe_allow_html=True)
                     with tab2:
                         st.download_button("📥 BAIXAR DOCUMENTO (.DOCX)", preparar_download(response.text, tipo_saida), "aether_result.docx")
                 except Exception as e:
-                    st.error(f"Erro na Rede Aether: {e}. Desative o tradutor do Chrome!")
+                    st.error(f"Erro Crítico: {e}. Por favor, realize um REBOOT no painel do Streamlit.")
         else:
-            st.warning("Insira uma instrução.")
+            st.warning("Aguardando comando do Sniper.")
 
 with st.sidebar:
     if st.button("🔄 Reiniciar Motor"):
         st.rerun()
-    st.caption("AETHER AUDIT v45.2 | Global Edition")
+    st.caption("AETHER AUDIT v45.3 | Global Master Edition")
