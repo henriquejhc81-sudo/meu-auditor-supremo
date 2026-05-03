@@ -22,19 +22,14 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- CONEXÃO BLINDADA (FIM DO 404 - FORÇANDO V1) ---
+# --- CONEXÃO BLINDADA (SIMPLIFICADA PARA EVITAR ERROS) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
-    # CORREÇÃO CRÍTICA: Forçamos a biblioteca a usar a versão v1 estável globalmente
-    genai.configure(api_key=API_KEY, transport='rest') # Usa REST para evitar conflitos de versão gRPC
-    
-    # Definimos o modelo explicitamente pela porta de produção
-    model = genai.GenerativeModel(
-        model_name='gemini-1.5-flash',
-        generation_config={"version": "v1"} # Força a versão 1 de produção
-    )
+    genai.configure(api_key=API_KEY)
+    # Forma mais direta e compatível de chamar o modelo
+    model = genai.GenerativeModel('gemini-1.5-flash')
 except Exception as e:
-    st.error(f"📡 Rede Aether: Sincronizando conexão segura...")
+    st.error(f"📡 Rede Aether: Sincronizando conexão...")
 
 def preparar_download(texto, titulo):
     doc = Document()
@@ -58,10 +53,10 @@ with col1:
     st.divider()
     
     st.markdown("### ⚙️ Sniper Config")
-    extrair_tab = st.toggle("Extração Inteligente de Tabelas", value=True)
-    score_risco = st.toggle("Score de Risco Automático", value=True)
-    detec_anomalia = st.toggle("Detecção de Anomalias (Assinaturas/Forense)", value=True)
-    cruzamento_dados = st.toggle("Cruzamento SPED/Multi-Fonte", value=False)
+    st.toggle("Extração Inteligente de Tabelas", value=True)
+    st.toggle("Score de Risco Automático", value=True)
+    st.toggle("Detecção de Anomalias (Assinaturas/Forense)", value=True)
+    st.toggle("Cruzamento SPED/Multi-Fonte", value=False)
 
 with col2:
     st.subheader("🔍 Central de Inteligência")
@@ -77,9 +72,8 @@ with col2:
     
     if st.button("🚀 EXECUTAR VARREDURA GLOBAL"):
         if pergunta:
-            with st.spinner("Processando..."):
+            with st.spinner("Conectando ao Arsenal Aether..."):
                 try:
-                    time.sleep(random.uniform(0.5, 1.2))
                     conteudo_extra = ""
                     if arquivo and arquivo.name.endswith(('.xlsx', '.csv')):
                         df = pd.read_excel(arquivo) if arquivo.name.endswith('.xlsx') else pd.read_csv(arquivo)
@@ -87,7 +81,8 @@ with col2:
 
                     prompt_final = f"""
                     Atue como AUDITOR SUPREMO e ADVOGADO SÊNIOR.
-                    Missão: {tipo_saida}. Instrução: {pergunta} {conteudo_extra}.
+                    Missão: {tipo_saida}. 
+                    Instrução: {pergunta} {conteudo_extra}.
                     Use lógica de Big Four, cite leis brasileiras e dê Score de Risco.
                     """
                     
@@ -103,13 +98,11 @@ with col2:
                     with tab2:
                         st.download_button(f"📥 BAIXAR {tipo_saida.upper()}", preparar_download(response.text, tipo_saida), "aether_result.docx")
                 except Exception as e:
-                    # Mensagem de ajuda mais clara caso o erro 404 persista
-                    st.error(f"Erro Crítico: {e}. Se persistir, realize um 'Reboot app' no menu lateral do Streamlit.")
+                    st.error(f"Erro Crítico: {e}. Desligue o tradutor e reinicie o motor.")
         else:
             st.warning("Insira uma instrução.")
 
 with st.sidebar:
-    st.info("💡 **Dica Sniper:** v46.3 corrigiu a conexão com o servidor Google v1.")
     if st.button("🔄 Reiniciar Motor do Sistema"):
         st.rerun()
-    st.caption("AETHER AUDIT v46.3 | Master Edition")
+    st.caption("AETHER AUDIT v46.4 | Master Edition")
