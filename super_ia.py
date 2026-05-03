@@ -6,7 +6,7 @@ import pandas as pd
 import io
 import time
 
-# --- DESIGN PREMIUM INTERNACIONAL ---
+# --- DESIGN PREMIUM REFINADO ---
 st.set_page_config(page_title="AETHER OMNI", layout="wide", page_icon="🛡️")
 
 st.markdown("""
@@ -19,18 +19,17 @@ st.markdown("""
         color: white; border-radius: 12px; font-weight: bold; height: 3.5em; border: none;
     }
     .report-card { padding: 30px; border-radius: 18px; background-color: #1a1c24; border: 1px solid #2d2f39; color: #e0e0e0; }
-    .suggestion-card { background: #262730; padding: 15px; border-radius: 10px; border-left: 4px solid #00c6ff; margin-bottom: 10px; font-size: 0.9em; cursor: pointer; }
+    .suggestion-card { background: #262730; padding: 15px; border-radius: 10px; border-left: 4px solid #00c6ff; margin-bottom: 10px; font-size: 0.9em; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- CONEXÃO ESTÁVEL V1 (FIM DO 404 V1BETA) ---
+# --- CONEXÃO BLINDADA v1 (FIM DO 404) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
-    # AJUSTE MESTRE: Usamos gemini-1.5-flash na porta de produção estável v1
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-1.5-flash-latest')
 except:
-    st.error("🔄 Sincronizando conexão estável para amanhã...")
+    st.error("🔄 Sincronizando conexão segura...")
 
 def preparar_download(texto):
     doc = Document()
@@ -42,56 +41,71 @@ def preparar_download(texto):
     buffer.seek(0)
     return buffer
 
-# --- PAINEL LATERAL (ARSENAL SNIPER) ---
+# --- SIDEBAR ---
 with st.sidebar:
     st.title("🛡️ Aether Omni")
     agente = st.selectbox("🎯 Agente Especialista", ["Auditor Geral", "Trabalhista", "Imobiliário", "Tributário", "LGPD"])
     
     st.divider()
-    ativar_biblioteca = st.toggle("📂 Biblioteca de Perguntas", value=False)
+    # CORREÇÃO DO ERRO: Nome da variável unificado
+    ativar_biblioteca = st.toggle("📂 Abrir Biblioteca de Perguntas", value=False)
+    
     if ativar_biblioteca:
-        st.subheader("📋 Sugestões (Copie e Cole)")
-        opcoes = {
-            "Auditor Geral": ["Analise riscos contratuais e financeiros.", "Verifique cláusulas abusivas ou ambíguas."],
-            "Trabalhista": ["Valide multas rescisórias conforme a CLT.", "Verifique riscos de vínculo empregatício."],
-            "Tributário": ["Valide alíquotas de impostos neste documento.", "Aponte possíveis divergências fiscais."],
-            "Imobiliário": ["Verifique reajustes (IGP-M/IPCA) e atrasos.", "Analise garantias e multas contratuais."],
-            "LGPD": ["Verifique se o tratamento de dados cumpre a lei.", "Analise a política de retenção de dados."]
-        }
-        for item in opcoes.get(agente, []):
-            st.markdown(f"<div class='suggestion-card'>{item}</div>", unsafe_allow_html=True)
+        st.subheader("📋 Sugestões Sniper")
+        if agente == "Auditor Geral":
+            st.markdown("<div class='suggestion-card'><b>Geral:</b> Analise este contrato e aponte os 5 principais riscos financeiros e jurídicos.</div>", unsafe_allow_html=True)
+            st.markdown("<div class='suggestion-card'><b>Geral:</b> Verifique se há cláusulas abusivas ou ambíguas neste documento.</div>", unsafe_allow_html=True)
+        elif agente == "Trabalhista":
+            st.markdown("<div class='suggestion-card'><b>Trabalhista:</b> Verifique se as multas rescisórias estão de acordo com a CLT.</div>", unsafe_allow_html=True)
+            st.markdown("<div class='suggestion-card'><b>Trabalhista:</b> Analise riscos de vínculo empregatício neste contrato.</div>", unsafe_allow_html=True)
+        elif agente == "Tributário":
+            st.markdown("<div class='suggestion-card'><b>Tributário:</b> Valide as alíquotas de impostos citadas nesta nota ou contrato.</div>", unsafe_allow_html=True)
+        elif agente == "Imobiliário":
+            st.markdown("<div class='suggestion-card'><b>Imobiliário:</b> Verifique cláusulas de reajuste e penalidades por atraso.</div>", unsafe_allow_html=True)
+        elif agente == "LGPD":
+            st.markdown("<div class='suggestion-card'><b>LGPD:</b> Verifique se o tratamento de dados cumpre a LGPD atual.</div>", unsafe_allow_html=True)
+        st.caption("Selecione o texto acima para copiar.")
 
     st.divider()
+    st.subheader("📂 Ingestão de Dados")
     arquivos = st.file_uploader("Upload de Evidências", type=["pdf", "png", "jpg", "jpeg", "xlsx", "csv"], accept_multiple_files=True)
+    
+    st.divider()
     if st.button("🔄 Reiniciar Motor"):
         st.rerun()
 
-# --- CENTRAL OMNI ---
+# --- CORPO CENTRAL ---
 st.title("🛡️ AETHER OMNI ENTERPRISE")
-st.caption(f"Operando como: **{agente}** | Conexão Estável v1")
+st.caption(f"Status: **Operacional** | Agente: **{agente}**")
 
-pergunta = st.text_area("O que o sistema deve analisar ou auditar?", placeholder="Digite sua instrução...", height=150)
+pergunta = st.text_area("O que o sistema deve analisar ou auditar?", placeholder="Digite sua instrução ou use a biblioteca da lateral...", height=150)
 
 if st.button("🚀 INICIAR VARREDURA OMNI"):
     if pergunta:
-        with st.spinner(f"O {agente} está varrendo as evidências..."):
+        with st.spinner(f"O {agente} está processando os dados..."):
             try:
                 time.sleep(1)
-                contexto_extra = ""
+                contexto_arquivos = ""
                 if arquivos:
                     for arq in arquivos:
                         if arq.name.endswith(('.xlsx', '.csv')):
                             df = pd.read_excel(arq) if arq.name.endswith('.xlsx') else pd.read_csv(arq)
-                            contexto_extra += f"\n\nDADOS DO ARQUIVO {arq.name}:\n{df.to_string()}"
+                            contexto_arquivos += f"\n\nDADOS DO ARQUIVO {arq.name}:\n{df.to_string()}"
 
-                prompt_final = f"Atue como {agente} Sênior. Analise: {pergunta} {contexto_extra}. Dê o Score de Risco e Checklist de Compliance."
+                prompt_final = f"Atue como um {agente} Sênior. Sua missão: {pergunta} {contexto_arquivos}. Forneça checklist de compliance e score de risco."
+                
                 response = model.generate_content(prompt_final)
                 
-                st.success("Análise Concluída!")
+                st.markdown("### 📝 Resultado da Auditoria")
                 st.markdown(f"<div class='report-card'>{response.text}</div>", unsafe_allow_html=True)
-                st.download_button("📥 BAIXAR RELATÓRIO WORD", preparar_download(response.text), "aether_report.docx")
+                
+                st.divider()
+                st.download_button("📥 Exportar para Word", preparar_download(response.text), "aether_report.docx")
                 st.balloons()
+                
             except Exception as e:
-                st.error(f"Erro técnico: {e}. O motor será recalibrado.")
+                st.error(f"Erro de Rede Omni: {e}. Desative o tradutor do navegador.")
     else:
-        st.warning("Insira uma instrução.")
+        st.warning("Insira uma pergunta.")
+
+st.sidebar.caption("v40.9 | Final Enterprise Edition")
