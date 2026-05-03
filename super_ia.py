@@ -21,18 +21,18 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- CONEXÃO BLINDADA (SOLUÇÃO DEFINITIVA PARA O ERRO 404) ---
+# --- CONEXÃO BLINDADA (ESTABILIZAÇÃO V1) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
-    # AJUSTE MESTRE: Forçamos o modelo estável para evitar o erro v1beta do seu print
+    # Forçamos o modelo estável v1 para ignorar o erro v1beta da sua imagem
     model = genai.GenerativeModel('gemini-1.5-flash')
-except Exception as e:
+except:
     st.error("📡 Rede Aether: Sincronizando conexão segura...")
 
-def preparar_download(texto):
+def preparar_download(texto, titulo):
     doc = Document()
-    doc.add_heading('AETHER AUDIT - RELATÓRIO EXECUTIVO SUPREMO', 0)
+    doc.add_heading(titulo, 0)
     for linha in texto.split('\n'):
         if linha.strip(): doc.add_paragraph(linha)
     buffer = io.BytesIO()
@@ -41,33 +41,33 @@ def preparar_download(texto):
     return buffer
 
 # --- INTERFACE ---
-st.title("🛡️ AETHER AUDIT ENTERPRISE v45.1")
+st.title("🛡️ AETHER AUDIT ENTERPRISE v45.2")
 st.markdown("##### *Standard for High-Frequency Auditing & Global Intelligence*")
 
 col1, col2 = st.columns(2)
 
 with col1:
     st.subheader("📂 Ingestão de Dados")
-    arquivo = st.file_uploader("Upload de Evidências (PDF, Imagem, Excel, TXT)", type=["txt", "pdf", "png", "jpg", "jpeg", "xlsx", "csv"])
+    arquivo = st.file_uploader("Upload de Evidências", type=["pdf", "png", "jpg", "jpeg", "xlsx", "csv"])
     st.divider()
     
     st.markdown("### ⚙️ Sniper Config")
     extrair_tab = st.toggle("Extração Inteligente de Tabelas", value=True)
     score_risco = st.toggle("Score de Risco Automático", value=True)
-    detec_anomalia = st.toggle("Detecção de Anomalias (Forense)", value=True)
-    cruzamento_sped = st.toggle("Cruzamento SPED/XML (Beta)", value=False)
+    detec_anomalia = st.toggle("Detecção de Anomalias (Assinaturas/Forense)", value=True)
+    cruzamento_sped = st.toggle("Cruzamento SPED/XML", value=False)
 
 with col2:
     st.subheader("🔍 Central de Inteligência")
-    # Filtro de Objetivo (Contrato, Processo, Auditoria)
-    modo_acao = st.selectbox("🎯 Objetivo da Análise", [
-        "Auditoria e Auditoria Forense", 
-        "Gerar Contrato Personalizado", 
-        "Gerar Processo/Petição Jurídica",
-        "Análise de Conformidade (Compliance)"
+    # BOTÃO DE FILTRO PARA PÓS-AUDITORIA
+    tipo_saida = st.selectbox("🎯 Ação Pós-Auditoria (Filtro)", [
+        "Apenas Relatório de Auditoria", 
+        "Auditoria + Gerar Contrato Corrigido", 
+        "Auditoria + Gerar Petição/Processo",
+        "Análise Grafotécnica (Assinaturas)"
     ])
     
-    pergunta = st.text_area("O que o sistema deve analisar ou redigir?", placeholder="Digite aqui sua instrução...", height=150)
+    pergunta = st.text_area("Instrução para a IA:", placeholder="Ex: Analise este documento e verifique assinaturas...", height=150)
     
     if st.button("🚀 EXECUTAR VARREDURA GLOBAL"):
         if pergunta:
@@ -78,16 +78,15 @@ with col2:
                         df = pd.read_excel(arquivo) if arquivo.name.endswith('.xlsx') else pd.read_csv(arquivo)
                         conteudo_extra = f"\n\nDADOS DA PLANILHA:\n{df.to_string()}"
 
-                    # Prompt de Engenharia Reversa (Simula Claude, DeepSeek, Llama, Grok internamente)
                     prompt_final = f"""
-                    Atue como o sistema AETHER AUDIT MASTER. 
-                    Objetivo: {modo_acao}.
+                    Atue como AUDITOR SUPREMO e ADVOGADO SÊNIOR.
+                    MISSÃO: {tipo_saida}.
                     Instrução: {pergunta} {conteudo_extra}.
                     
-                    Use lógica de Big Four (PwC, EY, Deloitte, KPMG).
-                    Analise sob 4 óticas: Ética, Técnica, Criativa e Pragmática.
-                    Forneça Checklist de Compliance, Score de Risco e Veredito Final.
-                    Siga estritamente as leis brasileiras e normas IFRS.
+                    REQUISITOS:
+                    - Se 'Assinaturas' ativo: Verifique sinais de fraude ou montagem.
+                    - Se 'Gerar Contrato/Processo': Redija o texto jurídico completo corrigindo os erros achados.
+                    - Cite leis brasileiras e dê Score de Risco.
                     """
                     
                     if arquivo and arquivo.type.startswith("image"):
@@ -96,19 +95,17 @@ with col2:
                         response = model.generate_content(prompt_final)
                     
                     st.success("Missão Cumprida!")
-                    tab1, tab2 = st.tabs(["📝 Relatório Supremo", "📥 Exportar"])
+                    tab1, tab2 = st.tabs(["📝 Relatório Inteligente", "📥 Exportar"])
                     with tab1:
                         st.markdown(f"<div class='report-card'>{response.text}</div>", unsafe_allow_html=True)
                     with tab2:
-                        st.download_button("📥 BAIXAR RELATÓRIO (.DOCX)", preparar_download(response.text), "aether_report.docx")
+                        st.download_button("📥 BAIXAR DOCUMENTO (.DOCX)", preparar_download(response.text, tipo_saida), "aether_result.docx")
                 except Exception as e:
-                    st.error(f"Erro na Rede Aether: {e}. Desative o tradutor e reinicie o motor.")
+                    st.error(f"Erro na Rede Aether: {e}. Desative o tradutor do Chrome!")
         else:
-            st.warning("Insira uma pergunta ou comando.")
+            st.warning("Insira uma instrução.")
 
 with st.sidebar:
-    if st.button("🔄 Reiniciar Motor do Sistema"):
+    if st.button("🔄 Reiniciar Motor"):
         st.rerun()
-    st.caption("AETHER AUDIT v45.1 | Global Enterprise Edition")
-    st.divider()
-    st.info("💡 **Dica de Elite:** No modo 'Gerar Contrato', descreva as partes e o objeto para uma redação jurídica perfeita.")
+    st.caption("AETHER AUDIT v45.2 | Global Edition")
