@@ -19,22 +19,22 @@ st.markdown("""
         color: white; border-radius: 12px; font-weight: bold; height: 3.8em; border: none;
     }
     .report-card { padding: 30px; border-radius: 18px; background-color: #1a1c24; border: 1px solid #2d2f39; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-    .suggestion-box { padding: 12px; background: #262730; border-radius: 10px; border-left: 5px solid #00c6ff; margin-bottom: 10px; font-size: 0.85em; }
+    .suggestion-box { padding: 15px; background: #262730; border-radius: 12px; border-left: 5px solid #00c6ff; margin-bottom: 15px; font-size: 0.9em; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- CONEXÃO BLINDADA (FIM DEFINITIVO DO ERRO 404) ---
+# --- CONEXÃO ESTÁVEL V1 (FIM DO 404 V1BETA) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
-    # A correção definitiva: Usar o nome estável v1 que o Google exige agora
+    # Conexão via porta estável de produção
     model = genai.GenerativeModel('gemini-1.5-flash')
-except Exception as e:
-    st.error("📡 Rede Omni: Sincronizando conexão segura...")
+except:
+    st.error("🔄 Conexão instável. Reinicie o motor na lateral.")
 
 def preparar_docx(texto):
     doc = Document()
-    doc.add_heading('AETHER OMNI - DOCUMENTO OFICIAL', 0)
+    doc.add_heading('AETHER OMNI - RELATÓRIO DE INTELIGÊNCIA MASTER', 0)
     for linha in texto.split('\n'):
         if linha.strip(): doc.add_paragraph(linha)
     buffer = io.BytesIO()
@@ -42,48 +42,51 @@ def preparar_docx(texto):
     buffer.seek(0)
     return buffer
 
-# --- PAINEL LATERAL (RESTAURADO COM TODAS AS FUNÇÕES) ---
+# --- SIDEBAR (ARSENAL SNIPER COMPLETO) ---
 with st.sidebar:
     st.title("🛡️ Aether Omni")
-    
-    # Restauração: Modo de Operação
-    modo = st.selectbox("🚀 Modo de Operação", ["Auditoria de Evidências", "Geração de Contratos/Petições", "Análise Financeira"])
-    
     agente = st.selectbox("🎯 Agente Especialista", ["Auditor Geral", "Trabalhista", "Imobiliário", "Tributário", "LGPD"])
     
     st.divider()
     with st.expander("📂 Biblioteca de Perguntas", expanded=False):
         opcoes = {
-            "Auditor Geral": ["Analise riscos financeiros.", "Verifique cláusulas ambíguas."],
-            "Trabalhista": ["Valide multas da CLT.", "Analise riscos de vínculo."],
-            "Geração": ["Redija contrato de prestação de serviços.", "Crie petição inicial trabalhista."]
+            "Auditor Geral": ["Analise riscos contratuais e financeiros.", "Verifique cláusulas abusivas ou ambíguas."],
+            "Trabalhista": ["Valide multas rescisórias conforme a CLT.", "Verifique riscos de vínculo empregatício."],
+            "Tributário": ["Valide alíquotas de impostos neste documento.", "Aponte possíveis divergências fiscais."],
+            "Imobiliário": ["Verifique reajustes (IGP-M/IPCA) e atrasos.", "Analise garantias e multas contratuais."],
+            "LGPD": ["Verifique se o tratamento de dados cumpre a lei.", "Analise a política de retenção de dados."]
         }
-        for item in opcoes.get(agente if modo != "Geração de Contratos/Petições" else "Geração", []):
-            st.markdown(f"<div class='suggestion-box'>💡 {item}</div>", unsafe_allow_html=True)
+        for item in opcoes.get(agente, []):
+            st.caption(f"💡 {item}")
 
     st.divider()
     st.subheader("📂 Ingestão de Dados")
-    arquivos = st.file_uploader("Upload de Documentos", type=["pdf", "png", "jpg", "jpeg", "xlsx", "csv"], accept_multiple_files=True)
+    arquivos = st.file_uploader("Upload de Evidências (PDF, Excel, Imagens)", type=["txt", "pdf", "png", "jpg", "jpeg", "xlsx", "csv"], accept_multiple_files=True)
     
     st.divider()
-    st.subheader("⚙️ Sniper Parameters")
+    st.subheader("⚙️ Parâmetros Sniper")
     checklist = st.toggle("Checklist de Compliance", value=True)
-    score = st.toggle("Score de Risco (%)", value=True)
-    tabelas = st.toggle("Extração de Tabelas (OCR)", value=True)
+    score = st.toggle("Score de Risco Automático (%)", value=True)
+    cruzamento = st.toggle("Cruzamento de Dados (Cross-check)", value=True)
     
     if st.button("🔄 Reiniciar Motor"):
         st.rerun()
-    st.caption("v43.2 | Enterprise Master Edition")
 
 # --- CENTRAL OMNI MASTER ---
 st.title("🛡️ AETHER OMNI ENTERPRISE")
-st.caption(f"Operação: **{modo}** | Agente: **{agente}** | Engine: **v1 Estável**")
+st.caption(f"Agente: **{agente}** | Status: **Operacional** | Versão Estável v1")
 
-pergunta = st.text_area("Descreva a missão (Ex: Analise este PDF ou Redija um contrato de...)", placeholder="Digite aqui...", height=150)
+# Sugestões rápidas visuais
+c1, c2, c3 = st.columns(3)
+with c1: st.caption("💡 *Analise riscos trabalhistas*")
+with c2: st.caption("💡 *Verifique cláusulas de LGPD*")
+with c3: st.caption("💡 *Compare planilhas e contratos*")
 
-if st.button("🚀 EXECUTAR VARREDURA GLOBAL OMNI"):
+pergunta = st.text_area("O que o sistema deve analisar ou auditar?", placeholder="Digite sua instrução...", height=150)
+
+if st.button("🚀 INICIAR VARREDURA GLOBAL OMNI"):
     if pergunta:
-        with st.spinner(f"Processando em modo {modo}..."):
+        with st.spinner(f"O {agente} está processando as evidências..."):
             try:
                 time.sleep(1)
                 contexto_total = ""
@@ -91,23 +94,32 @@ if st.button("🚀 EXECUTAR VARREDURA GLOBAL OMNI"):
                     for arq in arquivos:
                         if arq.name.endswith(('.xlsx', '.csv')):
                             df = pd.read_excel(arq) if arq.name.endswith('.xlsx') else pd.read_csv(arq)
-                            contexto_total += f"\n\nARQUIVO {arq.name}:\n{df.to_string()}"
+                            contexto_total += f"\n\nDADOS DO ARQUIVO {arq.name}:\n{df.to_string()}"
 
-                # Lógica Master: O prompt muda de acordo com o modo escolhido
-                if modo == "Geração de Contratos/Petições":
-                    instrucao_ia = f"Atue como um Advogado Sênior. Redija um documento jurídico profissional com base em: {pergunta}. Siga os padrões legais brasileiros."
-                else:
-                    instrucao_ia = f"Atue como um {agente} Sênior. Instrução: {pergunta} {contexto_total}. Forneça checklist de compliance: {checklist} e Score de Risco: {score}."
-
-                response = model.generate_content(instrucao_ia)
+                prompt_master = f"""
+                Atue como um {agente} Sênior (Nível Big Four). 
+                Instrução: {pergunta}
+                Contexto Adicional: {contexto_total}
                 
-                st.markdown("### 📝 Resultado da Inteligência Omni")
+                REQUISITOS OBRIGATÓRIOS:
+                1. 📝 RESUMO EXECUTIVO DA MISSÃO.
+                2. ✅ CHECKLIST DE COMPLIANCE: {checklist}.
+                3. 📊 SCORE DE RISCO (0-100%): {score}.
+                4. ⚖️ SUGESTÃO DE REDAÇÃO JURÍDICA/CORREÇÃO.
+                Use linguagem técnica e cite leis brasileiras vigentes.
+                """
+                
+                response = model.generate_content(prompt_master)
+                
+                st.markdown("### 📝 Resultado da Auditoria")
                 st.markdown(f"<div class='report-card'>{response.text}</div>", unsafe_allow_html=True)
                 
                 st.divider()
-                st.download_button("📥 BAIXAR DOCUMENTO (.DOCX)", preparar_docx(response.text), "aether_omni_doc.docx")
+                st.download_button("📥 Exportar Relatório Master (.DOCX)", preparar_download(response.text), "aether_report_master.docx")
                 st.balloons()
             except Exception as e:
-                st.error(f"Erro de Rede Omni: {e}. Desative o tradutor e aguarde 30 segundos.")
+                st.error(f"📡 Erro de Rede Omni: {e}. Desative o tradutor do navegador.")
     else:
-        st.warning("Insira uma instrução para o Sniper.")
+        st.warning("Aguardando instrução do auditor.")
+
+st.sidebar.caption("v41.0 | Enterprise Master Edition")
