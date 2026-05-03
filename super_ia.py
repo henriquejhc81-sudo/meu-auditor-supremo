@@ -5,12 +5,10 @@ from PIL import Image
 import pandas as pd
 import io
 import time
-import random
 
-# --- DESIGN PREMIUM OMNI ---
-st.set_page_config(page_title="AETHER OMNI MASTER", layout="wide", page_icon="🛡️")
+# --- DESIGN STEALTH GLOBAL (INSPIRADO EM HARVEY & IRONCLAD) ---
+st.set_page_config(page_title="AETHER OMNI | Intelligence", layout="wide", page_icon="🛡️")
 
-# Inicialização da Sessão
 if 'historico' not in st.session_state:
     st.session_state['historico'] = []
 if 'show_history' not in st.session_state:
@@ -18,34 +16,73 @@ if 'show_history' not in st.session_state:
 
 st.markdown("""
     <style>
-    .main { background-color: #0e1117; color: #ffffff; }
+    @import url('https://googleapis.com');
+    
+    html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
+    
+    .main { background-color: #0b0d11; color: #e1e1e1; }
+    
+    /* Botões Estilo Enterprise */
     .stButton>button { 
-        width: 100%; background: linear-gradient(90deg, #00c6ff 0%, #0072ff 100%); 
-        color: white; border-radius: 12px; font-weight: bold; height: 3.5em; border: none;
+        width: 100%; 
+        background: #1e2128; 
+        color: #00c6ff; 
+        border: 1px solid #2d323d;
+        border-radius: 8px; 
+        font-weight: 600; 
+        height: 3.2em;
+        transition: all 0.3s ease;
     }
-    .report-card { padding: 25px; border-radius: 15px; background-color: #1a1c24; border: 1px solid #2d2f39; color: #e0e0e0; margin-bottom: 15px; }
-    .history-card { background: #262730; padding: 10px; border-radius: 8px; border-left: 3px solid #00c6ff; margin-bottom: 5px; font-size: 0.8em; }
+    .stButton>button:hover { 
+        background: #00c6ff; 
+        color: #0b0d11;
+        border: 1px solid #00c6ff;
+    }
+
+    /* Cartões de Relatório Estilo Glassmorphism */
+    .report-card { 
+        padding: 30px; 
+        border-radius: 12px; 
+        background: #161920; 
+        border: 1px solid #252a34; 
+        color: #cfd2d9; 
+        line-height: 1.6;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+    
+    .history-card { 
+        background: #1c2028; 
+        padding: 12px; 
+        border-radius: 6px; 
+        border-left: 2px solid #00c6ff; 
+        margin-bottom: 8px; 
+        font-size: 0.85em; 
+    }
+
+    /* Sidebar Refinada */
+    .css-1d391kg { background-color: #11141b; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- CONEXÃO BLINDADA (LÓGICA DE OURO) ---
+# --- CONEXÃO BLINDADA ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
     modelos = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
     model = genai.GenerativeModel(modelos[0] if modelos else 'gemini-1.5-flash')
 except:
-    st.error("📡 Sincronizando rede segura...")
+    st.error("📡 Erro de sincronização com o núcleo de inteligência.")
 
 def preparar_docx(lista_resultados, unico=True):
     doc = Document()
     if unico:
-        doc.add_heading('AETHER OMNI - DOCUMENTO INDIVIDUAL', 0)
-        doc.add_paragraph(lista_resultados[-1]['texto'] if isinstance(lista_resultados, list) else lista_resultados)
+        doc.add_heading('PARECER TÉCNICO AETHER', 0)
+        texto = lista_resultados[-1]['texto'] if isinstance(lista_resultados, list) else lista_resultados
+        doc.add_paragraph(texto)
     else:
-        doc.add_heading('AETHER OMNI - RELATÓRIO CONSOLIDADO', 0)
+        doc.add_heading('CONSOLIDADO DE AUDITORIA', 0)
         for res in lista_resultados:
-            doc.add_heading(f"Missão: {res['titulo']} | Fonte: {res['fonte']}", level=1)
+            doc.add_heading(f"Sessão: {res['titulo']}", level=1)
             doc.add_paragraph(res['texto'])
             doc.add_page_break()
     buffer = io.BytesIO()
@@ -55,113 +92,110 @@ def preparar_docx(lista_resultados, unico=True):
 
 # --- PAINEL LATERAL ---
 with st.sidebar:
-    st.title("🛡️ Aether Omni")
+    st.title("🛡️ AETHER OMNI")
+    st.caption("v51.0 Global Intelligence")
     
-    # BOTAO PARA MOSTRAR HISTORICO
-    if st.button("📜 Ver Histórico de Missões"):
+    if st.button("📜 Histórico de Missões"):
         st.session_state['show_history'] = not st.session_state['show_history']
 
     if st.session_state['show_history']:
-        st.subheader("Histórico Recente")
         if st.session_state['historico']:
             for item in st.session_state['historico']:
-                st.markdown(f"<div class='history-card'><b>{item['fonte']}</b><br>{item['titulo']} | {item['data']}</div>", unsafe_allow_html=True)
-            st.divider()
-            st.download_button("📥 Baixar Tudo (DOCX Único)", preparar_docx(st.session_state['historico'], unico=False), "historico_total.docx")
+                st.markdown(f"<div class='history-card'><b>{item['fonte']}</b><br>{item['titulo']}</div>", unsafe_allow_html=True)
+            st.download_button("📥 Exportar Histórico", preparar_docx(st.session_state['historico'], unico=False), "omni_history.docx")
         else:
-            st.caption("Nenhum registro encontrado.")
+            st.caption("Sem registros ativos.")
 
     st.divider()
-    st.subheader("⚙️ Sniper Config")
-    st.toggle("Extração Inteligente OCR", value=True)
-    st.toggle("Score de Risco AI", value=True)
-    st.toggle("Detecção de Anomalias", value=True)
+    st.subheader("Parâmetros Sniper")
+    st.toggle("OCR Inteligente", value=True)
+    st.toggle("Risco Provisório", value=True)
+    st.toggle("Análise Forense", value=True)
     
-    # FILTRO DE ACÃO ABAIXO DOS TOGGLES
     st.divider()
-    st.subheader("⚡ Ação Imediata")
-    acao_filtro = st.selectbox("Escolha o comportamento:", [
-        "Apenas Auditoria Técnica",
-        "Auditoria + Gerar Contrato Corrigido",
-        "Auditoria + Gerar Processo Corrigido"
+    acao_filtro = st.selectbox("Comportamento Neural:", [
+        "Auditoria Técnica",
+        "Geração de Contrato Corrigido",
+        "Geração de Petição Corrigida"
     ])
 
     st.divider()
-    with st.expander("🛠️ Admin"):
-        if st.button("🔄 Reiniciar Motor"):
+    with st.expander("Sistemas"):
+        if st.button("Reiniciar Motor"):
             st.session_state['historico'] = []
             st.rerun()
-    st.caption("v50.0 | Master Ultimate Edition")
 
-# --- CENTRAL DE INTELIGÊNCIA ---
-st.title("🛡️ AETHER AUDIT ENTERPRISE v50.0")
-st.markdown("##### *Standard for High-Frequency Auditing & Global Compliance*")
+# --- CENTRAL OMNI ---
+st.title("🛡️ AETHER OMNI")
+st.markdown("<p style='color:#7b818f;'>SISTEMA DE ALTA FREQUÊNCIA PARA AUDITORIA E COMPLIANCE GLOBAL</p>", unsafe_allow_html=True)
 
-col1, col2 = st.columns(2)
+col1, col2 = st.columns([1, 1.2])
 
 with col1:
-    st.subheader("📂 Ingestão de Dados")
-    arquivos = st.file_uploader("Upload de Evidências", type=["pdf", "png", "jpg", "jpeg", "xlsx", "csv"], accept_multiple_files=True)
-    st.info("Envie arquivos para auditoria ou utilize a central para geração direta.")
+    st.subheader("Entrada de Dados")
+    arquivos = st.file_uploader("Upload de Ativos (PDF, PNG, XLSX)", type=["pdf", "png", "jpg", "jpeg", "xlsx", "csv"], accept_multiple_files=True)
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.info("O sistema processa evidências multimodais com cruzamento automático de dados.")
 
 with col2:
-    st.subheader("🔍 Central de Comando")
-    tipo_missao = st.selectbox("🎯 Objetivo da Missão", [
+    st.subheader("Centro de Comando")
+    tipo_missao = st.selectbox("Estratégia:", [
         "Auditoria Forense (Padrão)", 
         "Auditar e Corrigir Processo Judicial", 
         "Auditar e Corrigir Contrato",
-        "Análise Grafotécnica de Assinaturas",
-        "Gerar Documento do Zero"
+        "Análise Grafotécnica",
+        "Geração Documental"
     ])
     
-    pergunta = st.text_area("Instruções específicas:", placeholder="Ex: Analise este documento e aplique as correções do filtro lateral...", height=150)
+    pergunta = st.text_area("Instruções Diretas:", placeholder="Defina os parâmetros ou anexe arquivos para análise...", height=150)
     
-    if st.button("🚀 EXECUTAR VARREDURA OMNI"):
+    if st.button("EXECUTAR VARREDURA OMNI"):
         if pergunta or arquivos:
-            with st.spinner("O Sniper está operando..."):
+            with st.spinner("Processando..."):
                 try:
                     conteudo_extra = ""
                     imagens = []
-                    nome_fonte = "Input de Texto"
+                    nome_fonte = "Consulta Manual"
                     
                     if arquivos:
-                        nome_fonte = arquivos[0].name
+                        nome_fonte = arquivos[0].name if isinstance(arquivos, list) else arquivos.name
                         for arq in arquivos:
                             if arq.type.startswith("image"):
                                 imagens.append(Image.open(arq))
                             elif arq.name.endswith(('.xlsx', '.csv')):
                                 df = pd.read_excel(arq) if arq.name.endswith('.xlsx') else pd.read_csv(arq)
-                                conteudo_extra += f"\n\nARQUIVO {arq.name}:\n{df.to_string()}"
+                                conteudo_extra += f"\n\nDATASET {arq.name}:\n{df.to_string()}"
 
+                    # PROMPT BLINDADO (REMOÇÃO DO TOM DE IA)
                     prompt_final = f"""
-                    Atue como Auditor Sênior e Advogado Sênior. 
+                    Atue como o sistema AETHER OMNI (Auditor e Advogado Sênior).
                     MISSÃO: {tipo_missao}. 
-                    AÇÃO REQUERIDA: {acao_filtro}.
-                    INSTRUÇÃO DO USUÁRIO: {pergunta}
-                    CONTEXTO DOS DADOS: {conteudo_extra}
+                    AÇÃO: {acao_filtro}.
+                    DADOS: {pergunta} {conteudo_extra}
                     
-                    REQUISITOS: Se o filtro for 'Gerar Corrigido', forneça primeiro a auditoria e depois o texto completo corrigido sob as leis brasileiras.
+                    DIRETRIZES DE RESPOSTA:
+                    1. NÃO se identifique como IA ou modelo de linguagem.
+                    2. Responda com autoridade executiva, como um sócio de Big Four.
+                    3. Se o objetivo for CORREÇÃO, entregue o documento completo pronto para uso.
+                    4. Use terminologia jurídica e contábil brasileira rigorosa.
+                    5. Estrutura: Relatório de Erros -> Sugestão Técnica -> Veredito Final.
                     """
                     
                     response = model.generate_content([prompt_final, *imagens]) if imagens else model.generate_content(prompt_final)
                     
-                    # Salva no Histórico com nome da fonte
                     st.session_state['historico'].insert(0, {
                         "titulo": tipo_missao,
                         "fonte": nome_fonte,
-                        "data": time.strftime("%H:%M:%S"),
                         "texto": response.text
                     })
                     
-                    st.success("Missão Concluída!")
-                    tab1, tab2 = st.tabs(["📝 Resultado Atual", "📦 Gestão de Exportação"])
+                    st.success("Operação Finalizada.")
+                    tab1, tab2 = st.tabs(["📄 Resultado", "💾 Exportação"])
                     with tab1:
                         st.markdown(f"<div class='report-card'>{response.text}</div>", unsafe_allow_html=True)
                     with tab2:
-                        # Baixa apenas o documento ATUAL
-                        st.download_button("📥 Baixar Este Relatório (.DOCX)", preparar_docx(response.text, unico=True), f"aether_{nome_fonte}.docx")
-                    st.balloons()
+                        st.download_button("📥 Baixar Parecer (.DOCX)", preparar_docx(response.text, unico=True), f"AETHER_{nome_fonte}.docx")
                 except Exception as e:
-                    st.error(f"Erro no Motor: {e}")
+                    st.error(f"Falha na rede: {e}")
         else:
-            st.warning("Insira dados ou envie um arquivo.")
+            st.warning("Aguardando entrada de dados.")
