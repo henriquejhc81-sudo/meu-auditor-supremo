@@ -10,9 +10,11 @@ import random
 # --- DESIGN PREMIUM OMNI ---
 st.set_page_config(page_title="AETHER OMNI MASTER", layout="wide", page_icon="🛡️")
 
-# Inicialização do Histórico na Sessão
+# Inicialização da Sessão
 if 'historico' not in st.session_state:
     st.session_state['historico'] = []
+if 'show_history' not in st.session_state:
+    st.session_state['show_history'] = False
 
 st.markdown("""
     <style>
@@ -35,13 +37,17 @@ try:
 except:
     st.error("📡 Sincronizando rede segura...")
 
-def preparar_docx(lista_resultados):
+def preparar_docx(lista_resultados, unico=True):
     doc = Document()
-    doc.add_heading('AETHER OMNI - RELATÓRIO CONSOLIDADO', 0)
-    for i, res in enumerate(lista_resultados):
-        doc.add_heading(f"Missão {i+1}: {res['titulo']}", level=1)
-        doc.add_paragraph(res['texto'])
-        doc.add_page_break()
+    if unico:
+        doc.add_heading('AETHER OMNI - DOCUMENTO INDIVIDUAL', 0)
+        doc.add_paragraph(lista_resultados[-1]['texto'] if isinstance(lista_resultados, list) else lista_resultados)
+    else:
+        doc.add_heading('AETHER OMNI - RELATÓRIO CONSOLIDADO', 0)
+        for res in lista_resultados:
+            doc.add_heading(f"Missão: {res['titulo']} | Fonte: {res['fonte']}", level=1)
+            doc.add_paragraph(res['texto'])
+            doc.add_page_break()
     buffer = io.BytesIO()
     doc.save(buffer)
     buffer.seek(0)
@@ -51,61 +57,75 @@ def preparar_docx(lista_resultados):
 with st.sidebar:
     st.title("🛡️ Aether Omni")
     
-    # HISTÓRICO DE PESQUISA
-    st.subheader("📜 Histórico da Sessão")
-    if st.session_state['historico']:
-        for item in st.session_state['historico']:
-            st.markdown(f"<div class='history-card'><b>{item['titulo']}</b><br>{item['data']}</div>", unsafe_allow_html=True)
-        
-        st.divider()
-        # DOWNLOAD MÚLTIPLO (TUDO EM UM)
-        st.download_button("📥 Baixar Tudo (DOCX Único)", preparar_docx(st.session_state['historico']), "historico_consolidado.docx")
-    else:
-        st.caption("Nenhuma atividade registrada.")
+    # BOTAO PARA MOSTRAR HISTORICO
+    if st.button("📜 Ver Histórico de Missões"):
+        st.session_state['show_history'] = not st.session_state['show_history']
+
+    if st.session_state['show_history']:
+        st.subheader("Histórico Recente")
+        if st.session_state['historico']:
+            for item in st.session_state['historico']:
+                st.markdown(f"<div class='history-card'><b>{item['fonte']}</b><br>{item['titulo']} | {item['data']}</div>", unsafe_allow_html=True)
+            st.divider()
+            st.download_button("📥 Baixar Tudo (DOCX Único)", preparar_docx(st.session_state['historico'], unico=False), "historico_total.docx")
+        else:
+            st.caption("Nenhum registro encontrado.")
 
     st.divider()
-    if st.button("💡 Guia Sniper de Prompts"):
-        st.info("Dica: Use 'Gere um contrato de...' para redação técnica ou 'Audite este PDF...' para análise forense.")
+    st.subheader("⚙️ Sniper Config")
+    st.toggle("Extração Inteligente OCR", value=True)
+    st.toggle("Score de Risco AI", value=True)
+    st.toggle("Detecção de Anomalias", value=True)
+    
+    # FILTRO DE ACÃO ABAIXO DOS TOGGLES
+    st.divider()
+    st.subheader("⚡ Ação Imediata")
+    acao_filtro = st.selectbox("Escolha o comportamento:", [
+        "Apenas Auditoria Técnica",
+        "Auditoria + Gerar Contrato Corrigido",
+        "Auditoria + Gerar Processo Corrigido"
+    ])
 
     st.divider()
-    with st.expander("🛠️ Admin Motor"):
-        if st.button("🔄 Reiniciar Sistema"):
+    with st.expander("🛠️ Admin"):
+        if st.button("🔄 Reiniciar Motor"):
             st.session_state['historico'] = []
             st.rerun()
-    st.caption("v49.0 | Ultimate Master Edition")
+    st.caption("v50.0 | Master Ultimate Edition")
 
 # --- CENTRAL DE INTELIGÊNCIA ---
-st.title("🛡️ AETHER AUDIT ENTERPRISE v49.0")
-st.markdown("##### *Standard for High-Frequency Auditing & Global Intelligence*")
+st.title("🛡️ AETHER AUDIT ENTERPRISE v50.0")
+st.markdown("##### *Standard for High-Frequency Auditing & Global Compliance*")
 
 col1, col2 = st.columns(2)
 
 with col1:
     st.subheader("📂 Ingestão de Dados")
     arquivos = st.file_uploader("Upload de Evidências", type=["pdf", "png", "jpg", "jpeg", "xlsx", "csv"], accept_multiple_files=True)
-    st.divider()
-    st.toggle("Extração Inteligente OCR", value=True)
-    st.toggle("Score de Risco AI", value=True)
-    st.toggle("Detecção de Anomalias", value=True)
+    st.info("Envie arquivos para auditoria ou utilize a central para geração direta.")
 
 with col2:
     st.subheader("🔍 Central de Comando")
-    tipo_saida = st.selectbox("🎯 Objetivo da Missão", [
-        "Relatório de Auditoria Forense", 
-        "Gerar Contrato Completo", 
-        "Gerar Processo / Petição",
-        "Análise de Assinaturas (Grafotécnica)"
+    tipo_missao = st.selectbox("🎯 Objetivo da Missão", [
+        "Auditoria Forense (Padrão)", 
+        "Auditar e Corrigir Processo Judicial", 
+        "Auditar e Corrigir Contrato",
+        "Análise Grafotécnica de Assinaturas",
+        "Gerar Documento do Zero"
     ])
     
-    pergunta = st.text_area("Instrução da Missão:", placeholder="Ex: Analise e redija um veredito...", height=150)
+    pergunta = st.text_area("Instruções específicas:", placeholder="Ex: Analise este documento e aplique as correções do filtro lateral...", height=150)
     
     if st.button("🚀 EXECUTAR VARREDURA OMNI"):
-        if pergunta:
-            with st.spinner("O Sniper está operando em alta frequência..."):
+        if pergunta or arquivos:
+            with st.spinner("O Sniper está operando..."):
                 try:
                     conteudo_extra = ""
                     imagens = []
+                    nome_fonte = "Input de Texto"
+                    
                     if arquivos:
+                        nome_fonte = arquivos[0].name
                         for arq in arquivos:
                             if arq.type.startswith("image"):
                                 imagens.append(Image.open(arq))
@@ -113,29 +133,35 @@ with col2:
                                 df = pd.read_excel(arq) if arq.name.endswith('.xlsx') else pd.read_csv(arq)
                                 conteudo_extra += f"\n\nARQUIVO {arq.name}:\n{df.to_string()}"
 
-                    prompt_final = f"Atue como Auditor e Advogado Sênior. Missão: {tipo_saida}. Instrução: {pergunta} {conteudo_extra}."
+                    prompt_final = f"""
+                    Atue como Auditor Sênior e Advogado Sênior. 
+                    MISSÃO: {tipo_missao}. 
+                    AÇÃO REQUERIDA: {acao_filtro}.
+                    INSTRUÇÃO DO USUÁRIO: {pergunta}
+                    CONTEXTO DOS DADOS: {conteudo_extra}
                     
-                    if imagens:
-                        response = model.generate_content([prompt_final, *imagens])
-                    else:
-                        response = model.generate_content(prompt_final)
+                    REQUISITOS: Se o filtro for 'Gerar Corrigido', forneça primeiro a auditoria e depois o texto completo corrigido sob as leis brasileiras.
+                    """
                     
-                    # Salva no Histórico
+                    response = model.generate_content([prompt_final, *imagens]) if imagens else model.generate_content(prompt_final)
+                    
+                    # Salva no Histórico com nome da fonte
                     st.session_state['historico'].insert(0, {
-                        "titulo": tipo_saida,
+                        "titulo": tipo_missao,
+                        "fonte": nome_fonte,
                         "data": time.strftime("%H:%M:%S"),
                         "texto": response.text
                     })
                     
                     st.success("Missão Concluída!")
-                    tab1, tab2 = st.tabs(["📝 Resultado Atual", "📦 Gestão de Arquivos"])
+                    tab1, tab2 = st.tabs(["📝 Resultado Atual", "📦 Gestão de Exportação"])
                     with tab1:
                         st.markdown(f"<div class='report-card'>{response.text}</div>", unsafe_allow_html=True)
                     with tab2:
-                        st.download_button("📥 Baixar Relatório Atual (.DOCX)", preparar_docx([st.session_state['historico'][0]]), "aether_report.docx")
+                        # Baixa apenas o documento ATUAL
+                        st.download_button("📥 Baixar Este Relatório (.DOCX)", preparar_docx(response.text, unico=True), f"aether_{nome_fonte}.docx")
                     st.balloons()
-                    st.rerun() # Atualiza o histórico na lateral imediatamente
                 except Exception as e:
-                    st.error(f"Erro no Motor Omni: {e}")
+                    st.error(f"Erro no Motor: {e}")
         else:
-            st.warning("Insira uma instrução.")
+            st.warning("Insira dados ou envie um arquivo.")
