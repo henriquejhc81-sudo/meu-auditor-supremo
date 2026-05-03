@@ -140,9 +140,9 @@ with area_trabalho:
 with area_comando:
     st.subheader("🔍 Centro de Comando")
     tipo_missao = st.selectbox("Estratégia de Varredura:", [
-        "Auditoria Forense (Padrão)", 
-        "Auditar e Corrigir Processo Judicial", 
-        "Auditar e Corrigir Contrato",
+        "Auditoria Geral", 
+        "Auditar Processo Judicial", 
+        "Auditar Contrato",
         "Análise Grafotécnica de Assinaturas",
         "Geração Documental Técnica"
     ])
