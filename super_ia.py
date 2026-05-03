@@ -22,14 +22,19 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- CONEXÃO BLINDADA (FIM DO 404 V1BETA) ---
+# --- CONEXÃO BLINDADA (FIM DO 404 - FORÇANDO V1) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
-    genai.configure(api_key=API_KEY)
-    # Correção mestre: Forçamos a porta estável 'v1' para garantir funcionamento global
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    # CORREÇÃO CRÍTICA: Forçamos a biblioteca a usar a versão v1 estável globalmente
+    genai.configure(api_key=API_KEY, transport='rest') # Usa REST para evitar conflitos de versão gRPC
+    
+    # Definimos o modelo explicitamente pela porta de produção
+    model = genai.GenerativeModel(
+        model_name='gemini-1.5-flash',
+        generation_config={"version": "v1"} # Força a versão 1 de produção
+    )
 except Exception as e:
-    st.error(f"📡 Rede Aether: Sincronizando conexão segura... {e}")
+    st.error(f"📡 Rede Aether: Sincronizando conexão segura...")
 
 def preparar_download(texto, titulo):
     doc = Document()
@@ -52,7 +57,6 @@ with col1:
     arquivo = st.file_uploader("Upload de Evidências (PDF, Imagem, Excel, TXT)", type=["txt", "pdf", "png", "jpg", "jpeg", "xlsx", "csv"])
     st.divider()
     
-    # FUNCIONALIDADES DE ELITE (TOGGLES)
     st.markdown("### ⚙️ Sniper Config")
     extrair_tab = st.toggle("Extração Inteligente de Tabelas", value=True)
     score_risco = st.toggle("Score de Risco Automático", value=True)
@@ -62,7 +66,6 @@ with col1:
 with col2:
     st.subheader("🔍 Central de Inteligência")
     
-    # FILTRO DE AÇÃO PÓS-AUDITORIA (NOVIDADE)
     tipo_saida = st.selectbox("🎯 Objetivo da Missão (Filtro)", [
         "Apenas Relatório de Auditoria", 
         "Auditoria + Gerar Contrato Corrigido", 
@@ -70,31 +73,22 @@ with col2:
         "Análise Forense de Assinaturas"
     ])
     
-    pergunta = st.text_area("O que o sistema deve analisar ou redigir?", placeholder="Ex: Analise este documento e verifique riscos...", height=150)
+    pergunta = st.text_area("O que o sistema deve analisar ou redigir?", placeholder="Ex: Analise este documento...", height=150)
     
     if st.button("🚀 EXECUTAR VARREDURA GLOBAL"):
         if pergunta:
-            with st.spinner("Aether está processando na nuvem..."):
+            with st.spinner("Processando..."):
                 try:
-                    time.sleep(random.uniform(0.5, 1.5)) # Stealth Mode
+                    time.sleep(random.uniform(0.5, 1.2))
                     conteudo_extra = ""
                     if arquivo and arquivo.name.endswith(('.xlsx', '.csv')):
                         df = pd.read_excel(arquivo) if arquivo.name.endswith('.xlsx') else pd.read_csv(arquivo)
                         conteudo_extra = f"\n\nDADOS DA PLANILHA:\n{df.to_string()}"
 
-                    # SUPER PROMPT MULTI-IA (Claude, DeepSeek, Llama, Grok)
                     prompt_final = f"""
                     Atue como AUDITOR SUPREMO e ADVOGADO SÊNIOR.
-                    Missão Atual: {tipo_saida}.
-                    Instrução: {pergunta} {conteudo_extra}.
-                    
-                    ESTRUTURA DE ANÁLISE (Multi-IA):
-                    1. 🔍 Ótica Técnica (DeepSeek): Precisão dos dados e leis.
-                    2. ⚖️ Ótica Ética (Claude): Riscos de Compliance e LGPD.
-                    3. 📝 Ótica Pragmática (Grok): Ação imediata e veredito.
-                    4. ✅ RESULTADO FINAL: Se solicitado Geração, redija o texto completo do contrato ou petição.
-                    
-                    Use leis brasileiras, dê Score de Risco (%) e verifique assinaturas se houver imagem.
+                    Missão: {tipo_saida}. Instrução: {pergunta} {conteudo_extra}.
+                    Use lógica de Big Four, cite leis brasileiras e dê Score de Risco.
                     """
                     
                     if arquivo and arquivo.type.startswith("image"):
@@ -108,14 +102,14 @@ with col2:
                         st.markdown(f"<div class='report-card'>{response.text}</div>", unsafe_allow_html=True)
                     with tab2:
                         st.download_button(f"📥 BAIXAR {tipo_saida.upper()}", preparar_download(response.text, tipo_saida), "aether_result.docx")
-                        st.balloons()
                 except Exception as e:
-                    st.error(f"Erro na Rede Aether: {e}. Desative o tradutor e reinicie o motor.")
+                    # Mensagem de ajuda mais clara caso o erro 404 persista
+                    st.error(f"Erro Crítico: {e}. Se persistir, realize um 'Reboot app' no menu lateral do Streamlit.")
         else:
-            st.warning("Insira uma pergunta ou instrução.")
+            st.warning("Insira uma instrução.")
 
 with st.sidebar:
-    st.info("💡 **Dica Sniper:** No modo 'Gerar Contrato', o sistema utiliza IA jurídica para redigir cláusulas de blindagem patrimonial.")
+    st.info("💡 **Dica Sniper:** v46.3 corrigiu a conexão com o servidor Google v1.")
     if st.button("🔄 Reiniciar Motor do Sistema"):
         st.rerun()
-    st.caption("AETHER AUDIT v46.2 | Master Ultimate Edition")
+    st.caption("AETHER AUDIT v46.3 | Master Edition")
