@@ -17,28 +17,24 @@ st.markdown("""
         background: linear-gradient(90deg, #00c6ff 0%, #0072ff 100%); 
         color: white; border-radius: 8px; font-weight: bold; height: 3.5em; 
     }
-    .report-card { padding: 25px; border-radius: 12px; background-color: #1a1c24; border: 1px solid #2d2f39; color: #e0e0e0; }
+    .report-card { padding: 25px; border-radius: 12px; background-color: #1a1c24; border: 1px solid #2d2f39; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- CONEXÃO BLINDADA COM RESET DE VERSÃO ---
+# --- CONEXÃO BLINDADA (CORREÇÃO ANALÍTICA v36.1) ---
 try:
-    if "GOOGLE_API_KEY" not in st.secrets:
-        st.error("Chave API não encontrada nos Secrets!")
-    else:
-        # Forçamos a configuração global a ignorar betas
-        genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-        
-        # PROTOCOLO DE LIMPEZA: Criamos o modelo chamando explicitamente a versão de produção
-        model = genai.GenerativeModel(
-            model_name='models/gemini-1.5-flash', # Caminho completo de produção
-        )
+    API_KEY = st.secrets["GOOGLE_API_KEY"]
+    genai.configure(api_key=API_KEY)
+    
+    # Em vez de listar modelos (que gera o erro 404), usamos o identificador 
+    # direto de produção que é garantido pelo Google para o Gemini 1.5 Flash.
+    model = genai.GenerativeModel('gemini-1.5-flash')
 except Exception as e:
-    st.error(f"Erro de Configuração: {e}")
+    st.error(f"📡 Rede Aether: Sincronizando conexão segura... {e}")
 
-def preparar_download(texto, titulo):
+def preparar_download(texto):
     doc = Document()
-    doc.add_heading(titulo, 0)
+    doc.add_heading('AETHER AUDIT - RELATÓRIO EXECUTIVO', 0)
     for linha in texto.split('\n'):
         if linha.strip(): doc.add_paragraph(linha)
     buffer = io.BytesIO()
@@ -47,61 +43,51 @@ def preparar_download(texto, titulo):
     return buffer
 
 # --- INTERFACE ---
-st.title("🛡️ AETHER AUDIT ENTERPRISE v45.4")
-st.markdown("##### *Standard for High-Frequency Auditing & Global Intelligence*")
+st.title("🛡️ AETHER AUDIT ENTERPRISE")
+st.markdown("##### *Standard for High-Frequency Auditing & Global Compliance*")
 
 col1, col2 = st.columns(2)
 
 with col1:
     st.subheader("📂 Ingestão de Dados")
-    arquivo = st.file_uploader("Upload de Evidências", type=["pdf", "png", "jpg", "jpeg", "xlsx", "csv"])
+    arquivo = st.file_uploader("Upload de Evidências (PDF, Imagem, Excel, TXT)", type=["txt", "pdf", "png", "jpg", "jpeg", "xlsx", "csv"])
     st.divider()
-    
-    st.markdown("### ⚙️ Sniper Config")
     st.toggle("Extração Inteligente de Tabelas", value=True)
     st.toggle("Score de Risco Automático", value=True)
-    st.toggle("Detecção de Anomalias (Assinaturas/Forense)", value=True)
-    st.toggle("Cruzamento SPED/XML", value=False)
 
 with col2:
     st.subheader("🔍 Central de Inteligência")
-    tipo_saida = st.selectbox("🎯 Ação Pós-Auditoria (Filtro)", [
-        "Apenas Relatório de Auditoria", 
-        "Auditoria + Gerar Contrato Corrigido", 
-        "Auditoria + Gerar Petição/Processo",
-        "Análise Grafotécnica (Assinaturas)"
-    ])
-    
-    pergunta = st.text_area("Instrução para a IA:", placeholder="Ex: Analise este documento...", height=150)
+    pergunta = st.text_area("O que o sistema deve analisar ou auditar?", placeholder="Digite aqui...", height=150)
     
     if st.button("🚀 EXECUTAR VARREDURA GLOBAL"):
         if pergunta:
-            with st.spinner("Conectando ao Arsenal Aether..."):
+            with st.spinner("Aether está processando na nuvem..."):
                 try:
                     conteudo_extra = ""
                     if arquivo and arquivo.name.endswith(('.xlsx', '.csv')):
                         df = pd.read_excel(arquivo) if arquivo.name.endswith('.xlsx') else pd.read_csv(arquivo)
                         conteudo_extra = f"\n\nDADOS DA PLANILHA:\n{df.to_string()}"
 
-                    prompt_final = f"Atue como AUDITOR SUPREMO e ADVOGADO SÊNIOR. MISSÃO: {tipo_saida}. Instrução: {pergunta} {conteudo_extra}."
+                    prompt_final = f"Atue como o sistema AETHER AUDIT. Instrução: {pergunta} {conteudo_extra}. Use lógica de Big Four, cite leis brasileiras e dê o veredito."
                     
                     if arquivo and arquivo.type.startswith("image"):
                         response = model.generate_content([prompt_final, Image.open(arquivo)])
                     else:
                         response = model.generate_content(prompt_final)
                     
-                    st.success("Análise Concluída!")
+                    st.success("Auditoria Concluída!")
                     tab1, tab2 = st.tabs(["📝 Relatório Inteligente", "📥 Exportar"])
                     with tab1:
                         st.markdown(f"<div class='report-card'>{response.text}</div>", unsafe_allow_html=True)
                     with tab2:
-                        st.download_button("📥 BAIXAR DOCUMENTO (.DOCX)", preparar_download(response.text, tipo_saida), "aether_result.docx")
+                        st.download_button("📥 BAIXAR RELATÓRIO (.DOCX)", preparar_download(response.text), "aether_report.docx")
                 except Exception as e:
-                    st.error(f"Erro Crítico: {e}")
+                    # Melhoria no feedback de erro para o usuário
+                    st.error(f"Erro na Rede Aether: {e}. Verifique se o Google Tradutor está desligado.")
         else:
-            st.warning("Aguardando comando.")
+            st.warning("Insira uma pergunta.")
 
 with st.sidebar:
-    if st.button("🔄 Reiniciar Motor"):
+    if st.button("🔄 Reiniciar Motor do Sistema"):
         st.rerun()
-    st.caption("AETHER AUDIT v45.4 | Master Edition")
+    st.caption("AETHER AUDIT v36.1 | Global Enterprise Edition")
