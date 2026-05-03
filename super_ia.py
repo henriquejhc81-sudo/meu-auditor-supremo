@@ -22,14 +22,16 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- CONEXÃO BLINDADA (SIMPLIFICADA PARA EVITAR ERROS) ---
+# --- CONEXÃO BLINDADA (CORREÇÃO ANALÍTICA v46.5) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
-    # Forma mais direta e compatível de chamar o modelo
+    
+    # CORREÇÃO: Em vez de deixar o sistema buscar o modelo (que gera o erro 404),
+    # definimos manualmente a rota de produção estável 'gemini-1.5-flash'.
     model = genai.GenerativeModel('gemini-1.5-flash')
 except Exception as e:
-    st.error(f"📡 Rede Aether: Sincronizando conexão...")
+    st.error(f"📡 Rede Aether: Sincronizando conexão segura... {e}")
 
 def preparar_download(texto, titulo):
     doc = Document()
@@ -98,11 +100,11 @@ with col2:
                     with tab2:
                         st.download_button(f"📥 BAIXAR {tipo_saida.upper()}", preparar_download(response.text, tipo_saida), "aether_result.docx")
                 except Exception as e:
-                    st.error(f"Erro Crítico: {e}. Desligue o tradutor e reinicie o motor.")
+                    st.error(f"Erro Crítico: {e}. Se persistir, realize um Reboot app no painel Streamlit.")
         else:
             st.warning("Insira uma instrução.")
 
 with st.sidebar:
     if st.button("🔄 Reiniciar Motor do Sistema"):
         st.rerun()
-    st.caption("AETHER AUDIT v46.4 | Master Edition")
+    st.caption("AETHER AUDIT v46.5 | Master Edition")
