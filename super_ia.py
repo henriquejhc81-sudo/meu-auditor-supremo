@@ -6,8 +6,8 @@ import pandas as pd
 import io
 import time
 
-# --- DESIGN PREMIUM REFINADO (INTER FONT & DARK MODE) ---
-st.set_page_config(page_title="AETHER OMNI MASTER", layout="wide", page_icon="🛡️")
+# --- DESIGN PREMIUM INTERNACIONAL ---
+st.set_page_config(page_title="AETHER OMNI", layout="wide", page_icon="🛡️")
 
 st.markdown("""
     <style>
@@ -16,10 +16,10 @@ st.markdown("""
     .main { background-color: #0e1117; color: #ffffff; }
     .stButton>button { 
         width: 100%; background: linear-gradient(90deg, #00c6ff 0%, #0072ff 100%); 
-        color: white; border-radius: 12px; font-weight: bold; height: 3.8em; border: none;
+        color: white; border-radius: 12px; font-weight: bold; height: 3.5em; border: none;
     }
-    .report-card { padding: 30px; border-radius: 18px; background-color: #1a1c24; border: 1px solid #2d2f39; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-    .suggestion-box { padding: 15px; background: #262730; border-radius: 12px; border-left: 5px solid #00c6ff; margin-bottom: 15px; font-size: 0.9em; }
+    .report-card { padding: 30px; border-radius: 18px; background-color: #1a1c24; border: 1px solid #2d2f39; color: #e0e0e0; }
+    .suggestion-card { background: #262730; padding: 15px; border-radius: 10px; border-left: 4px solid #00c6ff; margin-bottom: 10px; font-size: 0.9em; cursor: pointer; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -27,14 +27,14 @@ st.markdown("""
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
-    # Conexão via porta estável de produção
+    # AJUSTE MESTRE: Usamos gemini-1.5-flash na porta de produção estável v1
     model = genai.GenerativeModel('gemini-1.5-flash')
 except:
-    st.error("🔄 Conexão instável. Reinicie o motor na lateral.")
+    st.error("🔄 Sincronizando conexão estável para amanhã...")
 
-def preparar_docx(texto):
+def preparar_download(texto):
     doc = Document()
-    doc.add_heading('AETHER OMNI - RELATÓRIO DE INTELIGÊNCIA MASTER', 0)
+    doc.add_heading('AETHER OMNI - RELATÓRIO DE INTELIGÊNCIA', 0)
     for linha in texto.split('\n'):
         if linha.strip(): doc.add_paragraph(linha)
     buffer = io.BytesIO()
@@ -42,13 +42,15 @@ def preparar_docx(texto):
     buffer.seek(0)
     return buffer
 
-# --- SIDEBAR (ARSENAL SNIPER COMPLETO) ---
+# --- PAINEL LATERAL (ARSENAL SNIPER) ---
 with st.sidebar:
     st.title("🛡️ Aether Omni")
     agente = st.selectbox("🎯 Agente Especialista", ["Auditor Geral", "Trabalhista", "Imobiliário", "Tributário", "LGPD"])
     
     st.divider()
-    with st.expander("📂 Biblioteca de Perguntas", expanded=False):
+    ativar_biblioteca = st.toggle("📂 Biblioteca de Perguntas", value=False)
+    if ativar_biblioteca:
+        st.subheader("📋 Sugestões (Copie e Cole)")
         opcoes = {
             "Auditor Geral": ["Analise riscos contratuais e financeiros.", "Verifique cláusulas abusivas ou ambíguas."],
             "Trabalhista": ["Valide multas rescisórias conforme a CLT.", "Verifique riscos de vínculo empregatício."],
@@ -57,69 +59,39 @@ with st.sidebar:
             "LGPD": ["Verifique se o tratamento de dados cumpre a lei.", "Analise a política de retenção de dados."]
         }
         for item in opcoes.get(agente, []):
-            st.caption(f"💡 {item}")
+            st.markdown(f"<div class='suggestion-card'>{item}</div>", unsafe_allow_html=True)
 
     st.divider()
-    st.subheader("📂 Ingestão de Dados")
-    arquivos = st.file_uploader("Upload de Evidências (PDF, Excel, Imagens)", type=["txt", "pdf", "png", "jpg", "jpeg", "xlsx", "csv"], accept_multiple_files=True)
-    
-    st.divider()
-    st.subheader("⚙️ Parâmetros Sniper")
-    checklist = st.toggle("Checklist de Compliance", value=True)
-    score = st.toggle("Score de Risco Automático (%)", value=True)
-    cruzamento = st.toggle("Cruzamento de Dados (Cross-check)", value=True)
-    
+    arquivos = st.file_uploader("Upload de Evidências", type=["pdf", "png", "jpg", "jpeg", "xlsx", "csv"], accept_multiple_files=True)
     if st.button("🔄 Reiniciar Motor"):
         st.rerun()
 
-# --- CENTRAL OMNI MASTER ---
+# --- CENTRAL OMNI ---
 st.title("🛡️ AETHER OMNI ENTERPRISE")
-st.caption(f"Agente: **{agente}** | Status: **Operacional** | Versão Estável v1")
-
-# Sugestões rápidas visuais
-c1, c2, c3 = st.columns(3)
-with c1: st.caption("💡 *Analise riscos trabalhistas*")
-with c2: st.caption("💡 *Verifique cláusulas de LGPD*")
-with c3: st.caption("💡 *Compare planilhas e contratos*")
+st.caption(f"Operando como: **{agente}** | Conexão Estável v1")
 
 pergunta = st.text_area("O que o sistema deve analisar ou auditar?", placeholder="Digite sua instrução...", height=150)
 
-if st.button("🚀 INICIAR VARREDURA GLOBAL OMNI"):
+if st.button("🚀 INICIAR VARREDURA OMNI"):
     if pergunta:
-        with st.spinner(f"O {agente} está processando as evidências..."):
+        with st.spinner(f"O {agente} está varrendo as evidências..."):
             try:
                 time.sleep(1)
-                contexto_total = ""
+                contexto_extra = ""
                 if arquivos:
                     for arq in arquivos:
                         if arq.name.endswith(('.xlsx', '.csv')):
                             df = pd.read_excel(arq) if arq.name.endswith('.xlsx') else pd.read_csv(arq)
-                            contexto_total += f"\n\nDADOS DO ARQUIVO {arq.name}:\n{df.to_string()}"
+                            contexto_extra += f"\n\nDADOS DO ARQUIVO {arq.name}:\n{df.to_string()}"
 
-                prompt_master = f"""
-                Atue como um {agente} Sênior (Nível Big Four). 
-                Instrução: {pergunta}
-                Contexto Adicional: {contexto_total}
+                prompt_final = f"Atue como {agente} Sênior. Analise: {pergunta} {contexto_extra}. Dê o Score de Risco e Checklist de Compliance."
+                response = model.generate_content(prompt_final)
                 
-                REQUISITOS OBRIGATÓRIOS:
-                1. 📝 RESUMO EXECUTIVO DA MISSÃO.
-                2. ✅ CHECKLIST DE COMPLIANCE: {checklist}.
-                3. 📊 SCORE DE RISCO (0-100%): {score}.
-                4. ⚖️ SUGESTÃO DE REDAÇÃO JURÍDICA/CORREÇÃO.
-                Use linguagem técnica e cite leis brasileiras vigentes.
-                """
-                
-                response = model.generate_content(prompt_master)
-                
-                st.markdown("### 📝 Resultado da Auditoria")
+                st.success("Análise Concluída!")
                 st.markdown(f"<div class='report-card'>{response.text}</div>", unsafe_allow_html=True)
-                
-                st.divider()
-                st.download_button("📥 Exportar Relatório Master (.DOCX)", preparar_download(response.text), "aether_report_master.docx")
+                st.download_button("📥 BAIXAR RELATÓRIO WORD", preparar_download(response.text), "aether_report.docx")
                 st.balloons()
             except Exception as e:
-                st.error(f"📡 Erro de Rede Omni: {e}. Desative o tradutor do navegador.")
+                st.error(f"Erro técnico: {e}. O motor será recalibrado.")
     else:
-        st.warning("Aguardando instrução do auditor.")
-
-st.sidebar.caption("v41.0 | Enterprise Master Edition")
+        st.warning("Insira uma instrução.")
