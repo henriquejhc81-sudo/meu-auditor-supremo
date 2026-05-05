@@ -6,15 +6,8 @@ import pandas as pd
 import io
 import time
 
-# Carrega o ícone que você acabou de subir
-img = Image.open("logo.png")
-
 # --- UI REVOLUTION (ESTÉTICA DE ALTA PERFORMANCE) ---
-st.set_page_config(
-    page_title="AETHER OMNI | Intelligence", 
-    layout="wide", 
-    page_icon=img
-)
+st.set_page_config(page_title="AETHER OMNI | Intelligence", layout="wide", page_icon="🛡️")
 
 if 'historico' not in st.session_state:
     st.session_state['historico'] = []
@@ -196,4 +189,3 @@ with area_comando:
                     st.error(f"🚨 Falha de Sincronização: {e}")
         else:
             st.warning("Aguardando entrada de dados para iniciar varredura.")
-```
