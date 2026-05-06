@@ -13,10 +13,10 @@ except ImportError:
     BIBLIOTECAS_OK = False
 
 # --- UI REVOLUTION & DESIGN PREMIUM ---
-st.set_page_config(page_title="AETHER OMNI MASTER v74.0", layout="wide", page_icon="🛡️")
+st.set_page_config(page_title="AETHER OMNI MASTER v75.0", layout="wide", page_icon="🛡️")
 
 if not BIBLIOTECAS_OK:
-    st.error("🚨 Erro Crítico: Dependências ausentes (google-generativeai, python-docx).")
+    st.error("🚨 Erro Crítico: Dependências ausentes no servidor. Verifique o requirements.txt.")
     st.stop()
 
 st.markdown("""
@@ -36,38 +36,44 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- FUNÇÃO DE AUTO CURA (HEALER ENGINE) ---
+# --- FUNÇÃO DE AUTO-EVOLUÇÃO (EVOLUTION ENGINE) ---
 @st.cache_resource
-def inicializar_motor_healer(api_key):
-    """Tenta múltiplos caminhos de conexão para curar erros de rota 404."""
+def engine_auto_evolutiva(api_key):
+    """Monitora erros e troca de IA/Protocolo automaticamente até estabilizar."""
     genai.configure(api_key=api_key)
     
-    # Lista de modelos e rotas para tentativa de cura
-    estrategias = [
-        {"name": "gemini-1.5-flash", "version": "v1"},
-        {"name": "models/gemini-1.5-flash", "version": "v1"},
-        {"name": "gemini-1.5-pro", "version": "v1"},
-        {"name": "gemini-pro", "version": "v1"}
+    # Lista priorizada de Modelos (Evolução Automática)
+    mapa_inteligencia = [
+        "gemini-1.5-flash",
+        "gemini-1.5-pro",
+        "gemini-pro",
+        "models/gemini-1.5-flash",
+        "models/gemini-pro"
     ]
     
-    for est in estrategias:
+    for modelo_nome in mapa_inteligencia:
         try:
-            m = genai.GenerativeModel(model_name=est["name"])
-            # Teste de pulso
-            m.generate_content("pulse", generation_config={"max_output_tokens": 1})
-            return m, est["name"]
-        except:
-            continue
+            m = genai.GenerativeModel(model_name=modelo_nome)
+            # Teste de sobrevivência (Ping Neural)
+            m.generate_content("ok", generation_config={"max_output_tokens": 1})
+            return m, modelo_nome
+        except Exception:
+            continue # Tenta a próxima IA da lista se a atual falhar
+            
+    # Última tentativa: Busca dinâmica na API por qualquer modelo vivo
+    try:
+        modelos_vivos = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+        if modelos_vivos:
+            m_emergencia = genai.GenerativeModel(modelos_vivos[0])
+            return m_emergencia, f"Emergência: {modelos_vivos[0]}"
+    except:
+        pass
+        
     return None, None
 
-# --- EXECUÇÃO DO MOTOR ---
+# --- ATIVAÇÃO DO MOTOR COM LOG DE STATUS ---
 api_key = st.secrets.get("GOOGLE_API_KEY")
-model, model_ativo = inicializar_motor_healer(api_key) if api_key else (None, None)
-
-if model:
-    st.sidebar.success(f"💉 Sistema Auto-Curado: {model_ativo}")
-else:
-    st.error("📡 Falha Crítica: O motor não conseguiu se auto-curar. Verifique a API Key.")
+model, model_id = engine_auto_evolutiva(api_key) if api_key else (None, None)
 
 def preparar_exportacao(texto):
     doc = Document()
@@ -79,19 +85,24 @@ def preparar_exportacao(texto):
     buffer.seek(0)
     return buffer
 
-# --- SIDEBAR (ARSENAL SNIPER) ---
+# --- SIDEBAR (CONTROLE DE INTELIGÊNCIA) ---
 with st.sidebar:
     st.title("🛡️ Aether Omni")
-    st.caption("v74.0 | Healer & Neural Engine")
-    agente = st.selectbox("🎯 Agente Especialista", ["Auditor Geral", "Compliance Federal", "Trabalhista", "Tributário"])
+    st.caption("v75.0 | Auto-Evolution Mode")
     
+    if model:
+        st.success(f"🔋 IA ATIVA: {model_id}")
+    else:
+        st.error("🚨 ERRO DE CHAVE: A API não autorizou a conexão.")
+        st.info("Verifique se sua chave no Streamlit Secrets está correta.")
+
+    agente = st.selectbox("🎯 Agente Especialista", ["Auditor Geral", "Compliance Federal", "Trabalhista", "Tributário"])
     st.divider()
     st.subheader("⚙️ Parâmetros Sniper")
-    checklist = st.toggle("Checklist de Compliance", value=True)
+    auto_evolve = st.toggle("Evolução Automática (IA)", value=True)
     score = st.toggle("Score de Risco (%)", value=True)
-    auto_cura = st.toggle("Ativar Auto-Cura (Healer)", value=True)
     
-    if st.button("🔄 Reiniciar e Curar"):
+    if st.button("🔄 FORÇAR AUTO-EVOLUÇÃO"):
         st.cache_resource.clear()
         st.rerun()
 
@@ -103,12 +114,12 @@ col_input, col_output = st.columns([1, 1.3], gap="large")
 with col_input:
     pergunta = st.text_area("Instruções Diretas (Sniper Prompt):", placeholder="Digite o comando...", height=250)
     arquivos = st.file_uploader("Upload de Ativos", type=["pdf", "png", "jpg", "jpeg", "xlsx", "csv"], accept_multiple_files=True)
-    acao = st.selectbox("Comportamento Neural:", ["Auditoria de Erros & Conclusão Mestra", "Detecção de Anomalias (Deep Learning)", "Blindagem Jurídica (LINDB)"])
+    acao = st.selectbox("Comportamento Neural:", ["Auditoria & Conclusão Mestra", "Detecção de Anomalias", "Blindagem LINDB"])
 
 with col_output:
     if st.button("🚀 INICIAR VARREDURA GLOBAL OMNI"):
         if (pergunta or arquivos) and model:
-            with st.spinner(f"AETHER está processando..."):
+            with st.spinner(f"Processando com {model_id}..."):
                 try:
                     extra_data, imagens = "", []
                     if arquivos:
@@ -120,16 +131,16 @@ with col_output:
 
                     prompt_master = f"Atue como AETHER OMNI ({agente}). MISSÃO: {acao}. INSTRUÇÃO: {pergunta} CONTEXTO: {extra_data}"
                     
-                    # TENTATIVA DE RESPOSTA COM TRATAMENTO DE ERRO EM TEMPO REAL
+                    # Chamada com proteção contra falha em tempo de execução
                     try:
                         response = model.generate_content([prompt_master, *imagens] if imagens else prompt_master)
                         st.markdown(f"<div class='report-card'>{response.text}</div>", unsafe_allow_html=True)
                         st.download_button("📥 Exportar (.DOCX)", preparar_exportacao(response.text), "AETHER_REPORT.docx")
-                    except Exception as e_inner:
-                        st.warning("⚠️ Erro súbito detectado. Iniciando Auto-Cura...")
+                    except:
+                        st.warning("IA falhou no processamento. Tentando Evolução em tempo real...")
                         st.cache_resource.clear()
-                        st.error(f"Erro: {e_inner}. Por favor, tente clicar no botão novamente.")
+                        st.rerun()
                 except Exception as e:
-                    st.error(f"Erro fatal: {e}")
+                    st.error(f"Erro Crítico: {e}")
         else:
-            st.warning("Aguardando entrada de dados.")
+            st.warning("Aguardando entrada ou conexão com a API.")
