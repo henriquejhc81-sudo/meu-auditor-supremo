@@ -13,7 +13,7 @@ except ImportError:
     BIBLIOTECAS_OK = False
 
 # --- UI REVOLUTION & DESIGN PREMIUM ---
-st.set_page_config(page_title="AETHER OMNI MASTER v71.0", layout="wide", page_icon="🛡️")
+st.set_page_config(page_title="AETHER OMNI MASTER v72.0", layout="wide", page_icon="🛡️")
 
 if not BIBLIOTECAS_OK:
     st.error("🚨 Erro Crítico: Dependências ausentes (google-generativeai, python-docx).")
@@ -37,27 +37,45 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- CONEXÃO COM AUTORRECUPERAÇÃO (FIX 404) ---
+# --- CONEXÃO BLINDADA V3 (AUTO-DIAGNÓSTICO) ---
 api_key = st.secrets.get("GOOGLE_API_KEY")
 model = None
 
 if api_key:
     genai.configure(api_key=api_key)
-    # Lista de modelos por ordem de preferência para fallback
-    modelos_tentativa = ['gemini-1.5-pro-latest', 'gemini-1.5-pro', 'gemini-1.5-flash']
     
+    # Lista de nomes completos para evitar erro 404 de versão
+    modelos_tentativa = [
+        'models/gemini-1.5-pro-latest',
+        'models/gemini-1.5-flash-latest',
+        'models/gemini-1.5-pro',
+        'models/gemini-1.5-flash'
+    ]
+    
+    sucesso_conexao = False
     for m_name in modelos_tentativa:
         try:
-            model = genai.GenerativeModel(m_name)
-            # Teste rápido de conexão
-            model.generate_content("ping", generation_config={"max_output_tokens": 1})
-            st.sidebar.success(f"Motor: {m_name} ATIVO")
+            model_inst = genai.GenerativeModel(m_name)
+            # Teste de fumaça (smoke test)
+            model_inst.generate_content("ok", generation_config={"max_output_tokens": 1})
+            model = model_inst
+            st.sidebar.success(f"Motor Ativo: {m_name}")
+            sucesso_conexao = True
             break
-        except:
+        except Exception:
             continue
-    
-    if not model:
-        st.error("🚨 Falha total no motor neural. Verifique sua cota da API.")
+            
+    if not sucesso_conexao:
+        st.error("🚨 Falha de rota na API. Tentando mapear modelos disponíveis...")
+        try:
+            available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+            if available_models:
+                model = genai.GenerativeModel(available_models[0])
+                st.sidebar.warning(f"Usando fallback: {available_models[0]}")
+            else:
+                st.error("Nenhum modelo compatível encontrado na sua conta.")
+        except Exception as e:
+            st.error(f"Erro ao listar modelos: {e}")
 else:
     st.error("📡 Chave mestra não detectada nos Secrets.")
 
@@ -74,7 +92,7 @@ def preparar_exportacao(texto):
 # --- SIDEBAR (ARSENAL SNIPER) ---
 with st.sidebar:
     st.title("🛡️ Aether Omni")
-    st.caption("v71.0 | Self-Healing Mode")
+    st.caption("v72.0 | Advanced Connectivity")
     agente = st.selectbox("🎯 Agente Especialista", ["Auditor Geral", "Trabalhista", "Imobiliário", "Tributário", "LGPD", "Compliance Federal"])
     
     st.divider()
@@ -106,7 +124,7 @@ with col_input:
 with col_output:
     if st.button("🚀 INICIAR VARREDURA GLOBAL OMNI"):
         if (pergunta or arquivos) and model:
-            with st.spinner(f"Processando..."):
+            with st.spinner(f"Orquestrando IAs e processando dados..."):
                 try:
                     extra_data, imagens = "", []
                     if arquivos:
@@ -127,8 +145,8 @@ with col_output:
                     response = model.generate_content([prompt_master, *imagens]) if imagens else model.generate_content(prompt_master)
                     st.markdown(f"<div class='report-card'>{response.text}</div>", unsafe_allow_html=True)
                     st.download_button("📥 Exportar (.DOCX)", preparar_exportacao(response.text), "AETHER_REPORT.docx")
+                    st.balloons()
                 except Exception as e:
-                    st.error(f"📡 Tentando autorrecuperação... Erro detectado: {e}")
-                    # Lógica de Retry Automático poderia ser expandida aqui
+                    st.error(f"📡 Erro Crítico de Execução: {e}")
         else:
-            st.warning("Verifique a entrada e a conexão.")
+            st.warning("Verifique a entrada e se o motor lateral está verde.")
