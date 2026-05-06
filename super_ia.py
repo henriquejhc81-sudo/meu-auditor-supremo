@@ -16,7 +16,7 @@ except ImportError:
 st.set_page_config(page_title="AETHER OMNI | Intelligence", layout="wide", page_icon="🛡️")
 
 if not BIBLIOTECAS_OK:
-    st.error("🚨 Erro de Dependências: Certifique-se de que o arquivo 'requirements.txt' contém 'google-generativeai' e 'python-docx'.")
+    st.error("🚨 Erro de Dependências: O arquivo 'requirements.txt' precisa conter 'google-generativeai' e 'python-docx'.")
     st.stop()
 
 if 'historico' not in st.session_state:
@@ -27,15 +27,11 @@ if 'show_history' not in st.session_state:
 st.markdown("""
     <style>
     @import url('https://googleapis.com');
-    
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
-    
     html, body, [class*="css"] { font-family: 'Inter', sans-serif; background-color: #080a0d; }
     .main { background: radial-gradient(circle at top right, #0d1117, #080a0d); color: #e1e1e1; }
-
-    /* Cards de Relatório - Efeito Glassmorphism */
     .report-card { 
         padding: 40px; border-radius: 20px; 
         background: rgba(22, 25, 32, 0.7); 
@@ -44,8 +40,6 @@ st.markdown("""
         box-shadow: 0 20px 40px rgba(0,0,0,0.4);
         backdrop-filter: blur(10px);
     }
-    
-    /* Botões Futuristas */
     .stButton>button { 
         width: 100%; 
         background: linear-gradient(135deg, #1e2128 0%, #11141b 100%); 
@@ -58,8 +52,6 @@ st.markdown("""
         box-shadow: 0 0 20px rgba(0, 198, 255, 0.4);
         transform: translateY(-2px);
     }
-
-    /* Sidebar Refinada */
     .history-card { 
         background: rgba(30, 33, 40, 0.5); 
         padding: 15px; border-radius: 10px; 
@@ -70,19 +62,18 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- CONEXÃO BLINDADA COM FALLBACK ---
-try:
-    if "GOOGLE_API_KEY" in st.secrets:
-        genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-        try:
-            model_list = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-            model = genai.GenerativeModel(model_list[0] if model_list else 'gemini-1.5-flash')
-        except:
-            model = genai.GenerativeModel('gemini-1.5-flash')
-    else:
-        st.error("📡 Chave mestra não detectada nos Secrets.")
-except Exception as e:
-    st.error(f"📡 Erro Crítico: {e}")
+# --- CONEXÃO BLINDADA COM CORREÇÃO DE LEITURA ---
+api_key = st.secrets.get("GOOGLE_API_KEY")
+
+if api_key:
+    genai.configure(api_key=api_key)
+    try:
+        model_list = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+        model = genai.GenerativeModel(model_list[0] if model_list else 'gemini-1.5-flash')
+    except Exception as e:
+        model = genai.GenerativeModel('gemini-1.5-flash')
+else:
+    st.error("📡 Chave mestra não detectada nos Secrets. Verifique as configurações do Streamlit Cloud.")
 
 def preparar_docx(lista_resultados, unico=True):
     doc = Document()
@@ -105,10 +96,8 @@ def preparar_docx(lista_resultados, unico=True):
 with st.sidebar:
     st.markdown("### 🛡️ AETHER OMNI")
     st.caption("Intelligence & Compliance System")
-    
     if st.button("📜 HISTÓRICO DE MISSÕES"):
         st.session_state['show_history'] = not st.session_state['show_history']
-
     if st.session_state['show_history']:
         if st.session_state['historico']:
             for item in st.session_state['historico']:
@@ -116,14 +105,12 @@ with st.sidebar:
             st.download_button("📥 EXPORTAR HISTÓRICO", preparar_docx(st.session_state['historico'], unico=False), "omni_history.docx")
         else:
             st.caption("Sem registros.")
-
     st.divider()
     st.subheader("🛠️ Parâmetros Sniper")
     st.toggle("OCR Inteligente", value=True)
     st.toggle("Risco Provisório", value=True)
     st.toggle("Análise Forense", value=True)
     st.toggle("Blindagem LINDB/Gestor", value=True)
-    
     st.divider()
     with st.expander("⚙️ Sistema"):
         if st.button("RESET MOTOR"):
@@ -139,80 +126,44 @@ area_trabalho, area_comando = st.columns([1, 1.3], gap="large")
 
 with area_trabalho:
     st.subheader("📂 Ingestão de Ativos")
-    arquivos = st.file_uploader("Arraste evidências para análise", type=["pdf", "png", "jpg", "jpeg", "xlsx", "csv"], accept_multiple_files=True)
-    
+    arquivos = st.file_uploader("Arraste evidências", type=["pdf", "png", "jpg", "jpeg", "xlsx", "csv"], accept_multiple_files=True)
     st.divider()
     st.subheader("⚡ Ação Imediata")
     acao_filtro = st.selectbox("Comportamento Neural:", [
-        "Auditoria Técnica",
-        "Geração de Contrato Corrigido",
-        "Geração de Petição Corrigida",
-        "Geração de Dossiê de Blindagem (Gestor)",
-        "Análise de Integridade (Anticorrupção)"
+        "Auditoria Técnica", "Geração de Contrato Corrigido", "Geração de Petição Corrigida",
+        "Geração de Dossiê de Blindagem (Gestor)", "Análise de Integridade (Anticorrupção)"
     ])
 
 with area_comando:
     st.subheader("🔍 Centro de Comando")
     tipo_missao = st.selectbox("Estratégia de Varredura:", [
-        "Auditoria Geral", 
-        "Auditar Processo Judicial", 
-        "Auditar Contrato",
-        "Análise Grafotécnica de Assinaturas",
-        "Geração Documental Técnica",
-        "Jurisprudência Preditiva (TCU/STF)",
-        "Compliance Portaria CGU 226/2025"
+        "Auditoria Geral", "Auditar Processo Judicial", "Auditar Contrato",
+        "Análise Grafotécnica de Assinaturas", "Geração Documental Técnica",
+        "Jurisprudência Preditiva (TCU/STF)", "Compliance Portaria CGU 226/2025"
     ])
-    
-    pergunta = st.text_area("Instruções Diretas (Sniper Prompt):", placeholder="Ex: Analise o anexo e aplique as correções do filtro lateral...", height=180)
+    pergunta = st.text_area("Instruções Diretas (Sniper Prompt):", height=180)
     
     if st.button("🚀 INICIAR VARREDURA GLOBAL OMNI"):
-        if pergunta or arquivos:
+        if (pergunta or arquivos) and api_key:
             with st.spinner("Processando..."):
                 try:
-                    conteudo_extra = ""
-                    imagens = []
-                    nome_fonte = "Input Manual"
-                    
+                    conteudo_extra, imagens, nome_fonte = "", [], "Input Manual"
                     if arquivos:
-                        # Verificação se arquivos é uma lista ou objeto único
-                        if isinstance(arquivos, list):
-                            primeiro_nome = arquivos[0].name
-                            nome_fonte = f"{primeiro_nome} (+{len(arquivos)-1})" if len(arquivos) > 1 else primeiro_nome
-                            
-                            for arq in arquivos:
-                                if arq.type.startswith("image"):
-                                    imagens.append(Image.open(arq))
-                                elif arq.name.endswith(('.xlsx', '.csv')):
-                                    df = pd.read_excel(arq) if arq.name.endswith('.xlsx') else pd.read_csv(arq)
-                                    conteudo_extra += f"\n\nDATASET {arq.name}:\n{df.to_string()}"
-                        else:
-                            nome_fonte = arquivos.name
-                            if arquivos.type.startswith("image"):
-                                imagens.append(Image.open(arquivos))
-
-                    prompt_final = f"""
-                    Atue como o sistema AETHER OMNI (Auditor Forense e Especialista em Compliance Sênior).
-                    MISSÃO: {tipo_missao}. AÇÃO: {acao_filtro}.
+                        nome_fonte = arquivos[0].name if isinstance(arquivos, list) else arquivos.name
+                        for arq in (arquivos if isinstance(arquivos, list) else [arquivos]):
+                            if arq.type.startswith("image"): imagens.append(Image.open(arq))
+                            elif arq.name.endswith(('.xlsx', '.csv')):
+                                df = pd.read_excel(arq) if arq.name.endswith('.xlsx') else pd.read_csv(arq)
+                                conteudo_extra += f"\n\nDATASET {arq.name}:\n{df.to_string()}"
                     
-                    DIRETRIZES DE ALTA PERFORMANCE (EVOLUÇÃO):
-                    1. Se a ação envolver 'Blindagem', utilize rigorosamente o Art. 22 da LINDB para justificar decisões e mitigar riscos pessoais do gestor.
-                    2. Se a missão envolver 'Integridade/CGU', avalie prazos e critérios da Portaria CGU 226/2025 e Lei 14.133/21.
-                    3. Se envolver 'Jurisprudência Preditiva', compare teses do Judiciário vs. Acórdãos do TCU para identificar zonas de tensão.
-                    
-                    DADOS: {pergunta} {conteudo_extra}
-                    ESTRUTURA: Diagnóstico -> Parecer Forense -> Veredito Técnico -> Matriz de Blindagem Jurídica.
-                    NOTA FINAL: 'Este relatório é um parecer técnico gerado por IA para auxílio na tomada de decisão, não substituindo a consultoria jurídica ou contábil individualizada.'
-                    """
-                    
+                    prompt_final = f"Atue como AETHER OMNI. MISSÃO: {tipo_missao}. AÇÃO: {acao_filtro}. DADOS: {pergunta} {conteudo_extra}"
                     response = model.generate_content([prompt_final, *imagens]) if imagens else model.generate_content(prompt_final)
                     
                     st.session_state['historico'].insert(0, {"titulo": tipo_missao, "fonte": nome_fonte, "texto": response.text})
-                    
                     st.markdown("### 📝 PARECER OMNI")
                     t1, t2 = st.tabs(["📄 Relatório Executivo", "💾 Safebox"])
                     with t1: st.markdown(f"<div class='report-card'>{response.text}</div>", unsafe_allow_html=True)
-                    with t2: st.download_button("📥 BAIXAR PARECER (.DOCX)", preparar_docx(response.text, unico=True), f"AETHER_{nome_fonte}.docx")
-                except Exception as e:
-                    st.error(f"Falha na Varredura: {e}")
+                    with t2: st.download_button("📥 BAIXAR PARECER", preparar_docx(response.text), f"AETHER_{nome_fonte}.docx")
+                except Exception as e: st.error(f"Falha: {e}")
         else:
-            st.warning("Aguardando Sniper Prompt ou Ativos para iniciar.")
+            st.warning("Verifique a Chave API e as instruções.")
