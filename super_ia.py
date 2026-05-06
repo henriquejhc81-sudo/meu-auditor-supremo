@@ -5,6 +5,11 @@ from PIL import Image
 import pandas as pd
 import io
 import time
+import os
+import logging
+
+# Configuração de logging
+logging.basicConfig(filename='logs/app.log', level=logging.INFO)
 
 # --- UI REVOLUTION (ESTÉTICA DE ALTA PERFORMANCE) ---
 st.set_page_config(page_title="AETHER OMNI | Intelligence", layout="wide", page_icon="🛡️")
@@ -17,11 +22,11 @@ if 'show_history' not in st.session_state:
 st.markdown("""
     <style>
     @import url('https://googleapis.com');
-    
+
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
-    
+
     html, body, [class*="css"] { font-family: 'Inter', sans-serif; background-color: #080a0d; }
     .main { background: radial-gradient(circle at top right, #0d1117, #080a0d); color: #e1e1e1; }
 
@@ -34,7 +39,7 @@ st.markdown("""
         box-shadow: 0 20px 40px rgba(0,0,0,0.4);
         backdrop-filter: blur(10px);
     }
-    
+
     /* Botões Futuristas */
     .stButton>button { 
         width: 100%; 
@@ -94,7 +99,7 @@ def preparar_docx(lista_resultados, unico=True):
 with st.sidebar:
     st.markdown("### 🛡️ AETHER OMNI")
     st.caption("Intelligence & Compliance System")
-    
+
     if st.button("📜 HISTÓRICO DE MISSÕES"):
         st.session_state['show_history'] = not st.session_state['show_history']
 
@@ -111,7 +116,7 @@ with st.sidebar:
     st.toggle("OCR Inteligente", value=True)
     st.toggle("Risco Provisório", value=True)
     st.toggle("Análise Forense", value=True)
-    
+
     st.divider()
     with st.expander("⚙️ Sistema"):
         if st.button("RESET MOTOR"):
@@ -128,7 +133,7 @@ area_trabalho, area_comando = st.columns([1, 1.3], gap="large")
 with area_trabalho:
     st.subheader("📂 Ingestão de Ativos")
     arquivos = st.file_uploader("Arraste evidências para análise", type=["pdf", "png", "jpg", "jpeg", "xlsx", "csv"], accept_multiple_files=True)
-    
+
     st.divider()
     st.subheader("⚡ Ação Imediata")
     acao_filtro = st.selectbox("Comportamento Neural:", [
@@ -146,9 +151,9 @@ with area_comando:
         "Análise Grafotécnica de Assinaturas",
         "Geração Documental Técnica"
     ])
-    
+
     pergunta = st.text_area("Instruções Diretas (Sniper Prompt):", placeholder="Ex: Analise o anexo e aplique as correções do filtro lateral...", height=180)
-    
+
     if st.button("🚀 INICIAR VARREDURA GLOBAL OMNI"):
         if pergunta or arquivos:
             with st.spinner("Processando..."):
@@ -156,12 +161,12 @@ with area_comando:
                     conteudo_extra = ""
                     imagens = []
                     nome_fonte = "Input Manual"
-                    
+
                     if arquivos:
                         # Tratamento para múltiplos arquivos
                         primeiro_nome = arquivos[0].name if isinstance(arquivos, list) else arquivos.name
                         nome_fonte = f"{primeiro_nome} (+{len(arquivos)-1})" if len(arquivos) > 1 else primeiro_nome
-                        
+
                         for arq in arquivos:
                             if arq.type.startswith("image"):
                                 imagens.append(Image.open(arq))
@@ -176,16 +181,52 @@ with area_comando:
                     ESTRUTURA: Diagnóstico -> Parecer Forense -> Veredito Técnico.
                     NOTA FINAL: 'Este relatório é um parecer técnico gerado por IA para auxílio na tomada de decisão, não substituindo a consultoria jurídica ou contábil individualizada.'
                     """
-                    
+
                     response = model.generate_content([prompt_final, *imagens]) if imagens else model.generate_content(prompt_final)
-                    
+
                     st.session_state['historico'].insert(0, {"titulo": tipo_missao, "fonte": nome_fonte, "texto": response.text})
-                    
+
                     st.markdown("### 📝 PARECER OMNI")
                     t1, t2 = st.tabs(["📄 Relatório Executivo", "💾 Safebox"])
                     with t1: st.markdown(f"<div class='report-card'>{response.text}</div>", unsafe_allow_html=True)
                     with t2: st.download_button("📥 BAIXAR PARECER (.DOCX)", preparar_docx(response.text, unico=True), f"AETHER_{nome_fonte}.docx")
+
+                    # Salvar arquivo no diretório data
+                    with open(f"data/{nome_fonte}.docx", "wb") as f:
+                        f.write(preparar_docx(response.text, unico=True).read())
+
+                    # Salvar log no diretório logs
+                    logging.info(f"Missão {tipo_missao} realizada com sucesso.")
                 except Exception as e:
                     st.error(f"🚨 Falha de Sincronização: {e}")
+                    logging.error(f"Erro ao realizar missão {tipo_missao}: {e}")
         else:
             st.warning("Aguardando entrada de dados para iniciar varredura.")
+
+# --- MÓDULO DE SEGURANÇA ---
+def verificar_seguranca():
+    # Verificar se o diretório data existe
+    if not os.path.exists("data"):
+        os.makedirs("data")
+
+    # Verificar se o diretório logs existe
+    if not os.path.exists("logs"):
+        os.makedirs("logs")
+
+    # Verificar se o diretório models existe
+    if not os.path.exists("models"):
+        os.makedirs("models")
+
+verificar_seguranca()
+
+# --- GUIA DE SETUP ---
+st.sidebar.write("### Guia de Setup")
+st.sidebar.write("1. Certifique-se de que o diretório data, logs e models existam.")
+st.sidebar.write("2. Configure a chave mestra nos Secrets.")
+st.sidebar.write("3. Inicie a aplicação e faça o upload dos arquivos necessários.")
+
+# --- ESTRUTURA DE PASTAS ---
+st.sidebar.write("### Estrutura de Pastas")
+st.sidebar.write("1. data: diretório para armazenar os arquivos de dados.")
+st.sidebar.write("2. logs: diretório para armazenar os logs da aplicação.")
+st.sidebar.write("3. models: diretório para armazenar os modelos de IA.")
