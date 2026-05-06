@@ -12,83 +12,92 @@ try:
 except ImportError:
     BIBLIOTECAS_OK = False
 
-# --- UI ELITE DESIGN (STEALTH & LOGO INTEGRATION) ---
-st.set_page_config(page_title="AETHER OMNI ELITE v84.0", layout="wide", page_icon="🛡️")
+# --- UI ELITE DESIGN (VIBRANT STEALTH & LOGO INTEGRATION) ---
+st.set_page_config(page_title="AETHER OMNI ELITE v87.0", layout="wide", page_icon="🛡️")
 
 if not BIBLIOTECAS_OK:
     st.error("🚨 Dependências ausentes. Verifique o requirements.txt.")
     st.stop()
 
-# Estilização Suprema: Fundo Matte, Neon Dinâmico e Cards de Vidro
+# Estilização: Fundo Profundo com Iluminação de Contorno e Neon Ativo
 st.markdown("""
     <style>
     @import url('https://googleapis.com');
     
     #MainMenu, footer, header {visibility: hidden;}
     
-    /* Fundo Matte Black Profundo */
-    .stApp { background: linear-gradient(180deg, #020305 0%, #05070a 100%) !important; color: #e1e1e1 !important; }
+    /* Fundo Dark com Gradiente de Iluminação */
+    .stApp { 
+        background: radial-gradient(circle at 50% 0%, #10141b 0%, #05070a 100%) !important; 
+        color: #e1e1e1 !important; 
+    }
     
-    /* Logo e Títulos */
-    .logo-text { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; letter-spacing: -2px; color: #ffffff; margin-bottom: 0px; }
-    p, span, label { color: #64748b !important; font-size: 0.85em; letter-spacing: 0.5px; }
+    /* Logo e Títulos Vibrantes */
+    .logo-text { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; letter-spacing: -1.5px; color: #ffffff; }
+    h2, h3 { color: #ffffff !important; font-family: 'Plus Jakarta Sans', sans-serif; }
+    p, span, label { color: #94a3b8 !important; font-size: 0.9em; font-weight: 500; }
 
-    /* Cards de Métrica (Layout Stealth) */
+    /* Cards de Métrica (Efeito de Brilho Interno) */
     .metric-card { 
-        background: rgba(10, 12, 16, 0.8); 
-        padding: 30px; border-radius: 20px; 
-        border: 1px solid rgba(255, 255, 255, 0.03);
+        background: rgba(15, 23, 42, 0.6); 
+        padding: 25px; border-radius: 18px; 
+        border: 1px solid rgba(0, 198, 255, 0.2);
         text-align: center;
-        backdrop-filter: blur(10px);
-        transition: 0.5s all cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        backdrop-filter: blur(12px);
+        transition: 0.4s all ease-in-out;
     }
     .metric-card:hover { 
         border-color: #00c6ff; 
-        box-shadow: 0 0 30px rgba(0, 198, 255, 0.15); 
-        transform: translateY(-8px);
+        box-shadow: 0 0 25px rgba(0, 198, 255, 0.2);
+        transform: translateY(-5px);
     }
     .metric-card b { 
         color: #00c6ff !important; 
-        font-size: 1.8em; 
+        font-size: 1.7em; 
         font-family: 'JetBrains Mono';
-        text-shadow: 0 0 15px rgba(0, 198, 255, 0.4);
+        text-shadow: 0 0 12px rgba(0, 198, 255, 0.5);
     }
+    .metric-card small { color: #475569; text-transform: uppercase; letter-spacing: 2px; }
 
-    /* Inputs e File Uploader (Glassmorphism Dark) */
+    /* Inputs (Remoção do aspecto 'apagado') */
     .stTextArea textarea { 
-        background-color: rgba(5, 7, 10, 0.8) !important; 
-        border: 1px solid #14181f !important; 
-        color: #f1f5f9 !important;
+        background-color: #0f172a !important; 
+        border: 1px solid #1e293b !important; 
+        color: #f8fafc !important;
         border-radius: 16px !important;
-        padding: 20px !important;
-        transition: 0.4s all;
+        font-size: 1em !important;
     }
-    .stTextArea textarea:focus { border-color: #00c6ff !important; box-shadow: 0 0 20px rgba(0, 198, 255, 0.1) !important; }
+    .stTextArea textarea:focus { border-color: #00c6ff !important; box-shadow: 0 0 15px rgba(0, 198, 255, 0.2) !important; }
 
-    /* Botão de Comando (Premium Gradient Glow) */
+    .stFileUploader section { 
+        background-color: #0f172a !important; 
+        border: 1px dashed #334155 !important; 
+        border-radius: 16px !important;
+    }
+
+    /* Botão de Comando (Power Blue) */
     .stButton>button { 
         width: 100%; background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%) !important; 
-        color: #ffffff !important; 
-        border: none !important; 
-        border-radius: 14px; font-weight: 700;
-        height: 4.2em; transition: 0.4s all;
+        color: #ffffff !important; border: none !important; 
+        border-radius: 12px; font-weight: 700;
+        height: 4em; transition: 0.3s all;
         text-transform: uppercase; letter-spacing: 2px;
-        box-shadow: 0 10px 20px rgba(0, 198, 255, 0.2);
+        box-shadow: 0 10px 20px rgba(0, 198, 255, 0.3);
     }
     .stButton>button:hover { 
-        transform: scale(1.02);
-        box-shadow: 0 20px 40px rgba(0, 198, 255, 0.4);
+        box-shadow: 0 0 30px rgba(0, 198, 255, 0.5);
         filter: brightness(1.1);
+        transform: scale(1.01);
     }
 
-    /* Sidebar Ultra-Dark */
-    [data-testid="stSidebar"] { background-color: #000000 !important; border-right: 1px solid #14181f; }
+    /* Sidebar Refinada */
+    [data-testid="stSidebar"] { background-color: #020617 !important; border-right: 1px solid #1e293b; }
     
-    /* Container do Relatório Final */
+    /* Painel de Resultado (O Parecer Master) */
     .report-card { 
-        padding: 60px; border-radius: 30px; background: #05070a; 
-        border: 1px solid #14181f; box-shadow: 0 50px 100px rgba(0,0,0,0.9);
-        line-height: 2.1; color: #cbd5e1; font-family: 'Plus Jakarta Sans';
+        padding: 40px; border-radius: 20px; background: #0f172a; 
+        border: 1px solid #1e293b; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        line-height: 2; color: #cbd5e1;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -110,38 +119,38 @@ model, model_id = evolution_engine(api_key) if api_key else (None, None)
 
 def export_docx(texto):
     doc = Document()
-    doc.add_heading('AETHER OMNI ELITE REPORT', 0)
+    doc.add_heading('AETHER OMNI MASTER REPORT', 0)
     doc.add_paragraph(texto)
     buffer = io.BytesIO()
     doc.save(buffer)
     buffer.seek(0)
     return buffer
 
-# --- SIDEBAR (CONFIGURAÇÃO E LOGO) ---
+# --- SIDEBAR (LOGO E AGENTE) ---
 with st.sidebar:
-    # --- ESPAÇO PARA O SEU LOGO ---
-    # st.image("caminho/do/seu/logo.png", width=150) # Descomente e coloque o caminho aqui
-    st.markdown("<h1 class='logo-text'>🛡️ AETHER</h1>", unsafe_allow_html=True)
-    st.caption("Intelligence System v84.0")
-    if model: st.success(f"Shield: {model_id}")
+    try:
+        st.image("logo.png.jpeg", use_column_width=True)
+    except:
+        st.markdown("<h1 class='logo-text'>🛡️ AETHER</h1>", unsafe_allow_html=True)
+    
+    st.caption("Intelligence System v87.0")
+    if model: st.success(f"System Online: {model_id}")
     
     st.divider()
-    agente = st.selectbox("🎯 Agent Strategy", ["E-Discovery (Everlaw)", "Due Diligence (Kira)", "Compliance (OneTrust)", "Finance Audit (DataSnipper)"])
+    agente = st.selectbox("🎯 Agent Focus", ["E-Discovery (Everlaw)", "Due Diligence (Kira)", "Compliance (OneTrust)", "Finance Audit (DataSnipper)"])
     st.divider()
-    st.subheader("⚡ Core Modules")
+    st.subheader("⚡ Modules")
     st.toggle("Neural Extraction", value=True)
     st.toggle("Anomalies Detection", value=True)
-    if st.button("🔄 System Reboot"):
+    if st.button("🔄 Reset Engine"):
         st.cache_resource.clear()
         st.rerun()
 
 # --- COMMAND CENTER ---
-# Logo no centro (opcional)
-# st.image("seu_logo_central.png", width=100) 
-st.markdown("<h2 style='letter-spacing:-2px; margin-bottom:5px;'>COMMAND CENTER</h2>", unsafe_allow_html=True)
-st.markdown(f"<p style='font-family:JetBrains Mono; color:#475569;'>ORCHESTRATOR STATUS: ACTIVE // AGENT: {agente.upper()}</p>", unsafe_allow_html=True)
+st.markdown("<h2 style='letter-spacing:-1.5px; margin-bottom:0px;'>AETHER OMNI COMMAND</h2>", unsafe_allow_html=True)
+st.markdown(f"<p style='font-family:JetBrains Mono; color:#38bdf8;'>ORCHESTRATOR STATUS: ACTIVE // AGENT: {agente.upper()}</p>", unsafe_allow_html=True)
 
-# Métricas Estilo Elite (Glow Reforçado)
+# Métricas Vibrantes (Estilo Harvey + Iluminação)
 m1, m2, m3 = st.columns(3)
 with m1: st.markdown("<div class='metric-card'><small>Status</small><br><b>MONITORING</b></div>", unsafe_allow_html=True)
 with m2: st.markdown("<div class='metric-card'><small>Precision</small><br><b>99.9%</b></div>", unsafe_allow_html=True)
@@ -149,7 +158,6 @@ with m3: st.markdown("<div class='metric-card'><small>Protocol</small><br><b>ENC
 
 st.divider()
 
-# Layout de Trabalho
 col_a, col_b = st.columns([1, 1.4], gap="large")
 
 with col_a:
@@ -162,7 +170,7 @@ with col_b:
     pergunta = st.text_area("Audit Command:", placeholder="Input the specific mission parameters...", height=230)
     if st.button("🚀 EXECUTE GLOBAL SWEEP"):
         if (pergunta or arquivos) and model:
-            with st.spinner("Analyzing Global Assets..."):
+            with st.spinner("Analyzing Assets..."):
                 try:
                     extra_data, imagens = "", []
                     if arquivos:
@@ -177,5 +185,6 @@ with col_b:
                     
                     st.markdown("### 📝 FINAL REPORT")
                     st.markdown(f"<div class='report-card'>{response.text}</div>", unsafe_allow_html=True)
-                    st.download_button("📥 DOWNLOAD ENCRYPTED REPORT", export_docx(response.text), "AETHER_REPORT.docx")
+                    st.download_button("📥 DOWNLOAD REPORT", export_docx(response.text), "AETHER_REPORT.docx")
+                    st.balloons()
                 except Exception as e: st.error(f"Error: {e}")
