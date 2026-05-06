@@ -1,114 +1,202 @@
 import streamlit as st
-from groq import Groq
-from duckduckgo_search import DDGS
+import google.generativeai as genai
+from docx import Document
+from PIL import Image
+import pandas as pd
+import io
 import time
-import random
 
-# --- CONFIGURAÇÃO DA PÁGINA ---
-st.set_page_config(page_title="Aether Omni | Intelligence", page_icon="🛡️", layout="wide")
+# --- UI REVOLUTION (ESTÉTICA DE ALTA PERFORMANCE) ---
+st.set_page_config(page_title="AETHER OMNI | Intelligence", layout="wide", page_icon="🛡️")
 
-# --- DESIGN CYBER-SENTINEL ---
+if 'historico' not in st.session_state:
+    st.session_state['historico'] = []
+if 'show_history' not in st.session_state:
+    st.session_state['show_history'] = False
+
 st.markdown("""
     <style>
-    .main { background-color: #0b0e14; color: #e0e0e0; }
-    .stButton>button { 
-        background: linear-gradient(135deg, #00c853 0%, #b2ff59 100%); 
-        color: #000; font-weight: bold; border-radius: 8px; width: 100%; height: 3.5em;
+    @import url('https://googleapis.com');
+    
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
+    html, body, [class*="css"] { font-family: 'Inter', sans-serif; background-color: #080a0d; }
+    .main { background: radial-gradient(circle at top right, #0d1117, #080a0d); color: #e1e1e1; }
+
+    /* Cards de Relatório - Efeito Glassmorphism */
+    .report-card { 
+        padding: 40px; border-radius: 20px; 
+        background: rgba(22, 25, 32, 0.7); 
+        border: 1px solid rgba(0, 198, 255, 0.1); 
+        color: #d1d5db; line-height: 1.8;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        backdrop-filter: blur(10px);
     }
-    .status-box { padding: 15px; border-radius: 10px; background: #161b22; border-left: 5px solid #00c853; margin-bottom: 20px; }
-    .dossie-box { background-color: #1a1c24; padding: 20px; border-radius: 10px; border: 1px solid #00c853; }
+    
+    /* Botões Futuristas */
+    .stButton>button { 
+        width: 100%; 
+        background: linear-gradient(135deg, #1e2128 0%, #11141b 100%); 
+        color: #00c6ff; border: 1px solid #2d323d;
+        border-radius: 12px; font-weight: 700; letter-spacing: 1px;
+        height: 3.8em; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .stButton>button:hover { 
+        background: #00c6ff; color: #080a0d;
+        box-shadow: 0 0 20px rgba(0, 198, 255, 0.4);
+        transform: translateY(-2px);
+    }
+
+    /* Sidebar Refinada */
+    .history-card { 
+        background: rgba(30, 33, 40, 0.5); 
+        padding: 15px; border-radius: 10px; 
+        border-left: 4px solid #00c6ff; 
+        margin-bottom: 12px; font-size: 0.85em; 
+    }
+    .stTextArea textarea { background-color: #11141b !important; border-radius: 12px !important; border: 1px solid #2d323d !important; color: #fff !important; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- MOTOR ANTI-LOCK 429 E AUTO-HEALING ---
-def aether_brain(prompt, modo, contexto):
-    try:
-        # Priorizando Groq para evitar o erro 429 do Google Gemini
-        client = Groq(api_key=st.secrets["GROQ_API_KEY"])
-    except:
-        return "Erro: Configure sua GROQ_API_KEY nos Secrets!"
-        
-    for attempt in range(5):
+# --- CONEXÃO BLINDADA COM FALLBACK ---
+try:
+    if "GOOGLE_API_KEY" in st.secrets:
+        genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
         try:
-            prompt_sistema = f"""
-            Você é o Aether Omni Sentinel. Missão: {modo}.
-            OBRIGATÓRIO: Gere um 'DOSSIÊ DE BLINDAGEM' com Justificativa Técnica e base na LINDB.
-            
-            NOTA LEGAL OBRIGATÓRIA AO FINAL:
-            '⚠️ NOTA: Este relatório é um suporte tecnológico à decisão e análise técnica. Não substitui o parecer jurídico de um advogado ou autoridade competente.'
-            """
-            completion = client.chat.completions.create(
-                messages=[{"role": "system", "content": prompt_sistema}, {"role": "user", "content": prompt}],
-                model="llama-3.3-70b-versatile",
-                temperature=0.1
-            )
-            return completion.choices[0].message.content
-        except Exception as e:
-            if "429" in str(e):
-                st.warning(f"🛡️ Sincronização em curso... Aguarde {attempt+5}s")
-                time.sleep(attempt + 5)
-            else:
-                return f"Erro no sistema: {e}"
-    return "O sistema atingiu o limite. Tente novamente em instantes."
+            model_list = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+            model = genai.GenerativeModel(model_list[0] if model_list else 'gemini-1.5-flash')
+        except:
+            model = genai.GenerativeModel('gemini-1.5-flash')
+    else:
+        st.error("📡 Chave mestra não detectada nos Secrets.")
+except Exception as e:
+    st.error(f"📡 Erro Crítico: {e}")
 
-# --- BARRA LATERAL ---
+def preparar_docx(lista_resultados, unico=True):
+    doc = Document()
+    if unico:
+        doc.add_heading('PARECER TÉCNICO AETHER', 0)
+        doc.add_paragraph(lista_resultados[-1]['texto'] if isinstance(lista_resultados, list) else lista_resultados)
+    else:
+        doc.add_heading('CONSOLIDADO DE MISSÕES OMNI', 0)
+        for res in lista_resultados:
+            doc.add_heading(f"Missão: {res['titulo']}", level=1)
+            doc.add_paragraph(res['texto'])
+            doc.add_page_break()
+    buffer = io.BytesIO()
+    doc.save(buffer)
+    buffer.seek(0)
+    return buffer
+
+# --- SIDEBAR ---
 with st.sidebar:
-    st.title("🛡️ Aether Omni")
+    st.markdown("### 🛡️ AETHER OMNI")
     st.caption("Intelligence & Compliance System")
     
+    if st.button("📜 HISTÓRICO DE MISSÕES"):
+        st.session_state['show_history'] = not st.session_state['show_history']
+
+    if st.session_state['show_history']:
+        if st.session_state['historico']:
+            for item in st.session_state['historico']:
+                st.markdown(f"<div class='history-card'><b>{item['fonte']}</b><br>{item['titulo']}</div>", unsafe_allow_html=True)
+            st.download_button("📥 EXPORTAR HISTÓRICO", preparar_docx(st.session_state['historico'], unico=False), "omni_history.docx")
+        else:
+            st.caption("Sem registros.")
+
     st.divider()
-    st.subheader("⚙️ Parâmetros Sniper")
+    st.subheader("🛠️ Parâmetros Sniper")
     st.toggle("OCR Inteligente", value=True)
     st.toggle("Risco Provisório", value=True)
     st.toggle("Análise Forense", value=True)
+    st.toggle("Blindagem LINDB/Gestor", value=True) # Nova Função de Evolução
     
     st.divider()
-    modo = st.selectbox("🎯 Ação Imediata", [
-        "Auditoria Técnica + LINDB",
-        "Dossiê de Blindagem",
-        "Correção de Código Sentinel",
-        "Análise de Risco Compliance"
+    with st.expander("⚙️ Sistema"):
+        if st.button("RESET MOTOR"):
+            st.session_state['historico'] = []
+            st.rerun()
+    st.caption("v52.1 Master Gold")
+
+# --- CENTRAL DE OPERAÇÕES ---
+st.title("🛡️ AETHER OMNI")
+st.markdown("<p style='color:#7b818f; font-family:JetBrains Mono;'>HIGH-FREQUENCY AUDIT TERMINAL // GLOBAL COMPLIANCE</p>", unsafe_allow_html=True)
+
+area_trabalho, area_comando = st.columns([1, 1.3], gap="large")
+
+with area_trabalho:
+    st.subheader("📂 Ingestão de Ativos")
+    arquivos = st.file_uploader("Arraste evidências para análise", type=["pdf", "png", "jpg", "jpeg", "xlsx", "csv"], accept_multiple_files=True)
+    
+    st.divider()
+    st.subheader("⚡ Ação Imediata")
+    acao_filtro = st.selectbox("Comportamento Neural:", [
+        "Auditoria Técnica",
+        "Geração de Contrato Corrigido",
+        "Geração de Petição Corrigida",
+        "Geração de Dossiê de Blindagem (Gestor)", # Evolução
+        "Análise de Integridade (Anticorrupção)"   # Evolução
     ])
 
-# --- ÁREA PRINCIPAL ---
-st.title("🛡️ Sistema Aether Omni")
-st.markdown("<div class='status-box'><b>CONEXÃO:</b> ESTÁVEL | <b>MODO:</b> BLINDAGEM ATIVA</div>", unsafe_allow_html=True)
-
-col1, col2 = st.columns([1, 1.2])
-
-with col1:
-    st.subheader("📥 Entrada de Dados")
-    user_input = st.text_area("Descreva o caso ou cole o código para auditoria:", height=300)
-    upload = st.file_uploader("Upload de Documentos/Código", accept_multiple_files=True)
-
-with col2:
-    st.subheader("🚀 Dossiê Gerado")
-    if st.button("INICIAR VARREDURA GLOBAL OMNI"):
-        if user_input:
-            with st.spinner("Aether processando e gerando blindagem..."):
-                time.sleep(random.uniform(1.0, 2.0))
+with area_comando:
+    st.subheader("🔍 Centro de Comando")
+    tipo_missao = st.selectbox("Estratégia de Varredura:", [
+        "Auditoria Geral", 
+        "Auditar Processo Judicial", 
+        "Auditar Contrato",
+        "Análise Grafotécnica de Assinaturas",
+        "Geração Documental Técnica",
+        "Jurisprudência Preditiva (TCU/STF)",      # Evolução
+        "Compliance Portaria CGU 226/2025"         # Evolução
+    ])
+    
+    pergunta = st.text_area("Instruções Diretas (Sniper Prompt):", placeholder="Ex: Analise o anexo e aplique as correções do filtro lateral...", height=180)
+    
+    if st.button("🚀 INICIAR VARREDURA GLOBAL OMNI"):
+        if pergunta or arquivos:
+            with st.spinner("Processando..."):
                 try:
-                    with DDGS() as ddgs:
-                        busca = [r['body'] for r in ddgs.text(f"jurisprudência e técnica: {user_input}", max_results=2)]
-                        contexto = "\n".join(busca)
-                except:
-                    contexto = "Base interna offline."
-                
-                resultado = aether_brain(user_input, modo, contexto)
-                st.session_state['res_aether'] = resultado
-                st.markdown(f"<div class='dossie-box'>{resultado}</div>", unsafe_allow_html=True)
+                    conteudo_extra = ""
+                    imagens = []
+                    nome_fonte = "Input Manual"
+                    
+                    if arquivos:
+                        primeiro_nome = arquivos[0].name if isinstance(arquivos, list) else arquivos.name
+                        nome_fonte = f"{primeiro_nome} (+{len(arquivos)-1})" if len(arquivos) > 1 else primeiro_nome
+                        
+                        for arq in arquivos:
+                            if arq.type.startswith("image"):
+                                imagens.append(Image.open(arq))
+                            elif arq.name.endswith(('.xlsx', '.csv')):
+                                df = pd.read_excel(arq) if arq.name.endswith('.xlsx') else pd.read_csv(arq)
+                                conteudo_extra += f"\n\nDATASET {arq.name}:\n{df.to_string()}"
+
+                    # PROMPT MESTRE ATUALIZADO COM REGRAS DE EVOLUÇÃO
+                    prompt_final = f"""
+                    Atue como o sistema AETHER OMNI (Auditor Forense e Especialista em Compliance Sênior).
+                    MISSÃO: {tipo_missao}. AÇÃO: {acao_filtro}.
+                    
+                    DIRETRIZES DE ALTA PERFORMANCE (EVOLUÇÃO):
+                    1. Se a ação envolver 'Blindagem', utilize rigorosamente o Art. 22 da LINDB para justificar decisões e mitigar riscos pessoais do gestor.
+                    2. Se a missão envolver 'Integridade/CGU', avalie prazos e critérios da Portaria CGU 226/2025 e Lei 14.133/21.
+                    3. Se envolver 'Jurisprudência Preditiva', compare teses do Judiciário vs. Acórdãos do TCU para identificar zonas de tensão.
+                    
+                    DADOS: {pergunta} {conteudo_extra}
+                    ESTRUTURA: Diagnóstico -> Parecer Forense -> Veredito Técnico -> Matriz de Blindagem Jurídica.
+                    NOTA FINAL: 'Este relatório é um parecer técnico gerado por IA para auxílio na tomada de decisão, não substituindo a consultoria jurídica ou contábil individualizada.'
+                    """
+                    
+                    response = model.generate_content([prompt_final, *imagens]) if imagens else model.generate_content(prompt_final)
+                    
+                    st.session_state['historico'].insert(0, {"titulo": tipo_missao, "fonte": nome_fonte, "texto": response.text})
+                    
+                    st.markdown("### 📝 PARECER OMNI")
+                    t1, t2 = st.tabs(["📄 Relatório Executivo", "💾 Safebox"])
+                    with t1: st.markdown(f"<div class='report-card'>{response.text}</div>", unsafe_allow_html=True)
+                    with t2: st.download_button("📥 BAIXAR PARECER (.DOCX)", preparar_docx(response.text, unico=True), f"AETHER_{nome_fonte}.docx")
+                except Exception as e:
+                    st.error(f"Falha na Varredura: {e}")
         else:
-            st.error("Insira os dados para análise.")
-
-    if 'res_aether' in st.session_state:
-        st.divider()
-        formato = st.selectbox("Formato do Relatório:", [".txt", ".pdf (como texto)", ".py", ".html"])
-        st.download_button(label=f"📥 BAIXAR DOSSIÊ ({formato})", data=st.session_state['res_aether'], file_name=f"dossie_aether{formato}")
-
-# --- CHAT SUPORTE ---
-st.divider()
-st.subheader("💬 Consultar Analista Omni")
-chat_in = st.text_input("Dúvida sobre este dossiê?")
-if chat_in and 'res_aether' in st.session_state:
-    with st.chat_message("assistant"):
-        st.markdown(aether_brain(f"Contexto: {st.session_state['res_aether']}. Dúvida: {chat_in}", "Chat Suporte", ""))
+            st.warning("Aguardando Sniper Prompt ou Ativos para iniciar.")
