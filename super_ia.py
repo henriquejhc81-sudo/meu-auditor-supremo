@@ -12,77 +12,95 @@ try:
 except ImportError:
     BIBLIOTECAS_OK = False
 
-# --- UI ELITE DESIGN (LIQUID COMMAND CENTER) ---
-st.set_page_config(page_title="AETHER OMNI ELITE v82.0", layout="wide", page_icon="🛡️")
+# --- UI ELITE DESIGN (PRECISION & GLOW EVOLUTION) ---
+st.set_page_config(page_title="AETHER OMNI ELITE v83.0", layout="wide", page_icon="🛡️")
 
 if not BIBLIOTECAS_OK:
     st.error("🚨 Dependências ausentes. Verifique o requirements.txt.")
     st.stop()
 
-# Estilização High-End: Eliminando o branco e focando em profundidade
+# Estilização Refinada: Foco em profundidade e iluminação neon seletiva
 st.markdown("""
     <style>
     @import url('https://googleapis.com');
     
     #MainMenu, footer, header {visibility: hidden;}
     
-    /* Corpo Dark Mode Absoluto */
-    .stApp { background-color: #030407 !important; color: #e1e1e1 !important; }
+    /* Fundo Deep Black */
+    .stApp { background-color: #020305 !important; color: #e1e1e1 !important; }
     
-    /* Fontes e Títulos */
-    h1, h2, h3 { font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -1px; color: #ffffff !important; }
-    p, span, label { color: #8e95a2 !important; font-size: 0.95em; }
+    /* Títulos Magnéticos */
+    h1, h2, h3 { font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -1.5px; color: #ffffff !important; }
+    p, span, label { color: #64748b !important; font-size: 0.9em; font-weight: 500; }
 
-    /* Cards de Métrica (Efeito Glassmorphism) */
-    .metric-container { 
-        display: flex; gap: 15px; margin-bottom: 25px; 
-    }
+    /* Cards de Métrica (Refinamento de Glow) */
     .metric-card { 
-        background: rgba(13, 17, 23, 0.6); 
-        padding: 20px; border-radius: 16px; 
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        flex: 1; text-align: center;
+        background: #0a0c10; 
+        padding: 30px; border-radius: 18px; 
+        border: 1px solid #14181f;
+        text-align: center;
+        transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .metric-card:hover { 
+        border-color: #00c6ff; 
+        box-shadow: 0 0 25px rgba(0, 198, 255, 0.1); 
+        transform: translateY(-5px);
+    }
+    .metric-card b { 
+        color: #00c6ff !important; 
+        font-size: 1.8em; 
+        font-family: 'JetBrains Mono';
+        text-shadow: 0 0 10px rgba(0, 198, 255, 0.3);
+    }
+    .metric-card small { 
+        display: block; 
+        color: #475569; 
+        text-transform: uppercase; 
+        font-size: 0.75em; 
+        letter-spacing: 3px; 
+        margin-bottom: 8px; 
+    }
+
+    /* Inputs High-Tech (Foco Neon) */
+    .stTextArea textarea { 
+        background-color: #05070a !important; 
+        border: 1px solid #14181f !important; 
+        color: #f1f5f9 !important;
+        border-radius: 14px !important;
+        font-family: 'JetBrains Mono', monospace;
         transition: 0.3s all;
     }
-    .metric-card:hover { border-color: #00c6ff; background: rgba(0, 198, 255, 0.02); }
-    .metric-card b { color: #00c6ff !important; font-size: 1.6em; font-family: 'JetBrains Mono'; }
-    .metric-card small { display: block; color: #5c6370; text-transform: uppercase; font-size: 0.7em; letter-spacing: 2px; margin-bottom: 5px; }
+    .stTextArea textarea:focus { border-color: #00c6ff !important; box-shadow: 0 0 15px rgba(0, 198, 255, 0.15) !important; }
 
-    /* Inputs e TextAreas Estilo 'Luminance' */
-    .stTextArea textarea { 
-        background-color: #0a0c10 !important; 
-        border: 1px solid #1e252e !important; 
-        color: #d1d5db !important;
-        border-radius: 12px !important;
-        font-family: 'JetBrains Mono', monospace;
-    }
     .stFileUploader section { 
-        background-color: #0a0c10 !important; 
-        border: 1px dashed #1e252e !important; 
-        border-radius: 12px !important;
+        background-color: #05070a !important; 
+        border: 1px dashed #1e293b !important; 
+        border-radius: 14px !important;
     }
 
-    /* Botão de Ação (Aura Glow) */
+    /* Botão de Elite (Vidro & Luz) */
     .stButton>button { 
-        width: 100%; background: #ffffff !important; 
-        color: #000000 !important; border: none !important; 
-        border-radius: 10px; font-weight: 700;
-        height: 3.8em; transition: 0.4s all;
-        text-transform: uppercase; letter-spacing: 1px;
+        width: 100%; background: transparent !important; 
+        color: #ffffff !important; 
+        border: 1px solid #1e293b !important; 
+        border-radius: 12px; font-weight: 600;
+        height: 4em; transition: 0.5s all;
+        text-transform: uppercase; letter-spacing: 2px;
     }
     .stButton>button:hover { 
-        background: #00c6ff !important; color: #ffffff !important;
-        box-shadow: 0 10px 25px rgba(0, 198, 255, 0.3);
+        background: #ffffff !important; color: #000000 !important;
+        box-shadow: 0 15px 35px rgba(255, 255, 255, 0.2);
+        border: none !important;
     }
 
-    /* Sidebar Refinada */
-    [data-testid="stSidebar"] { background-color: #05070a !important; border-right: 1px solid #14181f; }
+    /* Sidebar Dark Profissional */
+    [data-testid="stSidebar"] { background-color: #010203 !important; border-right: 1px solid #14181f; }
     
-    /* Painel de Resultado (O Parecer) */
+    /* Área de Relatório (Efeito de Profundidade) */
     .report-card { 
-        padding: 45px; border-radius: 20px; background: #0a0c10; 
-        border: 1px solid #14181f; box-shadow: 0 30px 60px rgba(0,0,0,0.8);
-        line-height: 1.9; color: #d1d5db; font-family: 'Plus Jakarta Sans';
+        padding: 50px; border-radius: 24px; background: #05070a; 
+        border: 1px solid #14181f; box-shadow: 0 40px 80px rgba(0,0,0,0.9);
+        line-height: 2; color: #cbd5e1; font-family: 'Plus Jakarta Sans';
     }
     </style>
     """, unsafe_allow_html=True)
@@ -113,9 +131,9 @@ def export_docx(texto):
 
 # --- SIDEBAR (CONFIGURAÇÃO) ---
 with st.sidebar:
-    st.markdown("<h2 style='color:#00c6ff;'>🛡️ AETHER</h2>", unsafe_allow_html=True)
-    st.caption("Intelligence System v82.0")
-    if model: st.success(f"System: {model_id}")
+    st.markdown("<h1 style='color:#00c6ff; font-size:1.8em;'>🛡️ AETHER</h1>", unsafe_allow_html=True)
+    st.caption("Intelligence System v83.0")
+    if model: st.success(f"Online: {model_id}")
     
     st.divider()
     agente = st.selectbox("🎯 Agent Focus", ["E-Discovery (Everlaw)", "Due Diligence (Kira)", "Compliance (OneTrust)", "Finance Audit (DataSnipper)"])
@@ -129,9 +147,9 @@ with st.sidebar:
 
 # --- COMMAND CENTER ---
 st.title("🛡️ COMMAND CENTER")
-st.markdown(f"<p style='font-family:JetBrains Mono;'>ORCHESTRATOR ACTIVE // AGENT: {agente.upper()}</p>", unsafe_allow_html=True)
+st.markdown(f"<p style='font-family:JetBrains Mono; color:#475569;'>ORCHESTRATOR ACTIVE // AGENT: {agente.upper()}</p>", unsafe_allow_html=True)
 
-# Métricas Estilo Harvey AI
+# Métricas Estilo Harvey AI (Com Glow Reforçado)
 m1, m2, m3 = st.columns(3)
 with m1: st.markdown("<div class='metric-card'><small>Status</small><br><b>MONITORING</b></div>", unsafe_allow_html=True)
 with m2: st.markdown("<div class='metric-card'><small>Precision</small><br><b>99.8%</b></div>", unsafe_allow_html=True)
@@ -139,7 +157,7 @@ with m3: st.markdown("<div class='metric-card'><small>Security</small><br><b>ENC
 
 st.divider()
 
-# Layout de Trabalho Assimétrico
+# Layout de Trabalho Assimétrico (Melhorado)
 col_a, col_b = st.columns([1, 1.4], gap="large")
 
 with col_a:
@@ -149,10 +167,10 @@ with col_a:
 
 with col_b:
     st.markdown("### 🔍 Sniper Prompt")
-    pergunta = st.text_area("Audit Instructions:", placeholder="Enter your command for the Super-AI...", height=210)
+    pergunta = st.text_area("Audit Instructions:", placeholder="Enter your command for the Super-AI...", height=230)
     if st.button("🚀 EXECUTE GLOBAL SWEEP"):
         if (pergunta or arquivos) and model:
-            with st.spinner("Processing..."):
+            with st.spinner("Executing Swep..."):
                 try:
                     extra_data, imagens = "", []
                     if arquivos:
@@ -167,5 +185,5 @@ with col_b:
                     
                     st.markdown("### 📝 FINAL REPORT")
                     st.markdown(f"<div class='report-card'>{response.text}</div>", unsafe_allow_html=True)
-                    st.download_button("📥 DOWNLOAD (.DOCX)", export_docx(response.text), "AETHER_REPORT.docx")
+                    st.download_button("📥 DOWNLOAD REPORT (.DOCX)", export_docx(response.text), "AETHER_REPORT.docx")
                 except Exception as e: st.error(f"Error: {e}")
