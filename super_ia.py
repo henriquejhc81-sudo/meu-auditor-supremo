@@ -27,7 +27,7 @@ st.markdown("""
     #MainMenu, footer, header {visibility: hidden;}
     
     /* Fundo Principal Ultra-Dark */
-    .stApp { background-color: #05070a; color: #e1e1e1; }
+    .stApp { background-color: #05070a !important; color: #e1e1e1 !important; }
     
     /* Títulos e Textos */
     h1, h2, h3, p, span, label { color: #d1d5db !important; font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -35,10 +35,10 @@ st.markdown("""
     /* Botão Estilo Elite */
     .stButton>button { 
         width: 100%; background: linear-gradient(135deg, #12151c 0%, #1a1f2b 100%); 
-        color: #00c6ff; border: 1px solid #2d323d; border-radius: 8px; font-weight: 600;
+        color: #00c6ff !important; border: 1px solid #2d323d !important; border-radius: 8px; font-weight: 600;
         height: 3.8em; transition: 0.4s all; text-transform: uppercase; letter-spacing: 1.5px;
     }
-    .stButton>button:hover { border-color: #00c6ff; box-shadow: 0 0 20px rgba(0, 198, 255, 0.2); color: #fff; }
+    .stButton>button:hover { border-color: #00c6ff !important; box-shadow: 0 0 20px rgba(0, 198, 255, 0.2); color: #fff !important; }
     
     /* Cards de Métrica (Luminance Style) */
     .metric-card { 
@@ -46,8 +46,8 @@ st.markdown("""
         border: 1px solid #1e252e; text-align: center;
         box-shadow: inset 0 0 10px rgba(0, 198, 255, 0.05);
     }
-    .metric-card b { color: #00c6ff; font-size: 1.4em; }
-    .metric-card small { color: #7b818f; text-transform: uppercase; letter-spacing: 1px; }
+    .metric-card b { color: #00c6ff !important; font-size: 1.4em; }
+    .metric-card small { color: #7b818f !important; text-transform: uppercase; letter-spacing: 1px; }
     
     /* Inputs Escuros (Fim do Branco) */
     .stTextArea textarea, .stFileUploader section { 
