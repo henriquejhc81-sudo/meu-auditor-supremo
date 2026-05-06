@@ -1,4 +1,6 @@
 streamlit
-groq
-duckduckgo_search
+google-generativeai
+python-docx
+pillow
 pandas
+openpyxl
