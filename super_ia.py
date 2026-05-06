@@ -5,10 +5,6 @@ from PIL import Image
 import pandas as pd
 import io
 import time
-import logging
-
-# Configuração do logging
-logging.basicConfig(filename='logs/app.log', level=logging.INFO)
 
 # --- UI REVOLUTION (ESTÉTICA DE ALTA PERFORMANCE) ---
 st.set_page_config(page_title="AETHER OMNI | Intelligence", layout="wide", page_icon="🛡️")
@@ -21,11 +17,11 @@ if 'show_history' not in st.session_state:
 st.markdown("""
     <style>
     @import url('https://googleapis.com');
-
+    
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
-
+    
     html, body, [class*="css"] { font-family: 'Inter', sans-serif; background-color: #080a0d; }
     .main { background: radial-gradient(circle at top right, #0d1117, #080a0d); color: #e1e1e1; }
 
@@ -38,7 +34,7 @@ st.markdown("""
         box-shadow: 0 20px 40px rgba(0,0,0,0.4);
         backdrop-filter: blur(10px);
     }
-
+    
     /* Botões Futuristas */
     .stButton>button { 
         width: 100%; 
@@ -77,33 +73,28 @@ try:
         st.error("📡 Chave mestra não detectada nos Secrets.")
 except Exception as e:
     st.error(f"📡 Erro Crítico: {e}")
-    logging.error(f"Erro crítico: {e}")
 
 def preparar_docx(lista_resultados, unico=True):
-    try:
-        doc = Document()
-        if unico:
-            doc.add_heading('PARECER TÉCNICO AETHER', 0)
-            doc.add_paragraph(lista_resultados[-1]['texto'] if isinstance(lista_resultados, list) else lista_resultados)
-        else:
-            doc.add_heading('CONSOLIDADO DE MISSÕES OMNI', 0)
-            for res in lista_resultados:
-                doc.add_heading(f"Missão: {res['titulo']}", level=1)
-                doc.add_paragraph(res['texto'])
-                doc.add_page_break()
-        buffer = io.BytesIO()
-        doc.save(buffer)
-        buffer.seek(0)
-        return buffer
-    except Exception as e:
-        st.error(f"Erro ao preparar docx: {e}")
-        logging.error(f"Erro ao preparar docx: {e}")
+    doc = Document()
+    if unico:
+        doc.add_heading('PARECER TÉCNICO AETHER', 0)
+        doc.add_paragraph(lista_resultados[-1]['texto'] if isinstance(lista_resultados, list) else lista_resultados)
+    else:
+        doc.add_heading('CONSOLIDADO DE MISSÕES OMNI', 0)
+        for res in lista_resultados:
+            doc.add_heading(f"Missão: {res['titulo']}", level=1)
+            doc.add_paragraph(res['texto'])
+            doc.add_page_break()
+    buffer = io.BytesIO()
+    doc.save(buffer)
+    buffer.seek(0)
+    return buffer
 
 # --- SIDEBAR ---
 with st.sidebar:
     st.markdown("### 🛡️ AETHER OMNI")
     st.caption("Intelligence & Compliance System")
-
+    
     if st.button("📜 HISTÓRICO DE MISSÕES"):
         st.session_state['show_history'] = not st.session_state['show_history']
 
@@ -120,7 +111,7 @@ with st.sidebar:
     st.toggle("OCR Inteligente", value=True)
     st.toggle("Risco Provisório", value=True)
     st.toggle("Análise Forense", value=True)
-
+    
     st.divider()
     with st.expander("⚙️ Sistema"):
         if st.button("RESET MOTOR"):
@@ -137,7 +128,7 @@ area_trabalho, area_comando = st.columns([1, 1.3], gap="large")
 with area_trabalho:
     st.subheader("📂 Ingestão de Ativos")
     arquivos = st.file_uploader("Arraste evidências para análise", type=["pdf", "png", "jpg", "jpeg", "xlsx", "csv"], accept_multiple_files=True)
-
+    
     st.divider()
     st.subheader("⚡ Ação Imediata")
     acao_filtro = st.selectbox("Comportamento Neural:", [
@@ -155,21 +146,22 @@ with area_comando:
         "Análise Grafotécnica de Assinaturas",
         "Geração Documental Técnica"
     ])
-
+    
     pergunta = st.text_area("Instruções Diretas (Sniper Prompt):", placeholder="Ex: Analise o anexo e aplique as correções do filtro lateral...", height=180)
-
+    
     if st.button("🚀 INICIAR VARREDURA GLOBAL OMNI"):
-        try:
-            if pergunta or arquivos:
-                with st.spinner("Processando..."):
+        if pergunta or arquivos:
+            with st.spinner("Processando..."):
+                try:
                     conteudo_extra = ""
                     imagens = []
                     nome_fonte = "Input Manual"
-
+                    
                     if arquivos:
+                        # Tratamento para múltiplos arquivos
                         primeiro_nome = arquivos[0].name if isinstance(arquivos, list) else arquivos.name
                         nome_fonte = f"{primeiro_nome} (+{len(arquivos)-1})" if len(arquivos) > 1 else primeiro_nome
-
+                        
                         for arq in arquivos:
                             if arq.type.startswith("image"):
                                 imagens.append(Image.open(arq))
@@ -184,35 +176,16 @@ with area_comando:
                     ESTRUTURA: Diagnóstico -> Parecer Forense -> Veredito Técnico.
                     NOTA FINAL: 'Este relatório é um parecer técnico gerado por IA para auxílio na tomada de decisão, não substituindo a consultoria jurídica ou contábil individualizada.'
                     """
-
+                    
                     response = model.generate_content([prompt_final, *imagens]) if imagens else model.generate_content(prompt_final)
-
+                    
                     st.session_state['historico'].insert(0, {"titulo": tipo_missao, "fonte": nome_fonte, "texto": response.text})
-
+                    
                     st.markdown("### 📝 PARECER OMNI")
                     t1, t2 = st.tabs(["📄 Relatório Executivo", "💾 Safebox"])
                     with t1: st.markdown(f"<div class='report-card'>{response.text}</div>", unsafe_allow_html=True)
                     with t2: st.download_button("📥 BAIXAR PARECER (.DOCX)", preparar_docx(response.text, unico=True), f"AETHER_{nome_fonte}.docx")
-            else:
-                st.warning("Aguardando entrada de dados para iniciar varredura.")
-        except Exception as e:
-            st.error(f"🚨 Falha de Sincronização: {e}")
-            logging.error(f"Erro: {e}")
-
-# Módulo de Segurança e Logs de Invasão
-def log_invasao(e):
-    logging.error(f"Invasão detectada: {e}")
-
-try:
-    # Código do aplicativo
-except Exception as e:
-    log_invasao(e)
-    st.error(f"🚨 Falha de Sincronização: {e}")
-
-# Self-Healing (try/catch) em funções críticas
-def funcao_critica():
-    try:
-        # Código da função crítica
-    except Exception as e:
-        log_invasao(e)
-        st.error(f"🚨 Falha de Sincronização: {e}")
+                except Exception as e:
+                    st.error(f"🚨 Falha de Sincronização: {e}")
+        else:
+            st.warning("Aguardando entrada de dados para iniciar varredura.")
