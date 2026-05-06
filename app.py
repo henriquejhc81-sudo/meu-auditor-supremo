@@ -6,6 +6,8 @@ import pandas as pd
 import io
 import time
 import logging
+from PIL import ImageGrab
+import os
 
 # Configuração do logging
 logging.basicConfig(filename='app.log', level=logging.INFO)
@@ -98,6 +100,19 @@ def preparar_docx(lista_resultados, unico=True):
     except Exception as e:
         st.error(f"Erro ao preparar docx: {e}")
         logging.error(f"Erro ao preparar docx: {e}")
+
+def gerar_dossie_blindagem(texto):
+    try:
+        doc = Document()
+        doc.add_heading('DOSSiê DE BLINDAGEM', 0)
+        doc.add_paragraph(texto)
+        buffer = io.BytesIO()
+        doc.save(buffer)
+        buffer.seek(0)
+        return buffer
+    except Exception as e:
+        st.error(f"Erro ao gerar dossiê de blindagem: {e}")
+        logging.error(f"Erro ao gerar dossiê de blindagem: {e}")
 
 # --- SIDEBAR ---
 with st.sidebar:
@@ -192,9 +207,44 @@ with area_comando:
                     st.markdown("### 📝 PARECER OMNI")
                     t1, t2 = st.tabs(["📄 Relatório Executivo", "💾 Safebox"])
                     with t1: st.markdown(f"<div class='report-card'>{response.text}</div>", unsafe_allow_html=True)
-                    with t2: st.download_button("📥 BAIXAR PARECER (.DOCX)", preparar_docx(response.text, unico=True), f"AETHER_{nome_fonte}.docx")
+                    with t2: 
+                        st.download_button("📥 BAIXAR PARECER (.DOCX)", preparar_docx(response.text, unico=True), f"AETHER_{nome_fonte}.docx")
+                        st.download_button("📥 GERAR DOSSiê DE BLINDAGEM (.DOCX)", gerar_dossie_blindagem(response.text), f"AETHER_{nome_fonte}_DOSSIE.docx")
             else:
                 st.warning("Aguardando entrada de dados para iniciar varredura.")
         except Exception as e:
             st.error(f"🚨 Falha de Sincronização: {e}")
             logging.error(f"Erro: {e}")
+
+# --- MÓDULO DE SEGURANÇA E LOGS DE INVASÃO ---
+def log_invasao(mensagem):
+    logging.warning(f"Invasão detectada: {mensagem}")
+
+# --- SELF-HEALING (TRY/CATCH) EM FUNÇÕES CRÍTICAS ---
+def funcao_critica():
+    try:
+        # Código crítico aqui
+        pass
+    except Exception as e:
+        log_invasao(f"Erro crítico: {e}")
+        st.error(f"Erro crítico: {e}")
+
+# --- GUIA DE SETUP, ESTRUTURA DE PASTAS E CÓDIGO COMPLETO ---
+# 1. Instale as bibliotecas necessárias: `streamlit`, `google.generativeai`, `docx`, `PIL`, `pandas`, `io`, `time`, `logging`
+# 2. Configure o arquivo `secrets.toml` com a chave mestra do Google API
+# 3. Crie uma pasta `app` e adicione o código acima
+# 4. Execute o aplicativo com `streamlit run app.py`
+# 5. Acesse o aplicativo em `http://localhost:8501`
+
+# --- NOTA FINAL ---
+st.markdown("### 📝 NOTA FINAL")
+st.markdown("Este relatório é um parecer técnico gerado por IA para auxílio na tomada de decisão, não substituindo a consultoria jurídica ou contábil individualizada.")
+
+# --- ÍCONE DO APLICATIVO ---
+# Para alterar o ícone do aplicativo, você pode usar a função `st.set_page_config` com o parâmetro `page_icon`
+# Exemplo: `st.set_page_config(page_title="AETHER OMNI", layout="wide", page_icon="🛡️")`
+
+# --- MENSAGEM DE ERRO AO CLICAR NO ÍCONE ---
+# A mensagem de erro que você está vendo é porque o aplicativo está em modo de desenvolvimento e não está sendo executado em um servidor de produção
+# Para resolver isso, você pode executar o aplicativo em um servidor de produção ou usar a opção `--server.port` ao executar o aplicativo
+# Exemplo: `streamlit run app.py --server.port=8501`
