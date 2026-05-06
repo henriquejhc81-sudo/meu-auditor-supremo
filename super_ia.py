@@ -1,13 +1,23 @@
 import streamlit as st
-import google.generativeai as genai
-from docx import Document
-from PIL import Image
 import pandas as pd
 import io
 import time
+from PIL import Image
+
+# Tenta importar bibliotecas externas com tratamento de erro
+try:
+    import google.generativeai as genai
+    from docx import Document
+    BIBLIOTECAS_OK = True
+except ImportError:
+    BIBLIOTECAS_OK = False
 
 # --- UI REVOLUTION (ESTÉTICA DE ALTA PERFORMANCE) ---
 st.set_page_config(page_title="AETHER OMNI | Intelligence", layout="wide", page_icon="🛡️")
+
+if not BIBLIOTECAS_OK:
+    st.error("🚨 Erro de Dependências: Certifique-se de que o arquivo 'requirements.txt' contém 'google-generativeai' e 'python-docx'.")
+    st.stop()
 
 if 'historico' not in st.session_state:
     st.session_state['historico'] = []
@@ -78,7 +88,8 @@ def preparar_docx(lista_resultados, unico=True):
     doc = Document()
     if unico:
         doc.add_heading('PARECER TÉCNICO AETHER', 0)
-        doc.add_paragraph(lista_resultados[-1]['texto'] if isinstance(lista_resultados, list) else lista_resultados)
+        texto = lista_resultados[-1]['texto'] if isinstance(lista_resultados, list) else lista_resultados
+        doc.add_paragraph(texto)
     else:
         doc.add_heading('CONSOLIDADO DE MISSÕES OMNI', 0)
         for res in lista_resultados:
@@ -111,7 +122,7 @@ with st.sidebar:
     st.toggle("OCR Inteligente", value=True)
     st.toggle("Risco Provisório", value=True)
     st.toggle("Análise Forense", value=True)
-    st.toggle("Blindagem LINDB/Gestor", value=True) # Nova Função de Evolução
+    st.toggle("Blindagem LINDB/Gestor", value=True)
     
     st.divider()
     with st.expander("⚙️ Sistema"):
@@ -136,8 +147,8 @@ with area_trabalho:
         "Auditoria Técnica",
         "Geração de Contrato Corrigido",
         "Geração de Petição Corrigida",
-        "Geração de Dossiê de Blindagem (Gestor)", # Evolução
-        "Análise de Integridade (Anticorrupção)"   # Evolução
+        "Geração de Dossiê de Blindagem (Gestor)",
+        "Análise de Integridade (Anticorrupção)"
     ])
 
 with area_comando:
@@ -148,8 +159,8 @@ with area_comando:
         "Auditar Contrato",
         "Análise Grafotécnica de Assinaturas",
         "Geração Documental Técnica",
-        "Jurisprudência Preditiva (TCU/STF)",      # Evolução
-        "Compliance Portaria CGU 226/2025"         # Evolução
+        "Jurisprudência Preditiva (TCU/STF)",
+        "Compliance Portaria CGU 226/2025"
     ])
     
     pergunta = st.text_area("Instruções Diretas (Sniper Prompt):", placeholder="Ex: Analise o anexo e aplique as correções do filtro lateral...", height=180)
@@ -163,17 +174,22 @@ with area_comando:
                     nome_fonte = "Input Manual"
                     
                     if arquivos:
-                        primeiro_nome = arquivos[0].name if isinstance(arquivos, list) else arquivos.name
-                        nome_fonte = f"{primeiro_nome} (+{len(arquivos)-1})" if len(arquivos) > 1 else primeiro_nome
-                        
-                        for arq in arquivos:
-                            if arq.type.startswith("image"):
-                                imagens.append(Image.open(arq))
-                            elif arq.name.endswith(('.xlsx', '.csv')):
-                                df = pd.read_excel(arq) if arq.name.endswith('.xlsx') else pd.read_csv(arq)
-                                conteudo_extra += f"\n\nDATASET {arq.name}:\n{df.to_string()}"
+                        # Verificação se arquivos é uma lista ou objeto único
+                        if isinstance(arquivos, list):
+                            primeiro_nome = arquivos[0].name
+                            nome_fonte = f"{primeiro_nome} (+{len(arquivos)-1})" if len(arquivos) > 1 else primeiro_nome
+                            
+                            for arq in arquivos:
+                                if arq.type.startswith("image"):
+                                    imagens.append(Image.open(arq))
+                                elif arq.name.endswith(('.xlsx', '.csv')):
+                                    df = pd.read_excel(arq) if arq.name.endswith('.xlsx') else pd.read_csv(arq)
+                                    conteudo_extra += f"\n\nDATASET {arq.name}:\n{df.to_string()}"
+                        else:
+                            nome_fonte = arquivos.name
+                            if arquivos.type.startswith("image"):
+                                imagens.append(Image.open(arquivos))
 
-                    # PROMPT MESTRE ATUALIZADO COM REGRAS DE EVOLUÇÃO
                     prompt_final = f"""
                     Atue como o sistema AETHER OMNI (Auditor Forense e Especialista em Compliance Sênior).
                     MISSÃO: {tipo_missao}. AÇÃO: {acao_filtro}.
