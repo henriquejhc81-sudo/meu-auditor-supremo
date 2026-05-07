@@ -4,7 +4,7 @@ from PIL import Image
 try:
     from groq import Groq
 except ImportError:
-    st.error("🔄 O sistema está otimizando as bibliotecas. Aguarde 30 segundos.")
+    st.error("🔄 Otimizando pacotes... Por favor, aguarde e atualize a página.")
     st.stop()
 import google.generativeai as genai
 from duckduckgo_search import DDGS
@@ -13,8 +13,8 @@ import random
 import docx2txt
 import io
 
-# --- CONFIGURAÇÃO DA PÁGINA (INTEGRIDADE TOTAL MANTIDA) ---
-st.set_page_config(page_title="AETHER OMNI v88.0", page_icon="🛡️", layout="wide")
+# --- CONFIGURAÇÃO DA PÁGINA (PRESERVAÇÃO TOTAL) ---
+st.set_page_config(page_title="AETHER OMNI v88.1", page_icon="🛡️", layout="wide")
 
 # --- DESIGN ELITE TECH (MANTIDO) ---
 st.markdown("""
@@ -33,7 +33,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- FUNÇÃO DE LEITURA (PRESERVADA E AMPLIADA) ---
+# --- FUNÇÃO DE LEITURA (MANTIDA E INTEGRADA) ---
 def processar_arquivos(upload):
     conteudo = ""
     try:
@@ -48,29 +48,28 @@ def processar_arquivos(upload):
         else:
             conteudo = upload.read().decode("utf-8")
     except Exception as e:
-        st.error(f"Erro ao ler arquivo: {e}")
+        st.error(f"Erro na leitura: {e}")
     return conteudo
 
-# --- MOTOR DE INTELIGÊNCIA (CORREÇÃO SNIPER E NOVA FUNÇÃO) ---
+# --- MOTOR DE INTELIGÊNCIA HÍBRIDO (SNIPER FIX) ---
 def aether_brain(prompt, modo, contexto):
     try:
-        # A chave deve estar exatamente como 'GROQ_API_KEY' nos Secrets
         client = Groq(api_key=st.secrets["GROQ_API_KEY"])
     except Exception as e:
         return f"Erro de Configuração: {e}"
         
     for attempt in range(5):
         try:
-            # LÓGICA DE CRUZAMENTO DE DADOS (NOVA FUNÇÃO)
+            # LÓGICA ADITIVA: CRUZAMENTO DE MÚLTIPLOS DADOS
             instrucao_cruzamento = ""
             if contexto:
-                instrucao_cruzamento = f"\n⚠️ ANALISE COMPARATIVA: Cruze as informações do prompt do usuário com os dados do arquivo em anexo: {contexto}. Identifique divergências."
+                instrucao_cruzamento = f"\n🔍 PROTOCOLO DE CRUZAMENTO: Analise o prompt abaixo em conjunto com os dados extraídos do arquivo anexo ({contexto}). Identifique riscos, omissões ou divergências entre as duas fontes."
 
             prompt_sistema = f"""
-            Você é o AETHER OMNI v88.0. Missão: {modo}.
-            DIRETRIZ: Gere um DOSSIÊ DE BLINDAGEM técnica (LINDB). {instrucao_cruzamento}
+            Você é o AETHER OMNI v88.1. Missão: {modo}.
+            DIRETRIZ: {instrucao_cruzamento if contexto else "Gere um DOSSIÊ DE BLINDAGEM técnica (LINDB)."}
             
-            NOTA LEGAL: '⚠️ NOTA: Este relatório é um suporte tecnológico à decisão e não substitui o parecer jurídico.'
+            ⚠️ NOTA LEGAL OBRIGATÓRIA: 'Este relatório é um suporte tecnológico à decisão e não substitui o parecer jurídico.'
             """
             
             completion = client.chat.completions.create(
@@ -83,49 +82,49 @@ def aether_brain(prompt, modo, contexto):
             if "429" in str(e):
                 time.sleep(attempt + 5)
             else:
-                return f"Erro na rede neural Aether: {e}"
-    return "Aguardando cota..."
+                return f"Erro na rede neural: {e}"
+    return "Cota temporariamente excedida."
 
-# --- INTERFACE (MANTIDA E INTEGRADA) ---
+# --- INTERFACE (MANTIDA COM ADIÇÃO DE CRUZAMENTO) ---
 with st.sidebar:
     st.title("🛡️ AETHER OMNI")
-    st.caption("v88.0 | Elite Intelligence")
+    st.caption("v88.1 | Elite Intelligence")
     st.divider()
     modo = st.selectbox("🎯 Ação Estratégica", [
         "Auditoria Técnica + LINDB", 
         "Dossiê de Blindagem", 
-        "Cruzamento de Dados e Auditoria Comparativa" # NOVA OPÇÃO
+        "Cruzamento de Dados e Auditoria Comparativa" # NOVO DIFERENCIAL
     ])
     st.info("Sistemas de Imagem (Pillow) e Planilhas (Pandas) Protegidos.")
 
 st.title("🛡️ Centro de Inteligência Aether")
-st.markdown("<div class='status-box'>PROTOCOLO DE BLINDAGEM ATIVO | MOTOR HÍBRIDO | CRUZAMENTO DE DADOS ATIVADO</div>", unsafe_allow_html=True)
+st.markdown("<div class='status-box'>PROTOCOLO DE BLINDAGEM ATIVO | MOTOR HÍBRIDO | CRUZAMENTO DE DADOS ATIVO</div>", unsafe_allow_html=True)
 
 col1, col2 = st.columns([1, 1.2])
 
 with col1:
     st.subheader("Entrada de Dados")
-    user_input = st.text_area("Descreva o caso ou comando:", height=200)
-    upload = st.file_uploader("Subir arquivo para cruzamento", type=['docx', 'xlsx', 'xls', 'csv', 'txt', 'py'])
+    user_input = st.text_area("Descreva o caso ou solicite a análise de concorrência:", height=200)
+    upload = st.file_uploader("Subir arquivo para cruzamento/auditoria", type=['docx', 'xlsx', 'xls', 'csv', 'txt', 'py'])
 
 with col2:
     st.subheader("Dossiê de Auditoria")
     if st.button("INICIAR ANÁLISE ESTRATÉGICA"):
         conteudo_anexo = ""
         if upload:
-            with st.spinner("Extraindo dados para comparação..."):
+            with st.spinner("Sincronizando dados do anexo..."):
                 conteudo_anexo = processar_arquivos(upload)
         
         if user_input or conteudo_anexo:
-            with st.spinner("Cruzando informações e gerando blindagem..."):
+            with st.spinner("Executando Protocolo de Cruzamento..."):
                 resultado = aether_brain(user_input, modo, conteudo_anexo)
                 st.session_state['res_aether'] = resultado
-                st.markdown(f"<div class='dossie-box'>{resultado}</div>", unsafe_allow_html=True)
+                st.markdown(f<div class='dossie-box'>{resultado}</div>, unsafe_allow_html=True)
 
     if 'res_aether' in st.session_state:
-        st.download_button(label="📥 EXPORTAR DOSSIÊ", data=st.session_state['res_aether'], file_name="aether_audit.txt")
+        st.download_button(label="📥 EXPORTAR DOSSIÊ", data=st.session_state['res_aether'], file_name="aether_audit_v88.txt")
 
-# --- CONSULTA ANALISTA (RODAPÉ) ---
+# --- CONSULTA ANALISTA (RODAPÉ MANTIDO) ---
 st.divider()
 st.subheader("💬 Consultar Analista Aether")
 chat_in = st.text_input("Dúvida?")
