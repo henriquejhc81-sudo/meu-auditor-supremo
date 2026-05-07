@@ -13,7 +13,7 @@ import random
 import docx2txt
 import io
 
-# --- CONFIGURAÇÃO DA PÁGINA (PRESERVAÇÃO TOTAL) ---
+# --- CONFIGURAÇÃO DA PÁGINA (PRESERVAÇÃO TOTAL MANTIDA) ---
 st.set_page_config(page_title="AETHER OMNI v88.1", page_icon="🛡️", layout="wide")
 
 # --- DESIGN ELITE TECH (MANTIDO) ---
@@ -33,7 +33,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- FUNÇÃO DE LEITURA (MANTIDA E INTEGRADA) ---
+# --- FUNÇÃO DE LEITURA (MANTIDA) ---
 def processar_arquivos(upload):
     conteudo = ""
     try:
@@ -51,7 +51,7 @@ def processar_arquivos(upload):
         st.error(f"Erro na leitura: {e}")
     return conteudo
 
-# --- MOTOR DE INTELIGÊNCIA HÍBRIDO (SNIPER FIX) ---
+# --- MOTOR DE INTELIGÊNCIA HÍBRIDO ---
 def aether_brain(prompt, modo, contexto):
     try:
         client = Groq(api_key=st.secrets["GROQ_API_KEY"])
@@ -60,15 +60,13 @@ def aether_brain(prompt, modo, contexto):
         
     for attempt in range(5):
         try:
-            # LÓGICA ADITIVA: CRUZAMENTO DE MÚLTIPLOS DADOS
             instrucao_cruzamento = ""
             if contexto:
-                instrucao_cruzamento = f"\n🔍 PROTOCOLO DE CRUZAMENTO: Analise o prompt abaixo em conjunto com os dados extraídos do arquivo anexo ({contexto}). Identifique riscos, omissões ou divergências entre as duas fontes."
+                instrucao_cruzamento = f"\n🔍 PROTOCOLO DE CRUZAMENTO: Analise o prompt abaixo em conjunto com os dados extraídos do arquivo anexo ({contexto}). Identifique riscos ou divergências."
 
             prompt_sistema = f"""
             Você é o AETHER OMNI v88.1. Missão: {modo}.
             DIRETRIZ: {instrucao_cruzamento if contexto else "Gere um DOSSIÊ DE BLINDAGEM técnica (LINDB)."}
-            
             ⚠️ NOTA LEGAL OBRIGATÓRIA: 'Este relatório é um suporte tecnológico à decisão e não substitui o parecer jurídico.'
             """
             
@@ -85,7 +83,7 @@ def aether_brain(prompt, modo, contexto):
                 return f"Erro na rede neural: {e}"
     return "Cota temporariamente excedida."
 
-# --- INTERFACE (MANTIDA COM ADIÇÃO DE CRUZAMENTO) ---
+# --- INTERFACE ---
 with st.sidebar:
     st.title("🛡️ AETHER OMNI")
     st.caption("v88.1 | Elite Intelligence")
@@ -93,9 +91,8 @@ with st.sidebar:
     modo = st.selectbox("🎯 Ação Estratégica", [
         "Auditoria Técnica + LINDB", 
         "Dossiê de Blindagem", 
-        "Cruzamento de Dados e Auditoria Comparativa" # NOVO DIFERENCIAL
+        "Cruzamento de Dados e Auditoria Comparativa"
     ])
-    st.info("Sistemas de Imagem (Pillow) e Planilhas (Pandas) Protegidos.")
 
 st.title("🛡️ Centro de Inteligência Aether")
 st.markdown("<div class='status-box'>PROTOCOLO DE BLINDAGEM ATIVO | MOTOR HÍBRIDO | CRUZAMENTO DE DADOS ATIVO</div>", unsafe_allow_html=True)
@@ -104,27 +101,28 @@ col1, col2 = st.columns([1, 1.2])
 
 with col1:
     st.subheader("Entrada de Dados")
-    user_input = st.text_area("Descreva o caso ou solicite a análise de concorrência:", height=200)
-    upload = st.file_uploader("Subir arquivo para cruzamento/auditoria", type=['docx', 'xlsx', 'xls', 'csv', 'txt', 'py'])
+    user_input = st.text_area("Descreva o caso ou solicite a análise:", height=200)
+    upload = st.file_uploader("Subir arquivo para cruzamento", type=['docx', 'xlsx', 'xls', 'csv', 'txt', 'py'])
 
 with col2:
     st.subheader("Dossiê de Auditoria")
     if st.button("INICIAR ANÁLISE ESTRATÉGICA"):
         conteudo_anexo = ""
         if upload:
-            with st.spinner("Sincronizando dados do anexo..."):
+            with st.spinner("Sincronizando dados..."):
                 conteudo_anexo = processar_arquivos(upload)
         
         if user_input or conteudo_anexo:
-            with st.spinner("Executando Protocolo de Cruzamento..."):
+            with st.spinner("Gerando blindagem..."):
                 resultado = aether_brain(user_input, modo, conteudo_anexo)
                 st.session_state['res_aether'] = resultado
-                st.markdown(f<div class='dossie-box'>{resultado}</div>, unsafe_allow_html=True)
+                # CORREÇÃO DA LINHA 122 (ADICIONADO ASPAS NO F-STRING)
+                st.markdown(f"<div class='dossie-box'>{resultado}</div>", unsafe_allow_html=True)
 
     if 'res_aether' in st.session_state:
-        st.download_button(label="📥 EXPORTAR DOSSIÊ", data=st.session_state['res_aether'], file_name="aether_audit_v88.txt")
+        st.download_button(label="📥 EXPORTAR DOSSIÊ", data=st.session_state['res_aether'], file_name="aether_audit.txt")
 
-# --- CONSULTA ANALISTA (RODAPÉ MANTIDO) ---
+# --- CHAT SUPORTE ---
 st.divider()
 st.subheader("💬 Consultar Analista Aether")
 chat_in = st.text_input("Dúvida?")
