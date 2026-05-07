@@ -51,7 +51,7 @@ def processar_arquivos(upload):
         st.error(f"Erro na leitura: {e}")
     return conteudo
 
-# --- MOTOR DE INTELIGÊNCIA HÍBRIDO ---
+# --- MOTOR DE INTELIGÊNCIA HÍBRIDO (CORREÇÃO DO ERRO DE LISTA) ---
 def aether_brain(prompt, modo, contexto):
     try:
         client = Groq(api_key=st.secrets["GROQ_API_KEY"])
@@ -62,7 +62,7 @@ def aether_brain(prompt, modo, contexto):
         try:
             instrucao_cruzamento = ""
             if contexto:
-                instrucao_cruzamento = f"\n🔍 PROTOCOLO DE CRUZAMENTO: Analise o prompt abaixo em conjunto com os dados extraídos do arquivo anexo ({contexto}). Identifique riscos ou divergências."
+                instrucao_cruzamento = f"\n🔍 PROTOCOLO DE CRUZAMENTO: Analise o prompt abaixo em conjunto com os dados extraídos do arquivo anexo ({contexto})."
 
             prompt_sistema = f"""
             Você é o AETHER OMNI v88.1. Missão: {modo}.
@@ -75,7 +75,8 @@ def aether_brain(prompt, modo, contexto):
                 model="llama-3.3-70b-versatile",
                 temperature=0.1
             )
-            return completion.choices.message.content
+            # CORREÇÃO AQUI: Acesso direto ao conteúdo da mensagem
+            return completion.choices[0].message.content
         except Exception as e:
             if "429" in str(e):
                 time.sleep(attempt + 5)
@@ -116,13 +117,12 @@ with col2:
             with st.spinner("Gerando blindagem..."):
                 resultado = aether_brain(user_input, modo, conteudo_anexo)
                 st.session_state['res_aether'] = resultado
-                # CORREÇÃO DA LINHA 122 (ADICIONADO ASPAS NO F-STRING)
                 st.markdown(f"<div class='dossie-box'>{resultado}</div>", unsafe_allow_html=True)
 
     if 'res_aether' in st.session_state:
         st.download_button(label="📥 EXPORTAR DOSSIÊ", data=st.session_state['res_aether'], file_name="aether_audit.txt")
 
-# --- CHAT SUPORTE ---
+# --- CONSULTA ANALISTA ---
 st.divider()
 st.subheader("💬 Consultar Analista Aether")
 chat_in = st.text_input("Dúvida?")
