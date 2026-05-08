@@ -47,7 +47,7 @@ def processar_arquivos(upload):
         st.error(f"Erro na leitura técnica: {e}")
     return conteudo
 
-# --- 🧠 MOTOR DE INTELIGÊNCIA HÍBRIDO (MÉTODO ADITIVO - PILAR C) ---
+# --- 🧠 MOTOR DE INTELIGÊNCIA HÍBRIDO (CORREÇÃO DE ATRIBUTO) ---
 def aether_brain(prompt, modo, contexto):
     try:
         client = Groq(api_key=st.secrets["GROQ_API_KEY"])
@@ -56,17 +56,15 @@ def aether_brain(prompt, modo, contexto):
         
     for attempt in range(5):
         try:
-            # LÓGICA DE GERAÇÃO DE DOCUMENTOS (NOVA FUNÇÃO PILAR C)
             instrucao_documento = ""
             if "Gerador de Documentos" in modo:
-                instrucao_documento = "MISSÃO: Gere uma MINUTA DE ADITIVO CONTRATUAL ou DOCUMENTO FORMAL. Use linguagem jurídica de alto nível, cite cláusulas padrão e fundamente na LINDB e Código Civil."
+                instrucao_documento = "MISSÃO: Gere uma MINUTA DE ADITIVO CONTRATUAL formal. Use terminologia jurídica sênior, fundamentação na LINDB e estrutura de cláusulas."
             
             prompt_sistema = f"""
             Você é o AETHER OMNI v88.2. Atue como Sênior Big Four / Skadden Arps.
-            MODO: {modo}.
-            {instrucao_documento}
-            CONTEXTO: {contexto if contexto else "Análise Estratégica Geral."}
-            NOTA LEGAL: '⚠️ NOTA: Este documento é uma minuta de suporte tecnológico e não substitui a revisão por um advogado.'
+            MODO: {modo}. {instrucao_documento}
+            CONTEXTO: {contexto if contexto else "Análise Estratégica."}
+            NOTA LEGAL: '⚠️ NOTA: Este documento é uma minuta tecnológica e não substitui a revisão por um advogado.'
             """
             
             completion = client.chat.completions.create(
@@ -74,13 +72,16 @@ def aether_brain(prompt, modo, contexto):
                 model="llama-3.3-70b-versatile",
                 temperature=0.1
             )
-            return completion.choices.message.content
+            # CORREÇÃO DEFINITIVA PARA O ERRO DE LISTA
+            return completion.choices[0].message.content
         except Exception as e:
-            if "429" in str(e): time.sleep(attempt + 5)
-            else: return f"Erro na rede neural: {e}"
+            if "429" in str(e):
+                time.sleep(attempt + 5)
+            else:
+                return f"Erro na rede neural: {e}"
     return "Cota excedida."
 
-# --- 📂 SIDEBAR (PILARES MANTIDOS) ---
+# --- 📂 SIDEBAR ---
 with st.sidebar:
     st.title("🛡️ AETHER OMNI")
     st.caption("v88.2 | Elite Intelligence")
@@ -88,12 +89,12 @@ with st.sidebar:
     pilar = st.radio("📂 PILARES DE ATUAÇÃO", [
         "🛡️ Pilar A: Auditoria & Compliance",
         "⚖️ Pilar B: Legal & Due Diligence",
-        "📄 Pilar C: Gerador de Documentos" # FOCO DESTA ATUALIZAÇÃO
+        "📄 Pilar C: Gerador de Documentos"
     ])
     st.divider()
     funcao_elite = st.selectbox("Protocolo de Elite:", [
         "Scanner de Risco (Kroll)",
-        "Auto-Minuta de Aditivo (Skadden)", # NOVA FUNÇÃO
+        "Auto-Minuta de Aditivo (Skadden)",
         "Matriz de Compliance (KPMG)",
         "Gerar Resumo para o CEO"
     ])
@@ -113,7 +114,7 @@ col_in, col_out = st.columns([1, 1.2])
 
 with col_in:
     st.subheader("📥 Magic Upload & Comando")
-    user_input = st.text_area("Descreva o que deseja redigir ou analisar:", height=250, placeholder="Ex: Gere o aditivo para reduzir a multa para R$ 100k...")
+    user_input = st.text_area("Descreva o que deseja redigir ou analisar:", height=250)
     upload = st.file_uploader("Subir contrato base", accept_multiple_files=False)
 
 with col_out:
@@ -125,17 +126,10 @@ with col_out:
                 conteudo_anexo = processar_arquivos(upload)
         
         if user_input or conteudo_anexo:
-            with st.spinner("Gerando documento de blindagem..."):
+            with st.spinner("Gerando documento de elite..."):
                 resultado = aether_brain(user_input, f"{pilar} - {funcao_elite}", conteudo_anexo)
                 st.session_state['res_aether'] = resultado
                 st.markdown(f"<div class='dossie-box'>{resultado}</div>", unsafe_allow_html=True)
 
     if 'res_aether' in st.session_state:
         st.download_button(label="📥 EXPORTAR DOCUMENTO / ADITIVO", data=st.session_state['res_aether'], file_name="AETHER_DOC_FINAL.txt")
-
-st.divider()
-st.subheader("💬 Consultar Especialista Aether")
-chat_in = st.text_input("Ajustar termos do documento?")
-if chat_in and 'res_aether' in st.session_state:
-    with st.chat_message("assistant"):
-        st.markdown(aether_brain(f"Contexto: {st.session_state['res_aether']}. Dúvida: {chat_in}", "Suporte Documental", ""))
