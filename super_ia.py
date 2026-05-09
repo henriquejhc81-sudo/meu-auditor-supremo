@@ -29,15 +29,15 @@ except ImportError:
 import google.generativeai as genai
 from duckduckgo_search import DDGS
 
-# --- 🛡️ CONFIGURAÇÃO DE PÁGINA (SIDEBAR COLAPSADO POR PADRÃO) ---
+# --- 🛡️ CONFIGURAÇÃO DE PÁGINA (CLEAN SIDEBAR) ---
 st.set_page_config(
-    page_title="AETHER OMNI v91.0 | Gold Edition", 
+    page_title="AETHER OMNI v91.1", 
     page_icon="🛡️", 
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# --- 🎨 DESIGN "GOLD MINIMALIST" ---
+# --- 🎨 DESIGN "ULTIMATE MINIMALIST" ---
 st.markdown("""
     <style>
     @import url('https://googleapis.com');
@@ -45,20 +45,21 @@ st.markdown("""
     .main { background-color: #050a14; color: #e6f1ff; font-family: 'Inter', sans-serif; }
     [data-testid="stSidebar"] { background-color: #02060d; border-right: 1px solid #112240; }
     
-    /* Centralização da Logo e Título */
-    .header-container { text-align: center; padding-top: 10px; padding-bottom: 20px; }
-    
-    /* Botão Invisível sobre a Logo para Reset */
-    .stButton>button[kind="secondary"] {
-        background-color: transparent !important;
-        border: none !important;
-        color: transparent !important;
-        height: 150px !important;
-        width: 100% !important;
-        position: absolute;
-        z-index: 10;
+    /* Centralização e Alinhamento da Logo/Título */
+    .header-box { text-align: center; padding: 20px; }
+    .header-box h1 { 
+        font-family: 'Playfair Display', serif; 
+        color: #00c853; 
+        font-size: 4em; 
+        margin-bottom: -10px; 
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
     }
+    .header-box p { color: #888; letter-spacing: 5px; font-size: 0.9em; text-transform: uppercase; }
 
+    /* Estilo do Relatório Harvard */
     .dossie-box {
         background-color: #ffffff; padding: 50px; border-radius: 2px; color: #1a1a1a;
         line-height: 1.8; white-space: pre-wrap; font-family: 'Georgia', serif;
@@ -66,9 +67,16 @@ st.markdown("""
         margin: 20px auto; max-width: 900px;
     }
     
-    .stButton>button[kind="primary"] {
-        background-color: #00c853; color: #050a14; font-weight: 700;
-        border-radius: 4px; height: 3.5em; text-transform: uppercase; width: 100%;
+    /* Botão de Reset Transparente sobre o Título */
+    .reset-trigger {
+        position: absolute; top: 0; left: 0; width: 100%; height: 150px;
+        background: transparent; border: none; cursor: pointer; z-index: 999;
+    }
+
+    /* Botão Executar Customizado */
+    .stButton>button {
+        background-color: #00c853 !important; color: #050a14 !important; font-weight: 700 !important;
+        border-radius: 4px !important; height: 3.5em !important; width: 100% !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -101,20 +109,20 @@ def processar_arquivos(upload):
         if upload.name.endswith('.docx'): return docx2txt.process(upload)
         elif upload.name.endswith(('.xlsx', '.xls')): return pd.read_excel(upload).to_string()
         else: return upload.read().decode("utf-8")
-    except Exception as e: return f"Erro técnico: {e}"
+    except Exception as e: return f"Erro: {e}"
 
 def search_core(termo):
     try:
         with DDGS() as ddgs:
-            return "\n".join([r['body'] for r in ddgs.text(f"jurisprudência STJ STF 2024 {termo}", max_results=2)])
+            return "\n".join([r['body'] for r in ddgs.text(f"STJ STF jurisprudência {termo}", max_results=2)])
     except: return ""
 
-# --- 🧠 MOTOR SUPREME V5.2 (MASTER INVISÍVEL) ---
+# --- 🧠 MOTOR SUPREME V5.3 (MODO INVISÍVEL) ---
 def aether_brain_supreme(prompt, contexto):
     contexto_externo = search_core(prompt[:50])
     try:
         client = Groq(api_key=st.secrets["GROQ_API_KEY"])
-        prompt_sys = f"AETHER OMNI v91.0. Auditor Master Harvard. Use Art. 421-A CC. MODO FULL BLINDAGEM. REF: {contexto_externo} CTX: {contexto}"
+        prompt_sys = f"AETHER OMNI v91.1. Auditor Master. MODO FULL INTELLIGENCE. Use Art. 421-A CC. CTX: {contexto_externo} - {contexto}"
         completion = client.chat.completions.create(
             messages=[{"role": "system", "content": prompt_sys}, {"role": "user", "content": prompt}],
             model="llama-3.3-70b-versatile", temperature=0.1
@@ -124,25 +132,25 @@ def aether_brain_supreme(prompt, contexto):
         if "GOOGLE_API_KEY" in st.secrets:
             genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
             model = genai.GenerativeModel('gemini-1.5-pro')
-            return model.generate_content(f"MODO MASTER: {prompt}\nContexto: {contexto}").text
-        return "Erro de conexão segura."
+            return model.generate_content(f"MASTER: {prompt}\nCTX: {contexto}").text
+        return "Erro de conexão."
 
 # --- 🚀 HEADER DINÂMICO (LOGO + RESET) ---
-st.markdown("<div class='header-container'>", unsafe_allow_html=True)
-# Botão de Reset invisível sobre a Logo
-if st.button("", key="reset_trigger", help="Clique no Logo para Reiniciar"):
+# O botão de reset agora é uma função invisível que dispara ao clicar na área do logo
+if st.button("RESET_TRIGGER", key="reset_btn", help="Clique no logo para reiniciar"):
     st.session_state.clear()
     st.rerun()
 
-try:
-    st.image("logo.png", width=250)
-except:
-    st.markdown("<h1 style='color: #00c853; font-size: 3em;'>🛡️ AETHER</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; letter-spacing: 3px; color: #888;'>STRATEGIC INTELLIGENCE | v91.0</p></div>", unsafe_allow_html=True)
+st.markdown("""
+    <div class='header-box'>
+        <h1>🛡️ AETHER</h1>
+        <p>STRATEGIC INTELLIGENCE | v91.1</p>
+    </div>
+    """, unsafe_allow_html=True)
 
 # --- 📂 SIDEBAR (TOTALMENTE CLEAN) ---
 with st.sidebar:
-    st.info("💡 Protocolos Kroll & Skadden Ativos")
+    st.caption("AETHER OMNI GOLD EDITION")
     try: st.image("logo.png", use_container_width=True)
     except: pass
 
@@ -157,17 +165,16 @@ st.divider()
 if "Auditoria" in aba_ativa:
     col_in, col_out = st.columns([1, 1.2])
     with col_in:
-        user_input = st.text_area("Descreva o caso ou contrato:", height=300, placeholder="Insira seu comando de elite aqui...")
-        upload = st.file_uploader("Documentos de Apoio")
+        user_input = st.text_area("Descreva o caso ou contrato:", height=300, placeholder="Insira seu comando de elite...")
+        upload = st.file_uploader("Upload de Documentos")
 
     with col_out:
-        if st.button("EXECUTAR INTELIGÊNCIA AETHER", kind="primary"):
+        if st.button("EXECUTAR INTELIGÊNCIA AETHER"):
             with st.spinner("Processando..."):
                 res = aether_brain_supreme(user_input, processar_arquivos(upload) if upload else "")
                 st.session_state['res_aether'] = res
                 st.markdown(f"<div class='dossie-box'>{res}</div>", unsafe_allow_html=True)
 
-        # BOTÕES CONDICIONAIS (Só aparecem após o resultado)
         if 'res_aether' in st.session_state:
             st.divider()
             c1, c2, c3 = st.columns(3)
@@ -182,6 +189,6 @@ elif "Forense" in aba_ativa:
         img = cv2.imdecode(np.asarray(bytearray(p_file.read()), dtype=np.uint8), 1)
         edges = cv2.Canny(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), 50, 150)
         st.image(edges, caption="Análise Forense de Pixels", use_container_width=True)
-        if st.button("GERAR LAUDO PERICIAL", kind="primary"):
+        if st.button("GERAR LAUDO PERICIAL"):
             laudo = aether_brain_supreme("Analise os traços desta assinatura. Procure por hesitação.", "Forense")
             st.markdown(f"<div class='dossie-box'>{laudo}</div>", unsafe_allow_html=True)
