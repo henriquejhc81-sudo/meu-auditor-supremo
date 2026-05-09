@@ -30,16 +30,19 @@ import google.generativeai as genai
 from duckduckgo_search import DDGS
 
 # --- 🛡️ CONFIGURAÇÃO DE PÁGINA ---
-st.set_page_config(page_title="AETHER OMNI v90.0 | Ultimate Edition", page_icon="🛡️", layout="wide")
+st.set_page_config(page_title="AETHER OMNI v90.1", page_icon="🛡️", layout="wide")
 
-# --- 🎨 DESIGN "ULTIMATE CLEAN" ---
+# --- 🎨 DESIGN "SUPREME CLEAN" ---
 st.markdown("""
     <style>
     @import url('https://googleapis.com');
     .main { background-color: #050a14; color: #e6f1ff; font-family: 'Inter', sans-serif; }
     [data-testid="stSidebar"] { background-color: #02060d; border-right: 1px solid #112240; }
     
-    /* Relatório Harvard Style */
+    .header-logo { text-align: center; padding-bottom: 20px; }
+    .header-logo h1 { font-family: 'Playfair Display', serif; color: #00c853; font-size: 3em; margin-bottom: 0; }
+    .header-logo p { color: #e6f1ff; font-weight: 400; letter-spacing: 2px; }
+
     .dossie-box {
         background-color: #ffffff; padding: 50px; border-radius: 2px; color: #1a1a1a;
         line-height: 1.8; white-space: pre-wrap; font-family: 'Georgia', serif;
@@ -50,20 +53,17 @@ st.markdown("""
         background-color: #00c853; color: #050a14; font-weight: 700;
         border-radius: 4px; height: 3.5em; text-transform: uppercase;
     }
-    /* Estilo para Logo Interativa */
-    .logo-container { cursor: pointer; text-align: center; transition: 0.3s; }
-    .logo-container:hover { opacity: 0.8; transform: scale(1.02); }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 🛠️ FUNÇÕES DE EXPORTAÇÃO (CORE PRESERVADO) ---
+# --- 🛠️ FUNÇÕES DE EXPORTAÇÃO ---
 def export_pdf(texto):
     if not PDF_READY: return None
     pdf = FPDF()
     pdf.add_page()
     try: pdf.image('logo.png', 10, 8, 33)
     except: pass
-    pdf.set_font("Arial", 'B', 16); pdf.cell(0, 20, "RELATÓRIO DE ESTRATÉGIA AETHER", ln=True, align='C'); pdf.ln(10)
+    pdf.set_font("Arial", 'B', 16); pdf.cell(0, 20, "RELATÓRIO AETHER", ln=True, align='C'); pdf.ln(10)
     pdf.set_font("Arial", size=11)
     safe_text = texto.replace("🚨", "ALERTA:").encode('latin-1', 'replace').decode('latin-1')
     pdf.multi_cell(0, 8, txt=safe_text)
@@ -89,17 +89,15 @@ def processar_arquivos(upload):
 def search_core(termo):
     try:
         with DDGS() as ddgs:
-            return "\n".join([r['body'] for r in ddgs.text(f"jurisprudência STJ STF 2024 {termo}", max_results=2)])
+            return "\n".join([r['body'] for r in ddgs.text(f"jurisprudência STJ STF {termo}", max_results=2)])
     except: return ""
 
-# --- 🧠 MOTOR SUPREME V5.0 (INVISIBLE INTELLIGENCE) ---
+# --- 🧠 MOTOR SUPREME V5.1 (MODO INVISÍVEL) ---
 def aether_brain_supreme(prompt, contexto):
-    # Double-Check agora é invisível e nativo
     contexto_externo = search_core(prompt[:50])
     try:
         client = Groq(api_key=st.secrets["GROQ_API_KEY"])
-        # Instruções de Elite (Blindagem e Auditoria ativas por padrão)
-        prompt_sys = f"AETHER OMNI v90.0. Auditor Master Harvard. MODO FULL INTELLIGENCE. Use Art. 421-A CC. REF: {contexto_externo} CTX: {contexto}"
+        prompt_sys = f"AETHER OMNI v90.1. Auditor Master. MODO FULL INTELLIGENCE. Use Art. 421-A CC. REF: {contexto_externo} CTX: {contexto}"
         completion = client.chat.completions.create(
             messages=[{"role": "system", "content": prompt_sys}, {"role": "user", "content": prompt}],
             model="llama-3.3-70b-versatile", temperature=0.1
@@ -112,25 +110,23 @@ def aether_brain_supreme(prompt, contexto):
             return model.generate_content(f"MODO MASTER: {prompt}\nContexto: {contexto}").text
         return "Erro de conexão."
 
-# --- 📂 SIDEBAR (MARKET READY) ---
+# --- 📂 SIDEBAR (CLEAN) ---
 with st.sidebar:
-    # Logo Interativa que reinicia o sistema
-    if st.button("🛡️ RESET AETHER", help="Clique na logo para reiniciar o sistema"):
+    if st.button("🛡️ RESET SYSTEM"):
         st.session_state.clear()
         st.rerun()
-    
-    try: st.image("logo.png", width=160)
-    except: st.markdown("<h1 style='color: #00c853; text-align: center;'>AETHER</h1>", unsafe_allow_html=True)
-    
-    st.caption("Strategic Intelligence | v90.0")
     st.divider()
-    st.markdown("---")
-    # Toggles e Configurações agora são Core (Ativos e Ocultos conforme solicitado)
+    try: st.image("logo.png", use_container_width=True)
+    except: pass
 
 # --- 🚀 INTERFACE PRINCIPAL ---
-st.title("🏢 Strategic Operations Center")
+st.markdown("""
+    <div class='header-logo'>
+        <h1>🛡️ AETHER</h1>
+        <p>STRATEGIC INTELLIGENCE</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-# Segmented Control para Módulos
 if MODO_MODERNO:
     aba_ativa = segmented_control(options=["🛡️ Auditoria", "🔍 Forense", "🏗️ Engenharia"], index=0)
 else:
@@ -141,17 +137,17 @@ st.divider()
 if "Auditoria" in aba_ativa:
     col_in, col_out = st.columns([1, 1.2])
     with col_in:
-        user_input = st.text_area("Descreva o caso ou cole o contrato para processamento total:", height=350)
+        user_input = st.text_area("Descreva o caso ou cole o contrato para processamento:", height=350)
         upload = st.file_uploader("Upload de Documentos")
 
     with col_out:
         if st.button("EXECUTAR INTELIGÊNCIA AETHER"):
-            with st.spinner("Processando Inteligência de Elite..."):
+            with st.spinner("Processando..."):
                 res = aether_brain_supreme(user_input, processar_arquivos(upload) if upload else "")
                 st.session_state['res_aether'] = res
                 st.markdown(f"<div class='dossie-box'>{res}</div>", unsafe_allow_html=True)
 
-        # Botões de Exportação só aparecem APÓS a geração (Limpeza Total)
+        # Lógica de Botões Condicionais (FIXED)
         if 'res_aether' in st.session_state:
             st.divider()
             c1, c2, c3 = st.columns(3)
@@ -160,14 +156,12 @@ if "Auditoria" in aba_ativa:
             with c3: st.download_button("📑 TXT", data=st.session_state['res_aether'].encode('utf-8'), file_name="AETHER_REPORT.txt")
 
 elif "Forense" in aba_ativa:
-    st.subheader("🔍 Perícia Grafotécnica (OpenCV Core)")
+    st.subheader("🔍 Perícia Grafotécnica (OpenCV)")
     p_file = st.file_uploader("Upload de Amostra", type=['png', 'jpg'])
     if p_file:
-        # Processamento OpenCV automático nos bastidores
         img = cv2.imdecode(np.asarray(bytearray(p_file.read()), dtype=np.uint8), 1)
         edges = cv2.Canny(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), 50, 150)
         st.image(edges, caption="Análise Forense de Pixels", use_container_width=True)
-        
         if st.button("GERAR LAUDO PERICIAL"):
             laudo = aether_brain_supreme("Analise os traços desta assinatura. Procure por hesitação.", "Forense")
             st.session_state['res_forense'] = laudo
