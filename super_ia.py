@@ -29,8 +29,13 @@ except ImportError:
 import google.generativeai as genai
 from duckduckgo_search import DDGS
 
-# --- 🛡️ CONFIGURAÇÃO DE PÁGINA (RESPONSIVO & CLEAN) ---
-st.set_page_config(page_title="AETHER OMNI v92.3", page_icon="🛡️", layout="wide", initial_sidebar_state="collapsed")
+# --- 🛡️ CONFIGURAÇÃO DE PÁGINA (CLEAN & RESPONSIVE) ---
+st.set_page_config(
+    page_title="AETHER OMNI v92.4", 
+    page_icon="🛡️", 
+    layout="wide", 
+    initial_sidebar_state="collapsed"
+)
 
 # --- 🎨 DESIGN "PLATINUM SUPREME" (FIXED) ---
 st.markdown("""
@@ -39,12 +44,12 @@ st.markdown("""
     .main { background-color: #050a14; color: #e6f1ff; font-family: 'Inter', sans-serif; }
     [data-testid="stSidebar"] { background-color: #02060d; border-right: 1px solid #112240; }
     
-    /* Centralização de Logo e Título */
+    /* Centralização de Logo e Título Único */
     .header-box { text-align: center; padding: 20px; position: relative; }
-    .header-box h1 { font-family: 'Playfair Display', serif; color: #00c853; font-size: calc(2.5em + 1.5vw); margin: 0; }
+    .header-box h1 { font-family: 'Playfair Display', serif; color: #00c853; font-size: calc(2.2em + 1.5vw); margin: 0; }
     .header-box p { color: #888; letter-spacing: 5px; font-size: 0.8em; text-transform: uppercase; margin-top: -5px; }
 
-    /* Estilo do Relatório Harvard (Preservado) */
+    /* Relatório Harvard (DNA do Projeto) */
     .dossie-box {
         background-color: #ffffff; padding: 40px; border-radius: 2px; color: #1a1a1a;
         line-height: 1.8; white-space: pre-wrap; font-family: 'Georgia', serif;
@@ -52,15 +57,15 @@ st.markdown("""
         margin: 20px auto; width: 95%; max-width: 900px;
     }
 
-    /* Botão Reset Invisível sobre a Logo */
+    /* Reset Invisível sobre o Logo */
     div.stButton > button[key="reset_supreme"] {
         background: transparent !important; color: transparent !important; border: none !important;
-        position: absolute; top: 0; left: 0; width: 100%; height: 150px; z-index: 1000;
+        position: absolute; top: 0; left: 0; width: 100%; height: 160px; z-index: 1000;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 🛠️ FUNÇÕES DE EXPORTAÇÃO (CORE INTACTO) ---
+# --- 🛠️ FUNÇÕES DE EXPORTAÇÃO (CORE PRESERVADO) ---
 def export_pdf(texto):
     if not PDF_READY: return None
     pdf = FPDF()
@@ -90,16 +95,16 @@ def processar_arquivos(upload):
         else: return upload.read().decode("utf-8")
     except Exception as e: return f"Erro: {e}"
 
-# --- 🧠 MOTOR SUPREME V5.6 (HÍBRIDO) ---
+# --- 🧠 MOTOR SUPREME V5.7 (HÍBRIDO & DOUBLE-CHECK) ---
 def aether_brain_supreme(prompt, contexto):
     try:
         with DDGS() as ddgs:
-            contexto_ext = "\n".join([r['body'] for r in ddgs.text(f"STJ STF 2024 {prompt[:30]}", max_results=2)])
+            contexto_ext = "\n".join([r['body'] for r in ddgs.text(f"jurisprudência STJ STF 2024 {prompt[:30]}", max_results=2)])
     except: contexto_ext = ""
     
     try:
         client = Groq(api_key=st.secrets["GROQ_API_KEY"])
-        prompt_sys = f"AETHER OMNI v92.3. Auditor Harvard. Use Art. 421-A CC. CTX: {contexto_ext} - {contexto}"
+        prompt_sys = f"AETHER OMNI v92.4. Master Auditor Harvard. Use Art. 421-A CC. CTX: {contexto_ext} - {contexto}"
         completion = client.chat.completions.create(
             messages=[{"role": "system", "content": prompt_sys}, {"role": "user", "content": prompt}],
             model="llama-3.3-70b-versatile", temperature=0.1
@@ -112,23 +117,23 @@ def aether_brain_supreme(prompt, contexto):
             return model.generate_content(f"MASTER: {prompt}\nCTX: {contexto}").text
         return "Erro de conexão segura."
 
-# --- 🚀 HEADER ÚNICO (LOGO + RESET INTEGRADO) ---
+# --- 🚀 HEADER CENTRALIZADO (LOGO + RESET FIXED) ---
 st.markdown("<div class='header-box'>", unsafe_allow_html=True)
-c1, c2, c3 = st.columns() # Centralização forçada com 3 colunas
-with c2:
+col1, col2, col3 = st.columns(3) # Definido 3 colunas explicitamente para evitar TypeError
+with col2:
     if st.button(" ", key="reset_supreme", help="Clique no logo para reiniciar"):
         st.session_state.clear()
         st.rerun()
     try: st.image("logo.png", width=140)
-    except: pass # Se não houver logo, não duplica o nome
-st.markdown("<h1>AETHER</h1><p>STRATEGIC INTELLIGENCE | v92.3</p></div>", unsafe_allow_html=True)
+    except: pass 
+st.markdown("<h1>AETHER</h1><p>STRATEGIC INTELLIGENCE | v92.4</p></div>", unsafe_allow_html=True)
 
 # --- 🏗️ INTERFACE ---
 if MODO_MODERNO:
     try: aba_ativa = segmented_control(options=["🛡️ Auditoria", "🔍 Forense", "🏗️ Engenharia"], index=0)
-    except: aba_ativa = st.radio("Selecione o Pilar:", ["🛡️ Auditoria", "🔍 Forense", "🏗️ Engenharia"], horizontal=True)
+    except: aba_ativa = st.radio("Módulo:", ["🛡️ Auditoria", "🔍 Forense", "🏗️ Engenharia"], horizontal=True)
 else:
-    aba_ativa = st.radio("Selecione o Pilar:", ["🛡️ Auditoria", "🔍 Forense", "🏗️ Engenharia"], horizontal=True)
+    aba_ativa = st.radio("Módulo:", ["🛡️ Auditoria", "🔍 Forense", "🏗️ Engenharia"], horizontal=True)
 
 st.divider()
 
@@ -157,7 +162,7 @@ elif "Forense" in aba_ativa:
     if p_file:
         img = cv2.imdecode(np.asarray(bytearray(p_file.read()), dtype=np.uint8), 1)
         edges = cv2.Canny(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), 50, 150)
-        st.image(edges, caption="Análise Forense", use_container_width=True)
+        st.image(edges, caption="Análise Forense de Pixels", use_container_width=True)
         if st.button("GERAR LAUDO PERICIAL"):
             laudo = aether_brain_supreme("Analise os traços desta assinatura. Procure por hesitação.", "Forense")
             st.markdown(f"<div class='dossie-box'>{laudo}</div>", unsafe_allow_html=True)
