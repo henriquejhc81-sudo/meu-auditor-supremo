@@ -7,3 +7,8 @@ openpyxl>=3.1.0
 groq
 duckduckgo_search
 docx2txt
+streamlit-extras
+langchain-community
+faiss-cpu
+opencv-python-headless
+python-magic
