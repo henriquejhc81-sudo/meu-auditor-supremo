@@ -19,7 +19,7 @@ from streamlit_extras.grid import grid
 # --- 🛡️ PROTOCOLO DE PRESERVAÇÃO: CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(page_title="AETHER OMNI v88.3 | Legal Ops Hub", page_icon="🛡️", layout="wide")
 
-# --- 🎨 DESIGN ENTERPRISE "NAVY BLUE" (PRESERVADO) ---
+# --- 🎨 DESIGN ENTERPRISE "NAVY BLUE" ---
 st.markdown("""
     <style>
     .main { background-color: #050a14; color: #e6f1ff; font-family: 'Inter', sans-serif; }
@@ -48,7 +48,7 @@ def processar_arquivos(upload):
         st.error(f"Erro na leitura técnica: {e}")
     return conteudo
 
-# --- 🧠 MOTOR DE INTELIGÊNCIA V3.5 (EVOLUÍDO COM ESCRETA DEFENSIVA) ---
+# --- 🧠 MOTOR V3.5 (REVISADO) ---
 def aether_brain_v3(prompt, modo, contexto, strict_mode=True):
     try:
         client = Groq(api_key=st.secrets["GROQ_API_KEY"])
@@ -59,12 +59,7 @@ def aether_brain_v3(prompt, modo, contexto, strict_mode=True):
     if strict_mode:
         instrucao_blindagem = "FOCO: Blindagem Patrimonial e Redliner Defensivo. Identifique riscos que humanos ignoram. Se houver fraude ou prescrição, inicie com 'ALERTA DE FRAUDE'."
 
-    prompt_sistema = f"""
-    Você é o AETHER OMNI v88.3 - Auditor Jurídico Sênior (Big Four style).
-    MODO: {modo}. {instrucao_blindagem}
-    CONTEXTO: {contexto if contexto else "Análise Estratégica."}
-    ⚠️ NOTA: Este documento é uma minuta tecnológica e não substitui a revisão por um advogado.
-    """
+    prompt_sistema = f"Você é o AETHER OMNI v88.3. MODO: {modo}. {instrucao_blindagem} CONTEXTO: {contexto if contexto else 'Análise Estratégica.'}"
     
     try:
         completion = client.chat.completions.create(
@@ -72,33 +67,26 @@ def aether_brain_v3(prompt, modo, contexto, strict_mode=True):
             model="llama-3.3-70b-versatile",
             temperature=0.1
         )
+        # Fix de atributo .choices[0]
         return completion.choices[0].message.content
     except Exception as e:
         return f"Erro na rede neural: {e}"
 
-# --- 📂 SIDEBAR EVOLUÍDA ---
+# --- 📂 SIDEBAR ---
 with st.sidebar:
     st.title("🛡️ AETHER OMNI")
-    st.caption("v88.3 | Legal Operations Hub")
+    st.caption("v88.3 | Elite Intelligence")
     st.divider()
-    
-    # Toggles de Perícia (Nova Função solicitada)
     with st.expander("🛠️ CONFIGURAÇÕES DA PERÍCIA", expanded=True):
         strict_mode = st.toggle("Modo Blindagem Patrimonial", value=True)
-        check_vigencia = st.toggle("Double-Check Legislativo", value=True)
         ocr_active = st.toggle("Análise de Assinatura (OpenCV)", value=False)
-
     st.divider()
-    funcao_elite = st.selectbox("Protocolo de Elite:", [
-        "Scanner de Risco (Kroll)", 
-        "Auto-Minuta de Aditivo (Skadden)", 
-        "Matriz de Compliance (KPMG)",
-        "Análise Forense de Documento"
-    ])
+    funcao_elite = st.selectbox("Protocolo de Elite:", ["Scanner de Risco (Kroll)", "Auto-Minuta de Aditivo (Skadden)", "Matriz de Compliance (KPMG)"])
 
-# --- 🚀 TELA PRINCIPAL: NAVEGAÇÃO SEGMENTADA ---
+# --- 🚀 TELA PRINCIPAL ---
 st.title("🏢 Centro de Inteligência & Forense")
 
+# Segmented control usando a biblioteca instalada
 aba_ativa = segmented_control(
     label="Selecione o Pilar de Atuação:",
     options=["🛡️ Auditoria", "🔍 Forense Digital", "🏗️ Engenharia de Docs"],
@@ -108,37 +96,30 @@ aba_ativa = segmented_control(
 st.divider()
 
 if aba_ativa == "🛡️ Auditoria":
-    # Layout Original Preservado
     c1, c2, c3 = st.columns(3)
     with c1: st.markdown("<div class='insight-card'>🚨 <b>Risco:</b> Divergência M&A.</div>", unsafe_allow_html=True)
     with c2: st.markdown("<div class='insight-card'>⚖️ <b>Sugerido:</b> Redução de Multa.</div>", unsafe_allow_html=True)
-    with c3: st.markdown("<div class='insight-card'>📄 <b>Pilar C:</b> Pronto para redigir.</div>", unsafe_allow_html=True)
+    with c3: st.markdown("<div class='insight-card'>📄 <b>Status:</b> Pronto para redigir.</div>", unsafe_allow_html=True)
 
     col_in, col_out = st.columns([1, 1.2])
     with col_in:
-        user_input = st.text_area("Descreva a análise desejada:", height=200)
+        user_input = st.text_area("Descreva a análise desejada:", height=250)
         upload = st.file_uploader("Subir contrato base", type=['pdf', 'docx', 'xlsx'])
 
     with col_out:
         if st.button("ATIVAR PROTOCOLO OMNI"):
-            with st.spinner("Processando Inteligência..."):
+            with st.spinner("Processando..."):
                 cont = processar_arquivos(upload) if upload else ""
-                res = aether_brain_v3(user_input, f"Auditoria - {funcao_elite}", cont, strict_mode)
+                res = aether_brain_v3(user_input, funcao_elite, cont, strict_mode)
                 st.session_state['res_aether'] = res
                 st.markdown(f"<div class='dossie-box'>{res}</div>", unsafe_allow_html=True)
 
 elif aba_ativa == "🔍 Forense Digital":
     st.subheader("🔎 Módulo de Perícia Forense")
-    col_f1, col_f2 = st.columns(2)
-    with col_f1:
-        doc_forense = st.file_uploader("Upload de Prova (Imagem/PDF)", type=['png', 'jpg', 'pdf'], key="forense")
-    with col_f2:
-        if doc_forense:
-            st.image(doc_forense, caption="Visualização da Evidência", use_container_width=True)
-            if ocr_active:
-                st.info("Buscando padrões de fraude em assinaturas...")
+    pericia_file = st.file_uploader("Upload de Prova", type=['png', 'jpg', 'pdf'])
+    if pericia_file:
+        st.image(pericia_file, caption="Evidência Registrada", width=400)
 
 elif aba_ativa == "🏗️ Engenharia de Docs":
     st.subheader("📝 Gerador Zero-Draft")
-    st.info("IA configurada para consultar pasta de modelos internos (Template Ouro).")
-    # Futura implementação de busca vetorial (FAISS)
+    st.info("Módulo de Engenharia Jurídica ativo.")
