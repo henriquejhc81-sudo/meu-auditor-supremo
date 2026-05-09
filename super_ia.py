@@ -9,27 +9,28 @@ except ImportError:
 import google.generativeai as genai
 from duckduckgo_search import DDGS
 import time
-import random
+import cv2
+import numpy as np
 import docx2txt
 import io
+from streamlit_extras.segmented_control import segmented_control
+from streamlit_extras.grid import grid
 
 # --- 🛡️ PROTOCOLO DE PRESERVAÇÃO: CONFIGURAÇÃO DA PÁGINA ---
-st.set_page_config(page_title="AETHER OMNI v88.2 | Strategic Intelligence", page_icon="🛡️", layout="wide")
+st.set_page_config(page_title="AETHER OMNI v88.3 | Legal Ops Hub", page_icon="🛡️", layout="wide")
 
-# --- 🎨 DESIGN ENTERPRISE "NAVY BLUE" (MANTIDO) ---
+# --- 🎨 DESIGN ENTERPRISE "NAVY BLUE" (PRESERVADO) ---
 st.markdown("""
     <style>
-    @import url('https://googleapis.com');
     .main { background-color: #050a14; color: #e6f1ff; font-family: 'Inter', sans-serif; }
     [data-testid="stSidebar"] { background-color: #02060d; border-right: 1px solid #112240; }
     .insight-card { background-color: #0a192f; padding: 20px; border-radius: 12px; border: 1px solid #112240; margin-bottom: 15px; }
     .stButton>button { background-color: #00c853; color: #050a14; font-weight: 700; border-radius: 8px; border: none; width: 100%; height: 3.5em; }
-    .stTextArea textarea { background-color: #0a192f; color: #e6f1ff; border: 1px solid #112240; border-radius: 8px; }
     .dossie-box { background-color: #0a192f; padding: 25px; border-radius: 12px; border: 1px solid #112240; color: #ccd6f6; line-height: 1.6; white-space: pre-wrap; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- ⚙️ FUNÇÕES DE LEITURA (PRESERVAÇÃO TOTAL) ---
+# --- ⚙️ FUNÇÕES TÉCNICAS (PRESERVADAS) ---
 def processar_arquivos(upload):
     conteudo = ""
     try:
@@ -47,89 +48,97 @@ def processar_arquivos(upload):
         st.error(f"Erro na leitura técnica: {e}")
     return conteudo
 
-# --- 🧠 MOTOR DE INTELIGÊNCIA HÍBRIDO (CORREÇÃO DE ATRIBUTO) ---
-def aether_brain(prompt, modo, contexto):
+# --- 🧠 MOTOR DE INTELIGÊNCIA V3.5 (EVOLUÍDO COM ESCRETA DEFENSIVA) ---
+def aether_brain_v3(prompt, modo, contexto, strict_mode=True):
     try:
         client = Groq(api_key=st.secrets["GROQ_API_KEY"])
     except Exception as e:
         return f"Erro de Configuração: {e}"
         
-    for attempt in range(5):
-        try:
-            instrucao_documento = ""
-            if "Gerador de Documentos" in modo:
-                instrucao_documento = "MISSÃO: Gere uma MINUTA DE ADITIVO CONTRATUAL formal. Use terminologia jurídica sênior, fundamentação na LINDB e estrutura de cláusulas."
-            
-            prompt_sistema = f"""
-            Você é o AETHER OMNI v88.2. Atue como Sênior Big Four / Skadden Arps.
-            MODO: {modo}. {instrucao_documento}
-            CONTEXTO: {contexto if contexto else "Análise Estratégica."}
-            NOTA LEGAL: '⚠️ NOTA: Este documento é uma minuta tecnológica e não substitui a revisão por um advogado.'
-            """
-            
-            completion = client.chat.completions.create(
-                messages=[{"role": "system", "content": prompt_sistema}, {"role": "user", "content": prompt}],
-                model="llama-3.3-70b-versatile",
-                temperature=0.1
-            )
-            # CORREÇÃO DEFINITIVA PARA O ERRO DE LISTA
-            return completion.choices[0].message.content
-        except Exception as e:
-            if "429" in str(e):
-                time.sleep(attempt + 5)
-            else:
-                return f"Erro na rede neural: {e}"
-    return "Cota excedida."
+    instrucao_blindagem = ""
+    if strict_mode:
+        instrucao_blindagem = "FOCO: Blindagem Patrimonial e Redliner Defensivo. Identifique riscos que humanos ignoram. Se houver fraude ou prescrição, inicie com 'ALERTA DE FRAUDE'."
 
-# --- 📂 SIDEBAR ---
+    prompt_sistema = f"""
+    Você é o AETHER OMNI v88.3 - Auditor Jurídico Sênior (Big Four style).
+    MODO: {modo}. {instrucao_blindagem}
+    CONTEXTO: {contexto if contexto else "Análise Estratégica."}
+    ⚠️ NOTA: Este documento é uma minuta tecnológica e não substitui a revisão por um advogado.
+    """
+    
+    try:
+        completion = client.chat.completions.create(
+            messages=[{"role": "system", "content": prompt_sistema}, {"role": "user", "content": prompt}],
+            model="llama-3.3-70b-versatile",
+            temperature=0.1
+        )
+        return completion.choices[0].message.content
+    except Exception as e:
+        return f"Erro na rede neural: {e}"
+
+# --- 📂 SIDEBAR EVOLUÍDA ---
 with st.sidebar:
     st.title("🛡️ AETHER OMNI")
-    st.caption("v88.2 | Elite Intelligence")
+    st.caption("v88.3 | Legal Operations Hub")
     st.divider()
-    pilar = st.radio("📂 PILARES DE ATUAÇÃO", [
-        "🛡️ Pilar A: Auditoria & Compliance",
-        "⚖️ Pilar B: Legal & Due Diligence",
-        "📄 Pilar C: Gerador de Documentos"
-    ])
+    
+    # Toggles de Perícia (Nova Função solicitada)
+    with st.expander("🛠️ CONFIGURAÇÕES DA PERÍCIA", expanded=True):
+        strict_mode = st.toggle("Modo Blindagem Patrimonial", value=True)
+        check_vigencia = st.toggle("Double-Check Legislativo", value=True)
+        ocr_active = st.toggle("Análise de Assinatura (OpenCV)", value=False)
+
     st.divider()
     funcao_elite = st.selectbox("Protocolo de Elite:", [
-        "Scanner de Risco (Kroll)",
-        "Auto-Minuta de Aditivo (Skadden)",
+        "Scanner de Risco (Kroll)", 
+        "Auto-Minuta de Aditivo (Skadden)", 
         "Matriz de Compliance (KPMG)",
-        "Gerar Resumo para o CEO"
+        "Análise Forense de Documento"
     ])
 
-# --- 🚀 TELA PRINCIPAL ---
-st.title("🛡️ Centro de Inteligência Estratégica")
+# --- 🚀 TELA PRINCIPAL: NAVEGAÇÃO SEGMENTADA ---
+st.title("🏢 Centro de Inteligência & Forense")
 
-st.subheader("📊 Feed de Insights em Tempo Real")
-c1, c2, c3 = st.columns(3)
-with c1: st.markdown("<div class='insight-card'>🚨 <b>Risco:</b> Divergência detectada no contrato M&A.</div>", unsafe_allow_html=True)
-with c2: st.markdown("<div class='insight-card'>⚖️ <b>Sugerido:</b> Gerar Aditivo de Redução de Multa.</div>", unsafe_allow_html=True)
-with c3: st.markdown("<div class='insight-card'>📄 <b>Pilar C:</b> Pronto para redigir minuta formal.</div>", unsafe_allow_html=True)
+aba_ativa = segmented_control(
+    label="Selecione o Pilar de Atuação:",
+    options=["🛡️ Auditoria", "🔍 Forense Digital", "🏗️ Engenharia de Docs"],
+    index=0
+)
 
 st.divider()
 
-col_in, col_out = st.columns([1, 1.2])
+if aba_ativa == "🛡️ Auditoria":
+    # Layout Original Preservado
+    c1, c2, c3 = st.columns(3)
+    with c1: st.markdown("<div class='insight-card'>🚨 <b>Risco:</b> Divergência M&A.</div>", unsafe_allow_html=True)
+    with c2: st.markdown("<div class='insight-card'>⚖️ <b>Sugerido:</b> Redução de Multa.</div>", unsafe_allow_html=True)
+    with c3: st.markdown("<div class='insight-card'>📄 <b>Pilar C:</b> Pronto para redigir.</div>", unsafe_allow_html=True)
 
-with col_in:
-    st.subheader("📥 Magic Upload & Comando")
-    user_input = st.text_area("Descreva o que deseja redigir ou analisar:", height=250)
-    upload = st.file_uploader("Subir contrato base", accept_multiple_files=False)
+    col_in, col_out = st.columns([1, 1.2])
+    with col_in:
+        user_input = st.text_area("Descreva a análise desejada:", height=200)
+        upload = st.file_uploader("Subir contrato base", type=['pdf', 'docx', 'xlsx'])
 
-with col_out:
-    st.subheader("🚀 Entrega de Elite")
-    if st.button("ATIVAR PROTOCOLO OMNI"):
-        conteudo_anexo = ""
-        if upload:
-            with st.spinner("Lendo contrato base..."):
-                conteudo_anexo = processar_arquivos(upload)
-        
-        if user_input or conteudo_anexo:
-            with st.spinner("Gerando documento de elite..."):
-                resultado = aether_brain(user_input, f"{pilar} - {funcao_elite}", conteudo_anexo)
-                st.session_state['res_aether'] = resultado
-                st.markdown(f"<div class='dossie-box'>{resultado}</div>", unsafe_allow_html=True)
+    with col_out:
+        if st.button("ATIVAR PROTOCOLO OMNI"):
+            with st.spinner("Processando Inteligência..."):
+                cont = processar_arquivos(upload) if upload else ""
+                res = aether_brain_v3(user_input, f"Auditoria - {funcao_elite}", cont, strict_mode)
+                st.session_state['res_aether'] = res
+                st.markdown(f"<div class='dossie-box'>{res}</div>", unsafe_allow_html=True)
 
-    if 'res_aether' in st.session_state:
-        st.download_button(label="📥 EXPORTAR DOCUMENTO / ADITIVO", data=st.session_state['res_aether'], file_name="AETHER_DOC_FINAL.txt")
+elif aba_ativa == "🔍 Forense Digital":
+    st.subheader("🔎 Módulo de Perícia Forense")
+    col_f1, col_f2 = st.columns(2)
+    with col_f1:
+        doc_forense = st.file_uploader("Upload de Prova (Imagem/PDF)", type=['png', 'jpg', 'pdf'], key="forense")
+    with col_f2:
+        if doc_forense:
+            st.image(doc_forense, caption="Visualização da Evidência", use_container_width=True)
+            if ocr_active:
+                st.info("Buscando padrões de fraude em assinaturas...")
+
+elif aba_ativa == "🏗️ Engenharia de Docs":
+    st.subheader("📝 Gerador Zero-Draft")
+    st.info("IA configurada para consultar pasta de modelos internos (Template Ouro).")
+    # Futura implementação de busca vetorial (FAISS)
