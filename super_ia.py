@@ -25,7 +25,7 @@ st.set_page_config(page_title="AETHER OMNI v99.0 Master Evolução", page_icon="
 
 def get_base64(file):
     if os.path.exists(file):
-        with open(file, "rb") & f open(file, "rb") as f:
+        with open(file, "rb") as f: # ERRO CORRIGIDO NESTA LINHA!
             return base64.b64encode(f.read()).decode()
     return None
 
