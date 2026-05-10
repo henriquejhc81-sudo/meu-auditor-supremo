@@ -23,21 +23,22 @@ except ImportError:
     st.stop()
 
 # --- 🛡️ CONFIGURAÇÃO DE PÁGINA (FAVICON ANTIGO INSERIDO AQUI) ---
-# AQUI USAMOS O LOGO ANTIGO NA ABA DO NAVEGADOR
-st.set_page_config(page_title="AETHER OMNI v93.2", page_icon="antigo_logo.jpg", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="AETHER OMNI v93.3", page_icon="antigo_logo.jpg", layout="wide", initial_sidebar_state="collapsed")
 
-# --- 🎨 DESIGN "SAAS ENTERPRISE" (CSS CUSTOMIZADO SLATE & EMERALD) ---
+# --- 🎨 DESIGN "SAAS ENTERPRISE" (CORREÇÃO DE BORDAS E LAYOUT) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@700&display=swap');
     
-    /* Fundo Slate Profundo */
+    /* Fundo Slate Profundo e Fontes */
     .stApp { background-color: #050a14; color: #e6f1ff; font-family: 'Inter', sans-serif; }
     
+    /* 🛡️ CORREÇÃO DAS BORDAS BRANCAS DO LOGO */
+    img[data-testid="stImage"] { border-radius: 25px; box-shadow: 0px 10px 30px rgba(0, 200, 83, 0.15); }
+    
     /* Headers e Títulos */
-    h1, h2, h3 { font-family: 'Playfair Display', serif; color: #00c853 !important; }
-    .header-container { text-align: center; padding-top: 10px; margin-bottom: 20px; }
-    .header-subtitle { letter-spacing: 5px; color: #888; font-size: 0.9rem; text-transform: uppercase; margin-top: 5px; }
+    .header-container { margin-bottom: 30px; }
+    .header-subtitle { letter-spacing: 4px; color: #888; font-size: 0.9rem; text-transform: uppercase; margin-top: 10px; font-weight: 600;}
     
     /* Estilização das Abas (Tabs) */
     .stTabs [data-baseweb="tab-list"] { gap: 10px; justify-content: center; background-color: transparent; }
@@ -49,15 +50,15 @@ st.markdown("""
     .stTextArea textarea:focus { border-color: #00c853 !important; box-shadow: 0 0 5px rgba(0, 200, 83, 0.5) !important; }
     
     /* Dossiê Box Refinado */
-    .dossie-box { background-color: #0a192f; padding: 40px; border-radius: 8px; color: #e6f1ff; line-height: 1.8; white-space: pre-wrap; font-family: 'Inter', sans-serif; border-top: 5px solid #00c853; border-left: 1px solid #112240; border-right: 1px solid #112240; border-bottom: 1px solid #112240; box-shadow: 0px 10px 30px rgba(0,0,0,0.5); }
+    .dossie-box { background-color: #0a192f; padding: 40px; border-radius: 8px; color: #e6f1ff; line-height: 1.8; white-space: pre-wrap; font-family: 'Inter', sans-serif; border-top: 5px solid #00c853; border: 1px solid #112240; box-shadow: 0px 10px 30px rgba(0,0,0,0.5); }
     
-    /* Botões Premium */
-    div.stButton > button { background-color: #00c853 !important; color: #050a14 !important; font-weight: 700 !important; width: 100% !important; height: 3.5em !important; border-radius: 8px !important; text-transform: uppercase !important; border: none !important; transition: transform 0.2s ease, box-shadow 0.2s ease; }
-    div.stButton > button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 200, 83, 0.3); }
+    /* Estilo dos Botões */
+    div.stButton > button { background-color: #00c853 !important; color: #050a14 !important; font-weight: 700 !important; border-radius: 8px !important; text-transform: uppercase !important; border: none !important; }
+    div.stButton > button:hover { box-shadow: 0 5px 15px rgba(0, 200, 83, 0.3); }
     
-    /* Botão Reset Invisível (Mantido) */
-    div.stButton > button[key="reset_trigger"] { background: transparent !important; color: transparent !important; border: none !important; position: absolute; top: 0; left: 0; width: 100%; height: 100px; z-index: 1000; box-shadow: none !important; }
-    div.stButton > button[key="reset_trigger"]:hover { transform: none; box-shadow: none; }
+    /* Botão de Reset Menor e Discreto */
+    button[key="reset_btn"] { background-color: transparent !important; color: #888 !important; font-size: 0.8rem !important; border: 1px solid #112240 !important; width: auto !important; height: auto !important; padding: 5px 15px !important; margin-bottom: -20px; }
+    button[key="reset_btn"]:hover { color: #00c853 !important; border-color: #00c853 !important; background-color: rgba(0, 200, 83, 0.1) !important;}
     </style>
     """, unsafe_allow_html=True)
 
@@ -98,78 +99,28 @@ def aether_brain_supreme(prompt, contexto):
     
     try:
         client = Groq(api_key=st.secrets["GROQ_API_KEY"])
-        prompt_sys = f"AETHER OMNI v93.2. Master Auditor Harvard. Use Art. 421-A CC. CTX: {contexto_ext} - {contexto}"
+        prompt_sys = f"AETHER OMNI v93.3. Master Auditor Harvard. Use Art. 421-A CC. CTX: {contexto_ext} - {contexto}"
         completion = client.chat.completions.create(messages=[{"role": "system", "content": prompt_sys}, {"role": "user", "content": prompt}], model="llama-3.3-70b-versatile", temperature=0.1)
         return completion.choices[0].message.content
     except Exception as e_groq:
-        # Tratamento de erro visível no log para ajudar no debug
         print(f"Groq falhou: {e_groq}. Iniciando Gemini Auto-Healing...")
         if "GOOGLE_API_KEY" in st.secrets:
             try:
                 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-                # CORREÇÃO DO ERRO NOTFOUND AQUI: Usando o -latest
                 model = genai.GenerativeModel('gemini-1.5-pro-latest') 
                 return model.generate_content(f"MASTER: {prompt}\nCTX: {contexto}").text
             except Exception as e_gemini:
-                return f"Erro Crítico nos motores de IA. Groq: {e_groq} | Gemini: {e_gemini}"
-        return "Erro de conexão segura. Configure a GOOGLE_API_KEY no Streamlit."
+                return f"Erro Crítico. Groq: {e_groq} | Gemini: {e_gemini}"
+        return "Erro de conexão segura."
 
-# --- 🚀 HEADER CENTRALIZADO COM NOVO LOGO NA INTERFACE ---
+# --- 🚀 HEADER CENTRALIZADO (CORRIGIDO) ---
 st.markdown("<div class='header-container'>", unsafe_allow_html=True)
-col1, col2, col3 = st.columns([1, 2, 1])
 
-with col2:
-    if st.button("🔄", key="reset_trigger"):
+# 1. Botão de Reset limpo e organizado no canto
+col_btn, col_vazia = st.columns([1, 10])
+with col_btn:
+    if st.button("🔄 System Reset", key="reset_btn"):
         st.session_state.clear()
         st.rerun()
-    
-    # Renderiza o novo logo na tela principal
-    try:
-        st.image("logo.png", use_container_width=True)
-    except FileNotFoundError:
-        st.markdown("<h1 class='header-title'>AETHER OMNI</h1>", unsafe_allow_html=True)
-        
-st.markdown("<p class='header-subtitle'>STRATEGIC INTELLIGENCE HUB</p></div>", unsafe_allow_html=True)
-st.divider()
 
-# --- 🏗️ INTERFACE ---
-tab_auditoria, tab_forense, tab_engenharia = st.tabs(["🛡️ Auditoria", "🔍 Forense", "🏗️ Engenharia"])
-
-with tab_auditoria:
-    col_in, col_out = st.columns([1, 1.2], gap="large")
-    with col_in:
-        upload = st.file_uploader("Subir Arquivo para Análise", type=['pdf', 'docx', 'xlsx', 'csv'])
-        user_input = st.text_area("Comando Jurídico Estratégico:", height=250, placeholder="Ex: Analise este contrato buscando cláusulas abusivas segundo o Art. 421-A do CC...")
-        if st.button("🚀 PROCESSAR AUDITORIA"):
-            if user_input:
-                with st.spinner("AETHER processando inteligência estratégica..."):
-                    res = aether_brain_supreme(user_input, processar_arquivos(upload) if upload else "")
-                    st.session_state['res_aether'] = res
-            else:
-                st.warning("⚠️ Insira um comando jurídico para iniciar.")
-                
-    with col_out:
-        if 'res_aether' in st.session_state:
-            st.markdown(f"<div class='dossie-box'>{st.session_state['res_aether']}</div>", unsafe_allow_html=True)
-            st.divider()
-            c1, c2, c3 = st.columns(3)
-            with c1: st.download_button("📄 PDF REPORT", data=export_pdf(st.session_state['res_aether']), file_name="AETHER_REPORT.pdf")
-            with c2: st.download_button("📝 WORD DOCX", data=export_docx(st.session_state['res_aether']), file_name="AETHER_REPORT.docx")
-            with c3: st.download_button("📑 TXT RAW", data=st.session_state['res_aether'].encode('utf-8'), file_name="AETHER_REPORT.txt")
-
-with tab_forense:
-    col_f1, col_f2 = st.columns(2)
-    with col_f1:
-        p_file = st.file_uploader("Upload Assinatura/Documento (Forense)", type=['png', 'jpg', 'jpeg'])
-        if p_file:
-            img = cv2.imdecode(np.asarray(bytearray(p_file.read()), dtype=np.uint8), 1)
-            edges = cv2.Canny(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), 50, 150)
-            st.image(edges, caption="Análise Forense de Pixels e Hesitação", use_container_width=True)
-    with col_f2:
-        if p_file and st.button("🔍 GERAR LAUDO FORENSE"):
-            with st.spinner("Analisando matriz de pixels..."):
-                laudo = aether_brain_supreme("Analise traços desta assinatura com base na perícia grafotécnica. Descreva possíveis hesitações baseadas na detecção de bordas Canny.", "Módulo Forense Ativado")
-                st.markdown(f"<div class='dossie-box'>{laudo}</div>", unsafe_allow_html=True)
-
-with tab_engenharia:
-    st.info("🏗️ Módulo de Engenharia de Documentos configurado e em standby para expansão.")
+# 2. Logo
