@@ -22,29 +22,36 @@ except ImportError:
     st.error("🔄 Otimizando motores de elite no servidor...")
     st.stop()
 
-# --- 🛡️ CONFIGURAÇÃO DE PÁGINA (CORREÇÃO DE TELA PRETA AQUI) ---
-# Substituí o "antigo_logo.jpg" por "🛡️" para garantir 100% de carregamento seguro.
-st.set_page_config(page_title="AETHER OMNI v93.5", page_icon="🛡️", layout="wide", initial_sidebar_state="collapsed")
+# --- 🛡️ CONFIGURAÇÃO DE PÁGINA ---
+st.set_page_config(page_title="AETHER OMNI v93.6", page_icon="🛡️", layout="wide", initial_sidebar_state="collapsed")
 
-# --- 🎨 DESIGN "SAAS ENTERPRISE" ---
+# --- 🎨 DESIGN "SAAS ENTERPRISE" (CORREÇÃO DO LOGO) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@700&display=swap');
     
     .stApp { background-color: #050a14; color: #e6f1ff; font-family: 'Inter', sans-serif; }
-    img[data-testid="stImage"] { border-radius: 20px; box-shadow: 0px 5px 25px rgba(0, 200, 83, 0.1); }
+    
+    /* 🛡️ CORTADOR DE BORDAS: Remove os cantos brancos da imagem quadrada */
+    img[data-testid="stImage"] { border-radius: 45px !important; box-shadow: 0px 5px 25px rgba(0, 200, 83, 0.15); }
+    
     .header-subtitle { letter-spacing: 5px; color: #888; font-size: 0.85rem; text-transform: uppercase; font-weight: 600; text-align: center; margin-top: 10px;}
     .stTabs [data-baseweb="tab-list"] { justify-content: center; background-color: transparent; }
     .stTabs [data-baseweb="tab"] { background-color: #0a192f; border-radius: 8px 8px 0 0; color: #888; border: 1px solid #112240; padding: 0 30px; border-bottom: none;}
     .stTabs [aria-selected="true"] { background-color: #00c853 !important; color: #050a14 !important; font-weight: bold; }
     .stTextArea textarea { background-color: #0a192f !important; color: #e6f1ff !important; border: 1px solid #112240 !important; border-radius: 8px; }
     .dossie-box { background-color: #0a192f; padding: 30px; border-radius: 8px; color: #e6f1ff; font-family: 'Inter', sans-serif; border-top: 4px solid #00c853; border-bottom: 1px solid #112240; border-left: 1px solid #112240; border-right: 1px solid #112240; box-shadow: 0px 10px 30px rgba(0,0,0,0.5); }
-    button[kind="primary"] { background-color: #00c853 !important; color: #050a14 !important; font-weight: bold !important; border: none !important; border-radius: 8px !important; }
+    
+    /* Botões Padrão (incluindo o Reset) */
+    div.stButton > button { border: 1px solid #112240 !important; border-radius: 8px !important; }
+    
+    /* Botões Primários (Ação Principal Verde) */
+    button[kind="primary"] { background-color: #00c853 !important; color: #050a14 !important; font-weight: bold !important; border: none !important; border-radius: 8px !important; text-transform: uppercase !important; }
     button[kind="primary"]:hover { opacity: 0.9; box-shadow: 0px 0px 15px rgba(0, 200, 83, 0.4); }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 🛠️ FUNÇÕES TÉCNICAS (SUA LÓGICA DE MESES INTACTA) ---
+# --- 🛠️ FUNÇÕES TÉCNICAS (INTACTAS) ---
 def export_pdf(texto):
     if not PDF_READY: return None
     pdf = FPDF()
@@ -80,7 +87,7 @@ def aether_brain_supreme(prompt, contexto):
     except: contexto_ext = ""
     try:
         client = Groq(api_key=st.secrets["GROQ_API_KEY"])
-        prompt_sys = f"AETHER OMNI v93.5. Master Auditor Harvard. Use Art. 421-A CC. CTX: {contexto_ext} - {contexto}"
+        prompt_sys = f"AETHER OMNI v93.6. Master Auditor Harvard. Use Art. 421-A CC. CTX: {contexto_ext} - {contexto}"
         completion = client.chat.completions.create(messages=[{"role": "system", "content": prompt_sys}, {"role": "user", "content": prompt}], model="llama-3.3-70b-versatile", temperature=0.1)
         return completion.choices[0].message.content
     except Exception as e_groq:
@@ -93,18 +100,19 @@ def aether_brain_supreme(prompt, contexto):
                 return f"Erro Crítico. Groq: {e_groq} | Gemini: {e_gemini}"
         return "Erro de conexão segura."
 
-# --- 🚀 HEADER ESTRUTURADO ---
+# --- 🚀 HEADER ESTRUTURADO (PROPORÇÕES CORRIGIDAS) ---
 st.write("") 
-col_esq, col_centro, col_dir = st.columns([1, 2, 1]) 
+# As colunas laterais (2) "espremem" a do meio (1.5), limitando o tamanho do logo
+col_esq, col_centro, col_dir = st.columns([2, 1.5, 2]) 
 
 with col_esq:
-    if st.button("🔄 System Reset", use_container_width=False):
+    # Botão de reset agora é só um ícone discreto
+    if st.button("🔄", help="Reset do Sistema", use_container_width=False):
         st.session_state.clear()
         st.rerun()
 
 with col_centro:
     try:
-        # Se ele achar o logo novo, vai renderizar. Se não achar, coloca só o nome para não bugar nada.
         st.image("logo.png", use_container_width=True)
     except FileNotFoundError:
         st.markdown("<h1 style='text-align: center; color: #00c853;'>AETHER OMNI</h1>", unsafe_allow_html=True)
