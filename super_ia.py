@@ -21,7 +21,7 @@ except ImportError:
     st.stop()
 
 # --- ⚙️ CONFIGURAÇÃO ---
-st.set_page_config(page_title="AETHER OMNI v96.0 Ultra", page_icon="🛡️", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="AETHER OMNI v97.0 Ultra", page_icon="🛡️", layout="wide", initial_sidebar_state="collapsed")
 
 def get_base64(file):
     if os.path.exists(file):
@@ -36,18 +36,20 @@ if "cmd_input" not in st.session_state:
 def set_template(text):
     st.session_state.cmd_input = text
 
-# --- 🎨 DESIGN "CORPORATE TITAN" (CSS v96.0 Ultra) ---
+# --- 🎨 DESIGN "CORPORATE TITAN" (CSS v97.0 Ultra - NUCLEAR RED DOT FIX) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
     
     .stApp { background-color: #030712; color: #f3f4f6; font-family: 'Inter', sans-serif; }
-    .block-container { padding-top: 0.5rem !important; }
+    .block-container { padding-top: 0.5rem !important; padding-bottom: 0rem !important; }
     [data-testid="stHeader"] { display: none !important; }
-    [data-testid="stSidebar"] { display: none !important; }
+    
+    /* Remove a pequena seta do sidebar no canto superior esquerdo */
+    [data-testid="collapsedControl"] { display: none !important; }
 
     /* 🛡️ HEADER UNIT */
-    .brand-unit { display: flex; align-items: center; gap: 18px; margin-bottom: 0px; }
+    .brand-unit { display: flex; align-items: center; gap: 18px; margin-bottom: -5px; }
     .logo-final {
         width: 80px; height: 80px; border-radius: 50%;
         border: 2px solid #10b981; box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
@@ -64,14 +66,18 @@ st.markdown("""
         text-transform: uppercase; letter-spacing: 3px; margin-top: 4px;
     }
 
-    /* 🛡️ MENU NAVEGAÇÃO */
-    div[data-testid="stRadio"] [data-testid="stRadioButton"] { display: none !important; }
-    div[data-testid="stRadio"] label div[data-testid="stMarkdownContainer"] p::before { display: none !important; content: none !important; }
+    /* 🛡️ EXTERMÍNIO ABSOLUTO DA BOLINHA DO RADIO (NUCLEAR CSS) */
+    div[role="radiogroup"] label > div:first-child { display: none !important; } /* Alvo direto na bolinha */
+    div[data-testid="stRadio"] [data-testid="stRadioButton"] div[class*="st-"] { display: none !important; }
+    div[data-testid="stRadio"] label svg { display: none !important; }
+    div[data-testid="stRadio"] input { display: none !important; }
+    
     div[data-testid="stRadio"] > div { flex-direction: row !important; gap: 10px !important; margin-top: 15px !important; }
     div[data-testid="stRadio"] label {
         background-color: #111827 !important; color: #6b7280 !important;
         padding: 10px 20px !important; border-radius: 10px !important;
         border: 1px solid #1f2937 !important; transition: 0.3s;
+        justify-content: center;
     }
     div[data-testid="stRadio"] label:has(input:checked) {
         background-color: #10b981 !important; border-color: #10b981 !important;
@@ -81,7 +87,7 @@ st.markdown("""
 
     /* 🛡️ INTAKE MATRIX & UI ELEMENTS */
     .intake-matrix {
-        display: flex; gap: 10px; margin-bottom: 10px;
+        display: flex; gap: 10px; margin-bottom: 5px;
     }
     .intake-slot {
         flex: 1; background-color: #111827; border: 1px solid #1f2937; 
@@ -89,6 +95,11 @@ st.markdown("""
     }
     .intake-slot span { display: block; font-weight: bold; color: #d1d5db; margin-bottom: 2px; font-size: 0.9rem;}
     
+    /* Ocultar a interface feia do uploader nativo e deixar só a área clicável/arrastável */
+    [data-testid="stFileUploadDropzone"] { background-color: transparent !important; border: 1px dashed #1f2937 !important; padding: 10px !important; }
+    [data-testid="stFileUploadDropzone"] div { color: #6b7280 !important; font-size: 0.8rem !important; }
+    [data-testid="stFileUploadDropzone"] button { display: none !important; } /* Esconde o botão 'Browse files' nativo para ficar mais limpo */
+
     .card-panel { 
         background-color: #0f172a; padding: 30px; border-radius: 15px; 
         border: 1px solid #1e293b; border-top: 4px solid #10b981;
@@ -96,7 +107,7 @@ st.markdown("""
     
     /* 🛡️ DOSSIER PLACEHOLDER AVANÇADO */
     .dossier-wait {
-        border: 1px solid #1e293b; border-radius: 15px; height: 450px; 
+        border: 1px solid #1e293b; border-radius: 15px; height: 500px; 
         background: linear-gradient(145deg, #0f172a 0%, #030712 100%);
         display: flex; flex-direction: column; align-items: center; justify-content: center;
         position: relative; overflow: hidden;
@@ -119,12 +130,6 @@ st.markdown("""
         transition: 0.3s;
     }
     button[kind="primary"]:hover { filter: brightness(1.2); }
-    
-    button[kind="secondary"] {
-        border: 1px solid #374151 !important; background-color: #111827 !important; color: #9ca3af !important;
-        border-radius: 8px !important; transition: 0.3s; font-size: 0.8rem !important;
-    }
-    button[kind="secondary"]:hover { border-color: #10b981 !important; color: #10b981 !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -161,6 +166,7 @@ if menu == "🛡️ Auditoria":
         </div>
         """, unsafe_allow_html=True)
         
+        # O uploader agora fica mais sutil abaixo da matriz
         up = st.file_uploader("", type=['pdf', 'docx', 'xlsx', 'csv'], label_visibility="collapsed")
         
         st.markdown("<br>", unsafe_allow_html=True)
