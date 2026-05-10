@@ -27,7 +27,7 @@ except ImportError:
     PLOTLY_READY = False
 
 # --- ⚙️ CONFIGURAÇÃO ---
-st.set_page_config(page_title="AETHER OMNI v99.0 Master", page_icon="🛡️", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="AETHER OMNI v99.1 Master", page_icon="🛡️", layout="wide", initial_sidebar_state="collapsed")
 
 def get_base64(file):
     if os.path.exists(file):
@@ -39,11 +39,10 @@ def get_base64(file):
 if "cmd_input" not in st.session_state:
     st.session_state.cmd_input = ""
 
-# Função preservada (ativa no backend para os templates de IA)
 def set_template(text):
     st.session_state.cmd_input = text
 
-# --- 🎨 DESIGN "MINIMALIST MASTER" (Limpeza Visual Extrema) ---
+# --- 🎨 DESIGN "MINIMALIST MASTER" (Preservado 100%) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
@@ -53,7 +52,7 @@ st.markdown("""
     [data-testid="stHeader"] { display: none !important; }
     [data-testid="collapsedControl"] { display: none !important; }
 
-    /* 🛡️ HEADER UNIT - Limpo (Sem borda oval) */
+    /* 🛡️ HEADER UNIT */
     .logo-final {
         width: 75px; height: 75px; border-radius: 50%;
         cursor: pointer; transition: 0.4s; margin-top: 0px;
@@ -97,7 +96,6 @@ st.markdown("""
     }
     button[kind="primary"]:hover { filter: brightness(1.2); box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4) !important; }
     
-    /* Botões Secundários (Download) */
     button[kind="secondary"] {
         border: 1px solid #374151 !important; background-color: rgba(17, 24, 39, 0.5) !important; color: #9ca3af !important;
         border-radius: 6px !important; transition: 0.3s;
@@ -125,7 +123,6 @@ if menu == "🛡️ Auditoria":
     col_l, col_r = st.columns([1, 1.2], gap="large")
     
     with col_l:
-        # Uploader universal (Aceita qualquer arquivo, inclusive vídeos)
         up = st.file_uploader("", accept_multiple_files=True, label_visibility="collapsed")
         
         st.markdown("<br>", unsafe_allow_html=True)
@@ -133,16 +130,32 @@ if menu == "🛡️ Auditoria":
         
         st.markdown("<br>", unsafe_allow_html=True)
         if st.button("🚀 PROCESSAR AUDITORIA", type="primary", use_container_width=True):
-            # Lógica aether_brain_supreme...
-            # st.session_state['res_aether'] = "Relatório Dossiê Exemplo gerado!" # Descomente para testar a aparição
-            pass
+            
+            # --- EVOLUÇÃO: EFEITO DE PROCESSAMENTO NEURAL PARA DEMONSTRAÇÃO ---
+            with st.status("🧠 Inicializando Motores Neurais AETHER...", expanded=True) as status:
+                st.write("Analisando estrutura de dados...")
+                time.sleep(1) # Pode remover o sleep quando integrar a IA real
+                st.write("Buscando anomalias contratuais...")
+                time.sleep(1)
+                st.write("Compilando Dossiê Estratégico...")
+                time.sleep(1)
+                status.update(label="Auditoria Concluída com Sucesso!", state="complete", expanded=False)
+            
+            # Simulador para teste visual. Substitua pela chamada da sua IA.
+            st.session_state['res_aether'] = """
+            <h3 style='color: #10b981; margin-top:0;'>Resultado da Auditoria Neural</h3>
+            <p style='color: #d1d5db; font-size: 0.95rem; line-height: 1.6;'>
+            O processamento estratégico foi finalizado. Foram detectadas 3 anomalias críticas nas cláusulas de confidencialidade e 1 risco iminente na estruturação de distrato. As evidências foram correlacionadas com sucesso na matriz forense.
+            </p>
+            """
+            st.rerun() # Atualiza a tela instantaneamente para mostrar o lado direito
             
     with col_r:
         if 'res_aether' in st.session_state:
             # 1. Exibe o Dossiê
             st.markdown(f"<div class='card-panel'>{st.session_state['res_aether']}</div>", unsafe_allow_html=True)
             
-            # 2. Exibe os Botões de Download Matrix APENAS após gerar o relatório
+            # 2. Exibe os Botões
             st.markdown("<h5 style='color:#10b981; font-size: 0.9rem; margin-top: 10px;'>📥 Exportar Dossiê Matrix</h5>", unsafe_allow_html=True)
             d1, d2, d3, d4 = st.columns(4)
             d1.download_button("☁️ PDF", "dados mock pdf", file_name="aether_dossie.pdf", use_container_width=True)
@@ -152,7 +165,7 @@ if menu == "🛡️ Auditoria":
             
             st.markdown("<br>", unsafe_allow_html=True)
             
-            # 3. Exibe os Gráficos de Inteligência APENAS no relatório gerado
+            # 3. Exibe os Gráficos
             if PLOTLY_READY:
                 st.markdown("<h5 style='color:#10b981; font-size: 0.9rem;'>Métricas de Inteligência Estratégica</h5>", unsafe_allow_html=True)
                 pc1, pc2 = st.columns(2)
@@ -168,7 +181,6 @@ if menu == "🛡️ Auditoria":
                     fig_line.update_layout(margin=dict(t=0, b=0, l=0, r=0), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=180, xaxis=dict(showgrid=False, visible=False), yaxis=dict(showgrid=True, gridcolor='#1f2937'))
                     st.plotly_chart(fig_line, use_container_width=True, config={'displayModeBar': False})
         else:
-            # Estado Inicial Clean/Minimalista
             st.markdown("""
             <div style='height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #4b5563; border: 1px dashed #1f2937; border-radius: 12px; background-color: rgba(15, 23, 42, 0.2);'>
                 <div style='font-size: 2.5rem; margin-bottom: 10px;'>⚖️</div>
