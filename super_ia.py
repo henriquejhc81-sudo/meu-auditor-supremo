@@ -22,47 +22,41 @@ except ImportError:
     st.error("🔄 Otimizando motores de elite no servidor...")
     st.stop()
 
-# --- 🛡️ CONFIGURAÇÃO DE PÁGINA (FAVICON ANTIGO INSERIDO AQUI) ---
-st.set_page_config(page_title="AETHER OMNI v93.3", page_icon="antigo_logo.jpg", layout="wide", initial_sidebar_state="collapsed")
+# --- 🛡️ CONFIGURAÇÃO DE PÁGINA (FAVICON ANTIGO) ---
+st.set_page_config(page_title="AETHER OMNI v93.4", page_icon="antigo_logo.jpg", layout="wide", initial_sidebar_state="collapsed")
 
-# --- 🎨 DESIGN "SAAS ENTERPRISE" (CORREÇÃO DE BORDAS E LAYOUT) ---
+# --- 🎨 DESIGN "SAAS ENTERPRISE" (CSS LIMPO E SEGURO) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@700&display=swap');
     
-    /* Fundo Slate Profundo e Fontes */
+    /* Fundo Principal */
     .stApp { background-color: #050a14; color: #e6f1ff; font-family: 'Inter', sans-serif; }
     
-    /* 🛡️ CORREÇÃO DAS BORDAS BRANCAS DO LOGO */
-    img[data-testid="stImage"] { border-radius: 25px; box-shadow: 0px 10px 30px rgba(0, 200, 83, 0.15); }
+    /* Arredondamento do Logo para esconder pontas brancas */
+    img[data-testid="stImage"] { border-radius: 20px; box-shadow: 0px 5px 25px rgba(0, 200, 83, 0.1); }
     
-    /* Headers e Títulos */
-    .header-container { margin-bottom: 30px; }
-    .header-subtitle { letter-spacing: 4px; color: #888; font-size: 0.9rem; text-transform: uppercase; margin-top: 10px; font-weight: 600;}
+    /* Títulos */
+    .header-subtitle { letter-spacing: 5px; color: #888; font-size: 0.85rem; text-transform: uppercase; font-weight: 600; text-align: center; margin-top: 10px;}
     
-    /* Estilização das Abas (Tabs) */
-    .stTabs [data-baseweb="tab-list"] { gap: 10px; justify-content: center; background-color: transparent; }
-    .stTabs [data-baseweb="tab"] { height: 50px; background-color: #0a192f; border-radius: 8px 8px 0 0; color: #888; border: 1px solid #112240; border-bottom: none; padding: 0 30px; transition: all 0.3s ease; }
-    .stTabs [aria-selected="true"] { background-color: #00c853 !important; color: #050a14 !important; font-weight: bold; border-color: #00c853; }
+    /* Abas Premium */
+    .stTabs [data-baseweb="tab-list"] { justify-content: center; background-color: transparent; }
+    .stTabs [data-baseweb="tab"] { background-color: #0a192f; border-radius: 8px 8px 0 0; color: #888; border: 1px solid #112240; padding: 0 30px; border-bottom: none;}
+    .stTabs [aria-selected="true"] { background-color: #00c853 !important; color: #050a14 !important; font-weight: bold; }
     
-    /* Caixas de Texto e Uploads */
+    /* Caixas de Texto */
     .stTextArea textarea { background-color: #0a192f !important; color: #e6f1ff !important; border: 1px solid #112240 !important; border-radius: 8px; }
-    .stTextArea textarea:focus { border-color: #00c853 !important; box-shadow: 0 0 5px rgba(0, 200, 83, 0.5) !important; }
     
-    /* Dossiê Box Refinado */
-    .dossie-box { background-color: #0a192f; padding: 40px; border-radius: 8px; color: #e6f1ff; line-height: 1.8; white-space: pre-wrap; font-family: 'Inter', sans-serif; border-top: 5px solid #00c853; border: 1px solid #112240; box-shadow: 0px 10px 30px rgba(0,0,0,0.5); }
+    /* Dossiê Box */
+    .dossie-box { background-color: #0a192f; padding: 30px; border-radius: 8px; color: #e6f1ff; font-family: 'Inter', sans-serif; border-top: 4px solid #00c853; border-bottom: 1px solid #112240; border-left: 1px solid #112240; border-right: 1px solid #112240; box-shadow: 0px 10px 30px rgba(0,0,0,0.5); }
     
-    /* Estilo dos Botões */
-    div.stButton > button { background-color: #00c853 !important; color: #050a14 !important; font-weight: 700 !important; border-radius: 8px !important; text-transform: uppercase !important; border: none !important; }
-    div.stButton > button:hover { box-shadow: 0 5px 15px rgba(0, 200, 83, 0.3); }
-    
-    /* Botão de Reset Menor e Discreto */
-    button[key="reset_btn"] { background-color: transparent !important; color: #888 !important; font-size: 0.8rem !important; border: 1px solid #112240 !important; width: auto !important; height: auto !important; padding: 5px 15px !important; margin-bottom: -20px; }
-    button[key="reset_btn"]:hover { color: #00c853 !important; border-color: #00c853 !important; background-color: rgba(0, 200, 83, 0.1) !important;}
+    /* Botões Primários (Ação Principal) */
+    button[kind="primary"] { background-color: #00c853 !important; color: #050a14 !important; font-weight: bold !important; border: none !important; border-radius: 8px !important; }
+    button[kind="primary"]:hover { opacity: 0.9; box-shadow: 0px 0px 15px rgba(0, 200, 83, 0.4); }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 🛠️ FUNÇÕES TÉCNICAS PRESERVADAS ---
+# --- 🛠️ FUNÇÕES TÉCNICAS (INTACTAS) ---
 def export_pdf(texto):
     if not PDF_READY: return None
     pdf = FPDF()
@@ -96,31 +90,16 @@ def aether_brain_supreme(prompt, contexto):
         with DDGS() as ddgs:
             contexto_ext = "\n".join([r['body'] for r in ddgs.text(f"jurisprudência STJ STF 2024 {prompt[:30]}", max_results=2)])
     except: contexto_ext = ""
-    
     try:
         client = Groq(api_key=st.secrets["GROQ_API_KEY"])
-        prompt_sys = f"AETHER OMNI v93.3. Master Auditor Harvard. Use Art. 421-A CC. CTX: {contexto_ext} - {contexto}"
+        prompt_sys = f"AETHER OMNI v93.4. Master Auditor Harvard. Use Art. 421-A CC. CTX: {contexto_ext} - {contexto}"
         completion = client.chat.completions.create(messages=[{"role": "system", "content": prompt_sys}, {"role": "user", "content": prompt}], model="llama-3.3-70b-versatile", temperature=0.1)
         return completion.choices[0].message.content
     except Exception as e_groq:
-        print(f"Groq falhou: {e_groq}. Iniciando Gemini Auto-Healing...")
         if "GOOGLE_API_KEY" in st.secrets:
             try:
                 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
                 model = genai.GenerativeModel('gemini-1.5-pro-latest') 
                 return model.generate_content(f"MASTER: {prompt}\nCTX: {contexto}").text
             except Exception as e_gemini:
-                return f"Erro Crítico. Groq: {e_groq} | Gemini: {e_gemini}"
-        return "Erro de conexão segura."
-
-# --- 🚀 HEADER CENTRALIZADO (CORRIGIDO) ---
-st.markdown("<div class='header-container'>", unsafe_allow_html=True)
-
-# 1. Botão de Reset limpo e organizado no canto
-col_btn, col_vazia = st.columns([1, 10])
-with col_btn:
-    if st.button("🔄 System Reset", key="reset_btn"):
-        st.session_state.clear()
-        st.rerun()
-
-# 2. Logo
+                return f
