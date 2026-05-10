@@ -13,3 +13,4 @@ faiss-cpu
 opencv-python-headless
 python-magic
 fpdf
+plotly>=5.18.0
