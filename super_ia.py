@@ -27,7 +27,7 @@ except ImportError:
     PLOTLY_READY = False
 
 # --- ⚙️ CONFIGURAÇÃO ---
-st.set_page_config(page_title="AETHER KARV v102.0 Apex", page_icon="🛡️", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="AETHER KARV v103.0 Cyber", page_icon="🛡️", layout="wide", initial_sidebar_state="collapsed")
 
 def get_base64(file):
     if os.path.exists(file):
@@ -42,8 +42,8 @@ if "cmd_input" not in st.session_state:
 def set_template(text):
     st.session_state.cmd_input = text
 
-# --- ⚡ MOTOR AETHER KARV ---
-def aether_karv_engine(comando, api_key, arquivos):
+# --- ⚡ MOTOR AETHER KARV (Sem a exigência de chave na interface) ---
+def aether_karv_engine(comando, arquivos):
     """Lógica preservada do motor neural Karv."""
     time.sleep(2) 
     return f"""
@@ -56,112 +56,126 @@ def aether_karv_engine(comando, api_key, arquivos):
     </p>
     """
 
-# --- 🎨 DESIGN "APEX KARV" (Visuais de Elite baseados no Print 2) ---
+# --- 🎨 DESIGN "CYBER CONSOLE" (Espelhamento exato do seu Print do Paint) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
     
-    .stApp { background-color: #030712; color: #f3f4f6; font-family: 'Inter', sans-serif; }
-    .block-container { padding-top: 1.5rem !important; padding-bottom: 0rem !important; max-width: 92% !important;}
+    /* Fundo super escuro (Cyberpunk Console) */
+    .stApp { background-color: #020617; color: #f3f4f6; font-family: 'Inter', sans-serif; }
+    .block-container { padding-top: 2rem !important; padding-bottom: 0rem !important; max-width: 90% !important;}
     [data-testid="stHeader"] { display: none !important; }
     [data-testid="collapsedControl"] { display: none !important; }
 
     /* Blindagem Lateral */
     [data-testid="stSidebar"] { display: none !important; }
 
-    /* Estilo Cápsula para o Radio Menu (Print 2 Style) */
+    /* --- MENU PÍLULAS CENTRALIZADAS (Design do Print) --- */
     div[role="radiogroup"] > div > label > div:first-child { display: none !important; }
     
     div[data-testid="stRadio"] > div { 
         flex-direction: row !important; 
-        gap: 15px !important; 
-        background: rgba(17, 24, 39, 0.4);
+        justify-content: center !important; /* Centraliza as pílulas */
+        gap: 20px !important; 
+        background: transparent !important;
         padding: 10px;
-        border-radius: 50px;
-        width: fit-content;
-        margin: 0 auto 30px auto;
-        border: 1px solid #1f2937;
+        margin: 0 auto 40px auto;
+        border: none !important;
     }
     div[data-testid="stRadio"] label {
-        background-color: transparent !important; color: #6b7280 !important;
-        padding: 8px 25px !important; border-radius: 40px !important;
-        border: 1px solid transparent !important; transition: all 0.4s ease; margin: 0 !important;
+        background-color: #0f172a !important; 
+        color: #64748b !important;
+        padding: 12px 35px !important; 
+        border-radius: 50px !important; /* Formato Pílula */
+        border: 1px solid #1e293b !important; 
+        transition: all 0.4s ease; margin: 0 !important;
         cursor: pointer;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     }
     div[data-testid="stRadio"] label:has(input:checked) {
-        background-color: rgba(16, 185, 129, 0.1) !important; 
-        border-color: #10b981 !important;
-        box-shadow: 0 0 15px rgba(16, 185, 129, 0.3) !important;
+        background: linear-gradient(90deg, #064e3b, #10b981) !important; 
+        border-color: #34d399 !important;
+        box-shadow: 0 0 25px rgba(16, 185, 129, 0.5), inset 0 0 10px rgba(16, 185, 129, 0.5) !important; /* Aura Neon */
     }
-    div[data-testid="stRadio"] label:has(input:checked) p { color: #10b981 !important; font-weight: 800 !important; }
+    div[data-testid="stRadio"] label:has(input:checked) p { color: #ffffff !important; font-weight: 800 !important; text-shadow: 0 0 8px rgba(255,255,255,0.5); }
+    div[data-testid="stRadio"] label p { font-size: 1.1rem !important; font-weight: 600 !important; }
 
-    /* Uploader Glassmorphism */
+    /* --- UPLOADER CAMUFLADO --- */
     [data-testid="stFileUploadDropzone"] { 
-        background-color: rgba(15, 23, 42, 0.4) !important; 
-        border: 1px solid #1e293b !important; 
-        padding: 25px !important; border-radius: 15px !important; 
+        background-color: rgba(15, 23, 42, 0.3) !important; 
+        border: 1px dashed #1e293b !important; 
+        padding: 15px !important; border-radius: 12px !important; 
         transition: 0.3s;
-        box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
     }
     [data-testid="stFileUploadDropzone"]:hover { border-color: #10b981 !important; background-color: rgba(16, 185, 129, 0.05) !important;}
     
-    /* Input Area Integrada */
+    /* --- INPUT AREA (Escura e elegante) --- */
+    .stTextArea label { color: #f8fafc !important; font-weight: 600 !important; font-size: 1rem !important; margin-bottom: 8px !important; }
     .stTextArea textarea {
-        background-color: rgba(15, 23, 42, 0.6) !important;
+        background-color: #0f172a !important;
         border: 1px solid #1e293b !important;
-        border-radius: 12px !important;
+        border-radius: 8px !important;
         color: #d1d5db !important;
+        padding: 15px !important;
     }
+    .stTextArea textarea:focus { border-color: #10b981 !important; box-shadow: 0 0 10px rgba(16, 185, 129, 0.2) !important; }
 
-    /* Painéis e Botões */
-    .card-panel { background-color: #0f172a; padding: 30px; border-radius: 15px; border: 1px solid #1e293b; border-top: 4px solid #10b981; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+    /* --- PAINÉIS E BOTÕES --- */
+    .card-panel { background-color: #0f172a; padding: 30px; border-radius: 12px; border: 1px solid #1e293b; border-top: 3px solid #10b981; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
     
     button[kind="primary"] { 
         background: linear-gradient(90deg, #059669, #10b981) !important;
-        border: none !important; border-radius: 40px !important; font-weight: 800 !important; color: #ffffff !important;
-        box-shadow: 0 5px 20px rgba(16, 185, 129, 0.3) !important; text-transform: uppercase; letter-spacing: 1.5px;
-        padding: 15px 40px !important; margin-top: 10px !important; transition: 0.3s !important;
+        border: none !important; border-radius: 10px !important; font-weight: 800 !important; color: #ffffff !important;
+        box-shadow: 0 5px 20px rgba(16, 185, 129, 0.2) !important; text-transform: uppercase; letter-spacing: 1px;
+        padding: 18px 20px !important; margin-top: 15px !important; transition: 0.3s !important;
     }
-    button[kind="primary"]:hover { filter: brightness(1.2); transform: scale(1.02); }
+    button[kind="primary"]:hover { filter: brightness(1.2); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4) !important; }
 
-    /* Ajuste Expander UI */
-    .streamlit-expanderHeader { background-color: transparent !important; color: #9ca3af !important; border: 1px solid #1f2937 !important; border-radius: 8px !important;}
-
+    /* --- TITULO CENTRALIZADO COM GLOW --- */
+    .header-container { text-align: center; margin-bottom: 25px; display: flex; flex-direction: column; align-items: center; }
+    .logo-glow { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 35px rgba(16,185,129,0.8); margin-bottom: 15px; border: 2px solid rgba(16,185,129,0.3); }
     .karv-title {
-        margin: 0; font-family: 'Inter', sans-serif; font-weight: 900; font-size: 2.8rem; line-height: 1; letter-spacing: -1.5px;
-        background: linear-gradient(135deg, #ffffff 0%, #a7f3d0 100%);
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        margin: 0; font-family: 'Inter', sans-serif; font-weight: 900; font-size: 3.2rem; line-height: 1; letter-spacing: -1px;
+        color: #ffffff; text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
     }
+    .karv-subtitle { color: #34d399; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 1.1rem; letter-spacing: 3px; margin-top: 8px; }
     
-    @keyframes sutil-pulse {
-        0% { transform: scale(1); opacity: 0.8; }
-        50% { transform: scale(1.05); opacity: 1; }
-        100% { transform: scale(1); opacity: 0.8; }
+    /* --- DOSSIÊ PLACEHOLDER (Do Print) --- */
+    .dossier-empty {
+        background-color: #050b14;
+        border: 1px solid #1e293b;
+        border-radius: 12px;
+        height: 360px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        margin-top: 28px;
     }
-    .nexus-icon { display: inline-block; animation: sutil-pulse 3s infinite ease-in-out; color: #10b981; }
+    /* Borda superior verde fina */
+    .dossier-empty::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, #10b981, transparent); }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 🚀 HEADER SOLDADO (REBRANDING KARV) ---
+# --- 🚀 HEADER CENTRALIZADO (ESTILO CONSOLE) ---
 logo_b64 = get_base64("logo.png")
-logo_img = f'<img src="data:image/png;base64,{logo_b64}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 20px rgba(16,185,129,0.2);">' if logo_b64 else ''
+logo_img = f'<img src="data:image/png;base64,{logo_b64}" class="logo-glow">' if logo_b64 else ''
 
 header_html = f"""
-<div style="display: flex; align-items: center; justify-content: center; margin-bottom: 35px; text-align: center; width: 100%;">
-    <div style="display: flex; align-items: center; gap: 25px;">
-        {logo_img}
-        <div style="display: flex; flex-direction: column; text-align: left;">
-            <h1 class="karv-title">AETHER KARV</h1>
-            <span style="color: #10b981; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 0.9rem; letter-spacing: 4px; margin-top: 5px; opacity: 0.9;">STRATEGIC INTELLIGENCE HUB</span>
-        </div>
-    </div>
+<div class="header-container">
+    {logo_img}
+    <h1 class="karv-title">AETHER KARV</h1>
+    <div class="karv-subtitle">Strategic Intelligence Hub</div>
 </div>
 """
 st.markdown(header_html, unsafe_allow_html=True)
 
+# O Menu Radio agora centraliza automaticamente pelo CSS
 menu = st.radio("", ["🛡️ Auditoria", "🔍 Forense", "🏗️ Engenharia"], index=0, label_visibility="collapsed", horizontal=True)
 
-# --- 🏗️ ÁREA DE TRABALHO ---
+# --- 🏗️ ÁREA DE TRABALHO (2 COLUNAS) ---
 if menu == "🛡️ Auditoria":
     col_l, col_r = st.columns([1, 1.25], gap="large")
     
@@ -169,23 +183,16 @@ if menu == "🛡️ Auditoria":
         up_files = st.file_uploader(" ", accept_multiple_files=True, label_visibility="collapsed")
         
         st.markdown("<br>", unsafe_allow_html=True)
-        cmd = st.text_area("Comando Jurídico Estratégico:", key="cmd_input", height=160, placeholder="Descreva sua análise estratégica profunda para o motor Karv...")
-
-        # --- Cofre de Ignição (API Key) restaurado para não perder funcionalidade ---
-        with st.expander("⚙️ Configurações do Motor Neural"):
-            user_api_key = st.text_input("Chave de API (Gemini/Groq):", type="password", placeholder="Insira a chave secreta...")
-            st.caption("A chave é usada apenas durante esta sessão e não é armazenada.")
+        cmd = st.text_area("Comando Jurídico Estratégico:", key="cmd_input", height=150, placeholder="Descreva sua análise jurídica estratégica...")
 
         if st.button("🚀 PROCESSAR AUDITORIA", type="primary", use_container_width=True):
             if not cmd:
                 st.error("⚠️ Insira um comando estratégico antes de processar.")
-            elif not user_api_key:
-                st.warning("⚠️ Chave de API ausente! Abra as 'Configurações do Motor Neural' e insira a chave para dar a ignição.")
             else:
                 with st.status("🧠 Inicializando Motores Neurais AETHER KARV...", expanded=True) as status:
                     st.write("Ingerindo dados e alocando tensores...")
-                    st.write("Autenticando chave neural...")
-                    resultado_final = aether_karv_engine(comando=cmd, api_key=user_api_key, arquivos=up_files)
+                    # Função executada (sem a exigência de api_key na UI)
+                    resultado_final = aether_karv_engine(comando=cmd, arquivos=up_files)
                     st.write("Compilando Dossiê Estratégico...")
                     status.update(label="Auditoria Concluída com Sucesso!", state="complete", expanded=False)
                 
@@ -220,10 +227,12 @@ if menu == "🛡️ Auditoria":
                     fig_line.update_layout(margin=dict(t=10, b=10, l=10, r=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=190, xaxis=dict(showgrid=False, visible=False), yaxis=dict(showgrid=True, gridcolor='#1f2937', zeroline=False))
                     st.plotly_chart(fig_line, use_container_width=True, config={'displayModeBar': False})
         else:
+            # Novo layout do Dossiê Placeholder espelhando o seu texto do Paint
             st.markdown("""
-            <div style='border: 1px dashed #374151; border-radius: 15px; height: 380px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #4b5563; background: linear-gradient(180deg, rgba(15,23,42,0.1) 0%, rgba(3,7,18,0.4) 100%); margin-top: 5px; box-shadow: inset 0 0 30px rgba(0,0,0,0.5);'>
-                <div class="nexus-icon" style='font-size: 3.5rem; margin-bottom: 20px;'>⚖️</div>
-                <div style='font-family: "Inter", sans-serif; font-weight: 700; font-size: 1.2rem; letter-spacing: 2px; color: #e5e7eb;'>MOTOR KARV PRONTO</div>
-                <div style='font-size: 0.9rem; margin-top: 8px; opacity: 0.7;'>Aguardando ingestão e comando estratégico.</div>
+            <div class="dossier-empty">
+                <p style="color: #f1f5f9; font-weight: 700; font-size: 1.1rem; text-align: center; margin: 0;">
+                    Dossiê Estratégico:<br>
+                    <span style="color: #64748b; font-weight: 400; font-size: 0.95rem;">Aguardando Processamento Neural...</span>
+                </p>
             </div>
             """, unsafe_allow_html=True)
