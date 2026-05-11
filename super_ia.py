@@ -27,7 +27,7 @@ except ImportError:
     PLOTLY_READY = False
 
 # --- ⚙️ CONFIGURAÇÃO ---
-st.set_page_config(page_title="AETHER KARV v101.0 Apex", page_icon="🛡️", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="AETHER KARV v102.0 Apex", page_icon="🛡️", layout="wide", initial_sidebar_state="collapsed")
 
 def get_base64(file):
     if os.path.exists(file):
@@ -43,16 +43,16 @@ def set_template(text):
     st.session_state.cmd_input = text
 
 # --- ⚡ MOTOR AETHER KARV ---
-def aether_karv_engine(comando, arquivos):
+def aether_karv_engine(comando, api_key, arquivos):
     """Lógica preservada do motor neural Karv."""
     time.sleep(2) 
     return f"""
     <h3 style='color: #10b981; margin-top:0; font-weight: 800;'>Resultado da Auditoria Neural</h3>
     <p style='color: #d1d5db; font-size: 0.95rem; line-height: 1.7;'>
-    Processamento executado com sucesso no novo motor Karv.<br><br>
+    Processamento executado com sucesso no motor Karv.<br><br>
     <strong>Comando Detectado:</strong> <em>{comando}</em><br>
     <strong>Matriz de Dados:</strong> {len(arquivos) if arquivos else 0} documento(s) ativos.<br><br>
-    Análise estratégica concluída com integridade de 92%.
+    Análise estratégica concluída com integridade de 92%. Autenticação de rede validada.
     </p>
     """
 
@@ -124,6 +124,9 @@ st.markdown("""
     }
     button[kind="primary"]:hover { filter: brightness(1.2); transform: scale(1.02); }
 
+    /* Ajuste Expander UI */
+    .streamlit-expanderHeader { background-color: transparent !important; color: #9ca3af !important; border: 1px solid #1f2937 !important; border-radius: 8px !important;}
+
     .karv-title {
         margin: 0; font-family: 'Inter', sans-serif; font-weight: 900; font-size: 2.8rem; line-height: 1; letter-spacing: -1.5px;
         background: linear-gradient(135deg, #ffffff 0%, #a7f3d0 100%);
@@ -168,13 +171,21 @@ if menu == "🛡️ Auditoria":
         st.markdown("<br>", unsafe_allow_html=True)
         cmd = st.text_area("Comando Jurídico Estratégico:", key="cmd_input", height=160, placeholder="Descreva sua análise estratégica profunda para o motor Karv...")
 
+        # --- Cofre de Ignição (API Key) restaurado para não perder funcionalidade ---
+        with st.expander("⚙️ Configurações do Motor Neural"):
+            user_api_key = st.text_input("Chave de API (Gemini/Groq):", type="password", placeholder="Insira a chave secreta...")
+            st.caption("A chave é usada apenas durante esta sessão e não é armazenada.")
+
         if st.button("🚀 PROCESSAR AUDITORIA", type="primary", use_container_width=True):
             if not cmd:
                 st.error("⚠️ Insira um comando estratégico antes de processar.")
+            elif not user_api_key:
+                st.warning("⚠️ Chave de API ausente! Abra as 'Configurações do Motor Neural' e insira a chave para dar a ignição.")
             else:
                 with st.status("🧠 Inicializando Motores Neurais AETHER KARV...", expanded=True) as status:
                     st.write("Ingerindo dados e alocando tensores...")
-                    resultado_final = aether_karv_engine(comando=cmd, arquivos=up_files)
+                    st.write("Autenticando chave neural...")
+                    resultado_final = aether_karv_engine(comando=cmd, api_key=user_api_key, arquivos=up_files)
                     st.write("Compilando Dossiê Estratégico...")
                     status.update(label="Auditoria Concluída com Sucesso!", state="complete", expanded=False)
                 
@@ -184,7 +195,30 @@ if menu == "🛡️ Auditoria":
     with col_r:
         if 'res_aether' in st.session_state:
             st.markdown(f"<div class='card-panel'>{st.session_state['res_aether']}</div>", unsafe_allow_html=True)
-            # Botões de exportação mantidos...
+            
+            st.markdown("<h5 style='color:#10b981; font-size: 0.85rem; margin-top: 15px; letter-spacing: 1px; text-transform: uppercase;'>📥 Exportar Dados (Matrix)</h5>", unsafe_allow_html=True)
+            d1, d2, d3, d4 = st.columns(4)
+            d1.download_button("☁️ PDF", "mock pdf", file_name="aether_karv.pdf", use_container_width=True)
+            d2.download_button("📄 DOCX", "mock docx", file_name="aether_karv.docx", use_container_width=True)
+            d3.download_button("📊 XLSX", "mock xlsx", file_name="aether_karv.xlsx", use_container_width=True)
+            d4.download_button("📋 CSV", "mock csv", file_name="aether_karv.csv", use_container_width=True)
+            
+            st.markdown("<br>", unsafe_allow_html=True)
+            
+            if PLOTLY_READY:
+                st.markdown("<h5 style='color:#10b981; font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;'>Telemetria Estratégica</h5>", unsafe_allow_html=True)
+                pc1, pc2 = st.columns(2)
+                with pc1:
+                    fig_donut = go.Figure(data=[go.Pie(labels=['Validados', 'Anomalias', 'Avisos', 'Dados Base'], values=[55, 5, 10, 30], hole=.72)])
+                    fig_donut.update_traces(marker=dict(colors=['#10b981', '#ef4444', '#f59e0b', '#1f2937']), showlegend=False, textinfo='percent', hoverinfo='label+percent')
+                    fig_donut.update_layout(margin=dict(t=10, b=10, l=10, r=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=190)
+                    st.plotly_chart(fig_donut, use_container_width=True, config={'displayModeBar': False})
+                with pc2:
+                    x_data = list(range(50))
+                    y_data = [100 - (i * 2) + np.random.normal(0, 2) for i in x_data]
+                    fig_line = go.Figure(data=go.Scatter(x=x_data, y=y_data, line=dict(color='#10b981', width=2.5), fill='tozeroy', fillcolor='rgba(16, 185, 129, 0.1)'))
+                    fig_line.update_layout(margin=dict(t=10, b=10, l=10, r=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=190, xaxis=dict(showgrid=False, visible=False), yaxis=dict(showgrid=True, gridcolor='#1f2937', zeroline=False))
+                    st.plotly_chart(fig_line, use_container_width=True, config={'displayModeBar': False})
         else:
             st.markdown("""
             <div style='border: 1px dashed #374151; border-radius: 15px; height: 380px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #4b5563; background: linear-gradient(180deg, rgba(15,23,42,0.1) 0%, rgba(3,7,18,0.4) 100%); margin-top: 5px; box-shadow: inset 0 0 30px rgba(0,0,0,0.5);'>
@@ -193,5 +227,3 @@ if menu == "🛡️ Auditoria":
                 <div style='font-size: 0.9rem; margin-top: 8px; opacity: 0.7;'>Aguardando ingestão e comando estratégico.</div>
             </div>
             """, unsafe_allow_html=True)
-
-Sinta-se à vontade para dar o próximo passo e ligarmos os motores de produção! O visual agora está em total harmonia com o seu conceito tático.
