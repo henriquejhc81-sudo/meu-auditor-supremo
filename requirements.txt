@@ -7,10 +7,9 @@ openpyxl>=3.1.0
 groq
 duckduckgo-search
 docx2txt
-streamlit-extras
 langchain-community
 faiss-cpu
 opencv-python-headless
-python-magic-bin
+python-magic
 fpdf2
 plotly>=5.18.0
