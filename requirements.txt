@@ -10,6 +10,5 @@ docx2txt
 langchain-community
 faiss-cpu
 opencv-python-headless
-python-magic
 fpdf2
 plotly>=5.18.0
