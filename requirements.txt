@@ -11,6 +11,6 @@ streamlit-extras
 langchain-community
 faiss-cpu
 opencv-python-headless
-python-magic
+python-magic-bin
 fpdf2
 plotly>=5.18.0
