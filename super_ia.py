@@ -10,7 +10,8 @@ except ImportError:
     pass
 
 # --- ⚙️ CONFIGURAÇÃO DE AMBIENTE ---
-st.set_page_config(page_title="AETHER KARV V107.0 Apex", page_icon="🛡️", layout="wide", initial_sidebar_state="collapsed")
+# CORREÇÃO 1: Usando logo.png como ícone da aba do navegador (Favicon)
+st.set_page_config(page_title="AETHER KARV V107.0 Apex", page_icon="logo.png", layout="wide", initial_sidebar_state="collapsed")
 
 # Funções de Base64 para Imagens Locais
 def get_base64_image(file):
@@ -75,7 +76,6 @@ def aether_karv_engine(comando, contexto_arquivos):
 
 # --- 🎨 CARREGAMENTO DE TODOS OS ATIVOS VISUAIS ---
 back_apex_b64 = get_base64_image("back_apex.png")
-logo_b64 = get_base64_image("logo.png")
 auditoria_b64 = get_base64_image("auditoria_link.png")
 forense_b64 = get_base64_image("forense_link.png")
 engenharia_b64 = get_base64_image("engenharia_link.png")
@@ -160,9 +160,9 @@ st.markdown(f"""
     button[kind="primary"]:hover {{ transform: translateY(-1px); box-shadow: 0 15px 35px rgba(16, 185, 129, 0.5) !important; filter: brightness(1.1); }}
 
     /* TÍTULO CENTRALIZADO */
-    .header-container {{ text-align: center; margin-bottom: 10px; display: flex; flex-direction: column; align-items: center; }}
-    .logo-glow {{ width: 80px; height: 80px; border-radius: 50%; object-fit: contain; filter: drop-shadow(0 0 20px rgba(16,185,129,0.8)); margin-bottom: 8px; }}
-    .karv-title {{ margin: 0; font-weight: 900; font-size: 2.8rem; color: #ffffff; letter-spacing: -2px; line-height: 1; }}
+    /* CORREÇÃO 2: Margin-top ajustado para respeitar o logo integrado no back_apex.png */
+    .header-container {{ text-align: center; margin-bottom: 10px; display: flex; flex-direction: column; align-items: center; margin-top: 60px; }}
+    .karv-title {{ margin: 0; font-weight: 900; font-size: 2.8rem; color: #ffffff; letter-spacing: -2px; line-height: 1; text-shadow: 0 0 15px rgba(16, 185, 129, 0.3); }}
     .karv-subtitle {{ color: #10b981; font-weight: 700; font-size: 1rem; letter-spacing: 4px; text-transform: uppercase; margin-top: 5px; }}
     
     /* DOSSIÊ NEXUS COM ÍCONE CUSTOMIZADO */
@@ -179,11 +179,9 @@ st.markdown(f"""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 🚀 HEADER CENTRALIZADO ---
-logo_img = f'<img src="data:image/png;base64,{logo_b64}" class="logo-glow">' if logo_b64 else '🛡️'
+# --- 🚀 HEADER CENTRALIZADO (Logo HTML removido) ---
 st.markdown(f"""
 <div class="header-container">
-    {logo_img}
     <h1 class="karv-title">AETHER KARV</h1>
     <div class="karv-subtitle">Strategic Intelligence Hub</div>
 </div>
