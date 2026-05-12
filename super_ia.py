@@ -98,14 +98,11 @@ def aether_karv_engine(comando, contexto_arquivos):
         time.sleep(2.5) 
         return f"**AUDITORIA SINTÉTICA (MODO OFFLINE):**\nO sistema processou o comando `{comando[:20]}...` com sucesso. Para processamento neural real, ative a chave de API Groq no ambiente."
 
-# --- 🎨 DESIGN "CYBER APEX CONSOLE" - NOVA IMAGEM DE FUNDO COMPOSITA ---
-# Carregamos a nova imagem de composição (back_apex.png) que já contém os painéis pré-renderizados
-back_apex_b64 = get_base64_image("back_apex.png")
+# --- 🎨 DESIGN "CYBER APEX CONSOLE" ---
+back_b64 = get_base64_image("back.png")
 logo_b64 = get_base64_image("logo.png")
 
-# Se o fundo tático composto existir, aplicamos ele ao background.
-# Nota: O CSS do stApp foi simplificado porque o design flutuante agora está na imagem.
-bg_css = f"background-image: url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #020617;"
+bg_css = f"background-image: url('data:image/png;base64,{back_b64}'); background-size: cover; background-position: center;" if back_b64 else "background-color: #020617;"
 
 st.markdown(f"""
     <style>
@@ -119,7 +116,7 @@ st.markdown(f"""
     .block-container {{ padding-top: 1.5rem !important; padding-bottom: 0rem !important; max-width: 90% !important; margin: 0 auto !important; overflow: hidden !important;}}
     [data-testid="stHeader"], [data-testid="collapsedControl"] {{ display: none !important; }}
 
-    /* 2. MENU CÁPSULAS CENTRALIZADAS COM ÍCONES */
+    /* 2. MENU CÁPSULAS CENTRALIZADAS */
     div[role="radiogroup"] > div > label > div:first-child {{ display: none !important; }}
     
     div[data-testid="stRadio"] > div {{ 
@@ -136,36 +133,33 @@ st.markdown(f"""
         color: #020617 !important; font-weight: 800 !important; border-radius: 50px !important;
         box-shadow: 0 0 20px rgba(16, 185, 129, 0.5) !important;
     }}
-    div[data-testid="stRadio"] label p {{ font-size: 1rem !important; font-weight: 600 !important; display: flex; align-items: center; gap: 8px; }}
+    div[data-testid="stRadio"] label p {{ font-size: 1rem !important; font-weight: 600 !important; }}
 
-    /* 3. UPLOADER TÁTICO INTEGRADO (DESIGN DO PRINT IDEAL) */
+    /* 3. UPLOADER TÁTICO */
     [data-testid="stFileUploadDropzone"] {{ 
-        background-color: transparent !important; border: 2px dashed rgba(16, 185, 129, 0.3) !important; border-radius: 12px !important; transition: 0.3s;
-        text-align: center !important; padding: 30px !important;
+        background-color: rgba(7, 11, 20, 0.6) !important; border: 1px dashed #334155 !important; border-radius: 12px !important; transition: 0.3s;
     }}
     [data-testid="stFileUploadDropzone"]:hover {{ border-color: #10b981 !important; background-color: rgba(16, 185, 129, 0.05) !important;}}
-    [data-testid="stFileUploadDropzone"] p {{ color: #cbd5e1 !important; font-weight: 600; font-size: 0.95rem; margin: 0 !important;}}
-    
-    /* Escondemos os botões e textos padrão do Streamlit para manter a estética */
-    [data-testid="stFileUploadDropzone"] > button {{ display: none !important; }}
-    [data-testid="stFileUploadDropzone"] > span {{ display: none !important; }}
+    [data-testid="stFileUploadDropzone"] p {{ color: #cbd5e1 !important; }}
     
     /* 4. INPUT AREA */
     .stTextArea label, .stTextArea textarea, .stTextInput input, .stTextInput label {{
         font-family: 'Inter', sans-serif !important;
     }}
-    .stTextArea label {{ font-size: 0.9rem; font-weight: 800; color: #ffffff; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }}
     .stTextArea textarea {{
-        background-color: rgba(7, 11, 20, 0.8) !important; border: 1px solid #1e293b !important; color: #cbd5e1 !important; font-size: 0.9rem !important; border-radius: 10px;
+        background-color: #070b14 !important; border: 1px solid #1e293b !important; color: #cbd5e1 !important; font-size: 0.9rem !important;
     }}
     .stTextArea textarea:focus {{ border-color: #10b981 !important; box-shadow: 0 0 10px rgba(16, 185, 129, 0.2) !important; }}
 
-    /* 5. PAINÉIS E BOTÕES TÁTICOS (SIMPLIFICADO: FUNDO ESTÁ NA IMAGEM) */
+    /* 5. PAINÉIS E BOTÕES TÁTICOS (Glassmorphism) */
+    .card-label {{ font-size: 1.1rem; font-weight: 800; color: #ffffff; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }}
     .operation-card {{
-        background: transparent !important; /* Totalmente transparente, o fundo está na imagem composto */
-        border: none !important; border-radius: 20px; padding: 25px;
+        background: rgba(15, 23, 42, 0.5);
+        border: 1px solid #1e293b; border-radius: 20px; padding: 25px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.4);
         position: relative; overflow: hidden;
     }}
+    .operation-card::before {{ content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: #10b981; }}
     
     button[kind="primary"] {{ 
         background: linear-gradient(90deg, #10b981, #34d399) !important;
@@ -191,8 +185,8 @@ st.markdown(f"""
     .download-pill:hover {{ border-color: #10b981; color: #10b981; background: rgba(16, 185, 129, 0.05); }}
     
     /* MENSAGEM DO MOTOR DE RESPOSTA */
-    .karv-response {{ background: rgba(15,23,42,0.8); border-left: 4px solid #10b981; padding: 15px; border-radius: 5px; font-family: monospace; white-space: pre-wrap; margin-top: 10px; font-size: 0.95rem; text-align: left; }}
-    .telemetry-badge {{ display: inline-block; background: #1e293b; color: #34d399; font-size: 0.75rem; padding: 3px 8px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #34d399; text-align: center; width: 100%; }}
+    .karv-response {{ background: rgba(15,23,42,0.8); border-left: 4px solid #10b981; padding: 15px; border-radius: 5px; font-family: monospace; white-space: pre-wrap; margin-top: 10px; font-size: 0.95rem; }}
+    .telemetry-badge {{ display: inline-block; background: #1e293b; color: #34d399; font-size: 0.75rem; padding: 3px 8px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #34d399; }}
     </style>
     """, unsafe_allow_html=True)
 
@@ -208,25 +202,20 @@ header_html = f"""
 """
 st.markdown(header_html, unsafe_allow_html=True)
 
-menu = st.radio("", ["<i class='fas fa-shield-halved'></i> AUDITORIA", "<i class='fas fa-search-dollar'></i> FORENSE", "<i class='fas fa-drafting-compass'></i> ENGENHARIA"], index=0, label_visibility="collapsed", horizontal=True)
+menu = st.radio("", ["AUDITORIA", "FORENSE", "ENGENHARIA"], index=0, label_visibility="collapsed", horizontal=True)
 
 # Grid de Operação
 col_ing, col_dos = st.columns(2, gap="large")
 
 with col_ing:
-    # Os títulos "INGESTÃO" e "DOSSIÊ" agora estão pré-renderizados na imagem de fundo composta
+    st.markdown('<div class="card-label">INGESTÃO</div>', unsafe_allow_html=True)
     with st.container():
         st.markdown('<div class="operation-card">', unsafe_allow_html=True)
-        
-        # Uploader estilizado como na referência
         up = st.file_uploader(" ", accept_multiple_files=True, label_visibility="collapsed")
+        st.markdown('<p style="font-size:0.8rem;color:#64748b;text-align:center;margin-top:-10px;">ARRRASTE ARQUIVOS OU CLIQUE PARA UPLOAD (PDF, DOCX, XLSX, CSV)</p>', unsafe_allow_html=True)
         
-        # Texto de instrução centralizado
-        st.markdown('<p style="font-size:0.8rem;color:#64748b;text-align:center;margin-top:10px;">ARRRASTE ARQUIVOS OU CLIQUE PARA UPLOAD (PDF, DOCX, XLSX, CSV)</p>', unsafe_allow_html=True)
-        
-        # Área de Comando
-        st.markdown('<div style="margin-top:25px;"></div>', unsafe_allow_html=True)
-        cmd = st.text_area("COMANDO JURÍDICO ESTRATÉGICO:", key="cmd_input", height=130, placeholder="Descreva sua análise jurídica estratégica profunda...")
+        st.markdown('<div style="margin-top:25px;"><p class="card-label" style="font-size:0.9rem;">COMANDO JURÍDICO ESTRATÉGICO:</p></div>', unsafe_allow_html=True)
+        cmd = st.text_area("Comando Jurídico Estratégico:", key="cmd_input", height=130, placeholder="Descreva sua análise jurídica estratégica profunda...")
 
         if st.button("🚀 PROCESSAR AUDITORIA NEURAL", type="primary", use_container_width=True):
             if cmd:
@@ -251,12 +240,12 @@ with col_ing:
         st.markdown('</div>', unsafe_allow_html=True)
 
 with col_dos:
+    st.markdown('<div class="card-label">DOSSIÊ</div>', unsafe_allow_html=True)
     with st.container():
         st.markdown('<div class="operation-card">', unsafe_allow_html=True)
         
         if st.session_state.res_aether:
             # Exibe os resultados e a telemetria evoluída
-            st.markdown("<div style='text-align:center;'>", unsafe_allow_html=True)
             if st.session_state.telemetria:
                 st.markdown(f"<div class='telemetry-badge'>🛰️ TELEMETRIA: {st.session_state.telemetria}</div>", unsafe_allow_html=True)
             
@@ -267,9 +256,7 @@ with col_dos:
                 st.session_state.res_aether = None
                 st.session_state.telemetria = None
                 st.rerun()
-            st.markdown("</div>", unsafe_allow_html=True)
         else:
-            # Painel centralizado do Dossiê, igual ao print ideal
             st.markdown("""
             <div class="nexus-center">
                 <div class="scale-icon"><i class="fas fa-balance-scale"></i></div>
@@ -278,13 +265,12 @@ with col_dos:
             </div>
             """, unsafe_allow_html=True)
         
-        # Botões de download centralizados
         st.markdown("""
         <div class="download-bar">
-            <div class="download-pill"><i class="fas fa-file-pdf"></i> PDF</div>
-            <div class="download-pill"><i class="fas fa-file-word"></i> DOCX</div>
-            <div class="download-pill"><i class="fas fa-file-excel"></i> XLSX</div>
-            <div class="download-pill"><i class="fas fa-file-csv"></i> CSV</div>
+            <div class="download-pill"><i class="fas fa-file-pdf"></i> PDF Matrix</div>
+            <div class="download-pill"><i class="fas fa-file-word"></i> DOCX Grid</div>
+            <div class="download-pill"><i class="fas fa-file-excel"></i> XLSX Map</div>
+            <div class="download-pill"><i class="fas fa-file-csv"></i> CSV Table</div>
         </div>
         """, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
