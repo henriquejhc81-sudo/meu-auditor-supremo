@@ -26,10 +26,11 @@ try:
 except ImportError:
     PLOTLY_READY = False
 
-# --- ⚙️ CONFIGURAÇÃO ---
-st.set_page_config(page_title="AETHER KARV v104.0 Cyber Apex", page_icon="🛡️", layout="wide", initial_sidebar_state="collapsed")
+# --- ⚙️ CONFIGURAÇÃO DE AMBIENTE ---
+st.set_page_config(page_title="AETHER KARV V105.0 Apex", page_icon="🛡️", layout="wide", initial_sidebar_state="collapsed")
 
-def get_base64(file):
+# Funções de Base64 para Imagens Locais
+def get_base64_image(file):
     if os.path.exists(file):
         with open(file, "rb") as f:
             return base64.b64encode(f.read()).decode()
@@ -42,200 +43,158 @@ if "cmd_input" not in st.session_state:
 def set_template(text):
     st.session_state.cmd_input = text
 
-# --- ⚡ MOTOR AETHER KARV ---
+# --- ⚡ MOTOR AETHER KARV (SIMULAÇÃO PRESERVADA) ---
 def aether_karv_engine(comando, arquivos):
-    """Lógica preservada do motor neural Karv."""
+    """Lógica simulada do motor neural Karv (Fidelidade v104.0)."""
     time.sleep(2) 
-    return f"""
-    <h3 style='color: #10b981; margin-top:0; font-weight: 800;'>Resultado da Auditoria Neural</h3>
-    <p style='color: #d1d5db; font-size: 0.95rem; line-height: 1.7;'>
-    Processamento executado com sucesso no motor Karv.<br><br>
-    <strong>Comando Detectado:</strong> <em>{comando}</em><br>
-    <strong>Matriz de Dados:</strong> {len(arquivos) if arquivos else 0} documento(s) ativos.<br><br>
-    Análise estratégica concluída com integridade de 92%.
-    </p>
-    """
+    return f"Processamento neural concluído com sucesso."
 
-# --- 🎨 DESIGN "CYBER APEX CONSOLE" (Layout Táctico Travado) ---
-st.markdown("""
+# --- 🎨 DESIGN "CYBER APEX CONSOLE" (Espelhamento da Imagem Autorizada) ---
+# Carregamos as imagens do seu GitHub para usar no CSS
+back_b64 = get_base64_image("back.png")
+logo_b64 = get_base64_image("logo.png")
+
+# Se o fundo tático existir, aplicamos ele ao background
+bg_css = f"background-image: url('data:image/png;base64,{back_b64}'); background-size: cover; background-position: center;" if back_b64 else "background-color: #020617;"
+
+st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
     
-    /* 1. THE SETUP - CORPORATE TITAN DARK MODE */
-    .stApp { background-color: #020617; color: #f3f4f6; font-family: 'Inter', sans-serif; }
-    
-    /* BLINDAGEM DE LARGURA: Trava o layout para caber na tela sem rolar */
-    .block-container { padding-top: 1.5rem !important; padding-bottom: 0rem !important; max-width: 90% !important; margin: 0 auto !important;}
-    [data-testid="stHeader"] { display: none !important; }
-    [data-testid="collapsedControl"] { display: none !important; }
-
-    /* Blindagem Lateral */
-    [data-testid="stSidebar"] { display: none !important; }
+    /* 1. O AMBIENTE - CORPORATE TITAN DARK MODE */
+    .stApp {{
+        {bg_css}
+        color: #f3f4f6; font-family: 'Inter', sans-serif;
+    }}
+    .block-container {{ padding-top: 1.5rem !important; padding-bottom: 0rem !important; max-width: 90% !important; margin: 0 auto !important; overflow: hidden !important;}}
+    [data-testid="stHeader"], [data-testid="collapsedControl"] {{ display: none !important; }}
 
     /* 2. MENU CÁPSULAS CENTRALIZADAS (Design do Print) */
-    div[role="radiogroup"] > div > label > div:first-child { display: none !important; }
+    div[role="radiogroup"] > div > label > div:first-child {{ display: none !important; }}
     
-    div[data-testid="stRadio"] > div { 
-        flex-direction: row !important; 
-        justify-content: center !important; /* Centraliza as pílulas */
-        gap: 15px !important; 
-        background: transparent !important;
-        padding: 5px;
-        margin: 0 auto 30px auto;
-        border: none !important;
+    div[data-testid="stRadio"] > div {{ 
+        justify-content: center !important; gap: 12px !important; 
+        background: rgba(15, 23, 42, 0.6) !important;
+        padding: 5px !important; border-radius: 50px !important; border: 1px solid #1e293b !important;
+        width: fit-content !important; margin: 0 auto 35px auto !important;
+    }}
+    div[data-testid="stRadio"] label {{
+        background-color: transparent !important; color: #94a3b8 !important; padding: 10px 25px !important; transition: all 0.4s ease; margin: 0 !important; cursor: pointer;
+    }}
+    div[data-testid="stRadio"] label:has(input:checked) {{
+        background: linear-gradient(90deg, #10b981, #34d399) !important;
+        color: #020617 !important; font-weight: 800 !important; border-radius: 50px !important;
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.5) !important;
     }
-    div[data-testid="stRadio"] label {
-        background-color: #0f172a !important; 
-        color: #64748b !important;
-        padding: 8px 25px !important; 
-        border-radius: 50px !important; /* Formato Pílula */
-        border: 1px solid #1e293b !important; 
-        transition: all 0.4s ease; margin: 0 !important;
-        cursor: pointer;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-    }
-    div[data-testid="stRadio"] label:has(input:checked) {
-        background: linear-gradient(90deg, #064e3b, #10b981) !important; 
-        border-color: #34d399 !important;
-        box-shadow: 0 0 20px rgba(16, 185, 129, 0.4), inset 0 0 10px rgba(16, 185, 129, 0.4) !important; /* Aura Neon */
-    }
-    div[data-testid="stRadio"] label:has(input:checked) p { color: #ffffff !important; font-weight: 800 !important; }
-    div[data-testid="stRadio"] label p { font-size: 1rem !important; font-weight: 600 !important; }
+    div[data-testid="stRadio"] label p {{ font-size: 1rem !important; font-weight: 600 !important; }}
 
-    /* 3. UPLOADER CAMUFLADO */
-    [data-testid="stFileUploadDropzone"] { 
-        background-color: rgba(15, 23, 42, 0.3) !important; 
-        border: 1px dashed #1e293b !important; 
-        padding: 10px !important; border-radius: 12px !important; 
-        transition: 0.3s;
-    }
-    [data-testid="stFileUploadDropzone"]:hover { border-color: #10b981 !important; background-color: rgba(16, 185, 129, 0.05) !important;}
+    /* 3. UPLOADER TÁTICO */
+    [data-testid="stFileUploadDropzone"] {{ 
+        background-color: rgba(7, 11, 20, 0.6) !important; border: 1px dashed #334155 !important; border-radius: 12px !important; transition: 0.3s;
+    }}
+    [data-testid="stFileUploadDropzone"]:hover {{ border-color: #10b981 !important; background-color: rgba(16, 185, 129, 0.05) !important;}}
+    [data-testid="stFileUploadDropzone"] p {{ color: #cbd5e1 !important; }}
     
-    /* 4. INPUT AREA (Escura e elegante) */
-    .stTextArea label { color: #f8fafc !important; font-weight: 600 !important; font-size: 0.95rem !important; margin-bottom: 5px !important; }
-    .stTextArea textarea {
-        background-color: #0f172a !important;
-        border: 1px solid #1e293b !important;
-        border-radius: 8px !important;
-        color: #d1d5db !important;
-        padding: 10px !important;
-    }
-    .stTextArea textarea:focus { border-color: #10b981 !important; box-shadow: 0 0 10px rgba(16, 185, 129, 0.2) !important; }
+    /* 4. INPUT AREA */
+    .stTextArea label, .stTextArea textarea, .stTextInput input, .stTextInput label {{
+        font-family: 'Inter', sans-serif !important;
+    }}
+    .stTextArea textarea {{
+        background-color: #070b14 !important; border: 1px solid #1e293b !important; color: #cbd5e1 !important; font-size: 0.9rem !important;
+    }}
+    .stTextArea textarea:focus {{ border-color: #10b981 !important; box-shadow: 0 0 10px rgba(16, 185, 129, 0.2) !important; }}
 
-    /* 5. PAINÉIS E BOTÕES */
-    .card-panel { background-color: #0f172a; padding: 25px; border-radius: 12px; border: 1px solid #1e293b; border-top: 3px solid #10b981; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+    /* 5. PAINÉIS E BOTÕES TÁTICOS (Glassmorphism) */
+    .card-label {{ font-size: 1.1rem; font-weight: 800; color: #ffffff; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }}
+    .operation-card {{
+        background: rgba(15, 23, 42, 0.5);
+        border: 1px solid #1e293b; border-radius: 20px; padding: 25px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+        position: relative; overflow: hidden;
+    }}
+    .operation-card::before {{ content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: #10b981; }}
     
-    button[kind="primary"] { 
-        background: linear-gradient(90deg, #059669, #10b981) !important;
-        border: none !important; border-radius: 10px !important; font-weight: 800 !important; color: #ffffff !important;
-        box-shadow: 0 5px 20px rgba(16, 185, 129, 0.1) !important; text-transform: uppercase; letter-spacing: 1px;
-        padding: 15px 15px !important; margin-top: 10px !important; transition: 0.3s !important;
-    }
-    button[kind="primary"]:hover { filter: brightness(1.2); transform: translateY(-1px); box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3) !important; }
+    button[kind="primary"] {{ 
+        background: linear-gradient(90deg, #10b981, #34d399) !important;
+        border-radius: 50px !important; font-weight: 900 !important; color: #020617 !important;
+        box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3) !important; text-transform: uppercase; letter-spacing: 1px;
+        padding: 15px !important; margin-top: 15px !important; border: none !important; font-size: 1rem !important;
+    }}
+    button[kind="primary"]:hover {{ transform: translateY(-1px); box-shadow: 0 15px 35px rgba(16, 185, 129, 0.5) !important; filter: brightness(1.1); }}
 
-    /* 6. TITULO CENTRALIZADO COM GLOW */
-    .header-container { text-align: center; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; }
-    .logo-glow { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 35px rgba(16,185,129,0.8); margin-bottom: 10px; border: 2px solid rgba(16,185,129,0.3); }
-    .karv-title {
-        margin: 0; font-family: 'Inter', sans-serif; font-weight: 900; font-size: 2.8rem; line-height: 1; letter-spacing: -1px;
-        color: #ffffff; text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
-    }
-    .karv-subtitle { color: #34d399; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 1rem; letter-spacing: 3px; margin-top: 5px; }
+    /* 6. TÍTULO CENTRALIZADO COM GLOW */
+    .header-container {{ text-align: center; margin-bottom: 25px; display: flex; flex-direction: column; align-items: center; }}
+    .logo-glow {{ width: 80px; height: 80px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 35px rgba(16,185,129,0.8); margin-bottom: 12px; border: 2px solid rgba(16,185,129,0.3); }}
+    .karv-title {{ margin: 0; font-weight: 900; font-size: 3rem; color: #ffffff; letter-spacing: -2px; }}
+    .karv-subtitle {{ color: #10b981; font-weight: 700; font-size: 1.1rem; letter-spacing: 5px; text-transform: uppercase; margin-top: 5px; }}
     
-    /* 7. DOSSIÊ PLACEHOLDER (Do Print 2 e Conceito) */
-    .dossier-empty {
-        background-color: #050b14;
-        border: 1px solid #1e293b;
-        border-radius: 12px;
-        height: 340px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        overflow: hidden;
-        margin-top: 25px;
-    }
-    /* Borda superior verde fina */
-    .dossier-empty::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, #10b981, transparent); }
+    /* 7. DOSSIÊ NEXUS (Placeholder) */
+    .nexus-center {{ display: flex; flex-direction: column; align-items: center; justify-content: center; height: 320px; text-align: center; }}
+    .scale-icon {{ font-size: 4rem; color: #10b981; background: rgba(16, 185, 129, 0.1); width: 120px; height: 120px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #10b981; box-shadow: 0 0 50px rgba(16, 185, 129, 0.5); margin-bottom: 20px; }}
+
+    /* 8. DOWNLOAD PILLS */
+    .download-bar {{ display: flex; justify-content: center; gap: 8px; margin-top: 20px; }}
+    .download-pill {{ background: rgba(30, 41, 59, 0.7); border: 1px solid #334155; border-radius: 50px; padding: 6px 14px; color: #cbd5e1; font-size: 0.8rem; cursor: pointer; transition: 0.3s; font-weight: 600; }}
+    .download-pill:hover {{ border-color: #10b981; color: #10b981; background: rgba(16, 185, 129, 0.05); }}
     </style>
     """, unsafe_allow_html=True)
 
-# --- 🚀 HEADER CENTRALIZADO (ESTILO CONSOLE) ---
-logo_b64 = get_base64("logo.png")
-logo_img = f'<img src="data:image/png;base64,{logo_b64}" class="logo-glow">' if logo_b64 else ''
+# --- 🚀 HEADER CENTRALIZADO (ESTILO CONSOLE APEX) ---
+logo_html = f'<img src="data:image/png;base64,{logo_b64}" class="logo-glow">' if logo_b64 else '<div class="logo-glow" style="display:flex;align-items:center;justify-content:center;color:#10b981;font-size:2.5rem;"><i class="fas fa-shield-halved"></i></div>'
 
 header_html = f"""
 <div class="header-container">
-    {logo_img}
+    {logo_html}
     <h1 class="karv-title">AETHER KARV</h1>
     <div class="karv-subtitle">Strategic Intelligence Hub</div>
 </div>
 """
 st.markdown(header_html, unsafe_allow_html=True)
 
-# O Menu Radio agora centraliza automaticamente pelo CSS
-menu = st.radio("", ["🛡️ Auditoria", "🔍 Forense", "🏗️ Engenharia"], index=0, label_visibility="collapsed", horizontal=True)
+menu = st.radio("", ["AUDITORIA", "FORENSE", "ENGENHARIA"], index=0, label_visibility="collapsed", horizontal=True)
 
-# --- 🏗️ ÁREA DE TRABALHO (2 COLUNAS TRAVADAS) ---
-if menu == "🛡️ Auditoria":
-    # col_l, col_r = st.columns([1, 1.25], gap="large")
-    # Trocamos para colunas com gap menor para garantir que tudo assente
-    col_l, col_r = st.columns([1, 1], gap="medium")
-    
-    with col_l:
-        up_files = st.file_uploader(" ", accept_multiple_files=True, label_visibility="collapsed")
+# Grid de Operação
+col_ing, col_dos = st.columns(2, gap="large")
+
+with col_ing:
+    st.markdown('<div class="card-label">INGESTÃO</div>', unsafe_allow_html=True)
+    with st.container():
+        st.markdown('<div class="operation-card">', unsafe_allow_html=True)
+        up = st.file_uploader(" ", accept_multiple_files=True, label_visibility="collapsed")
+        st.markdown('<p style="font-size:0.8rem;color:#64748b;text-align:center;margin-top:-10px;">ARRRASTE ARQUIVOS OU CLIQUE PARA UPLOAD (PDF, DOCX, XLSX, CSV)</p>', unsafe_allow_html=True)
         
-        st.markdown("<br>", unsafe_allow_html=True)
-        cmd = st.text_area("Comando Jurídico Estratégico:", key="cmd_input", height=140, placeholder="Descreva sua análise jurídica estratégica...")
+        st.markdown('<div style="margin-top:25px;"><p class="card-label" style="font-size:0.9rem;">COMANDO JURÍDICO ESTRATÉGICO:</p></div>', unsafe_allow_html=True)
+        cmd = st.text_area("Comando Jurídico Estratégico:", key="cmd_input", height=130, placeholder="Descreva sua análise jurídica estratégica profunda...")
 
-        if st.button("🚀 PROCESSAR AUDITORIA", type="primary", use_container_width=True):
-            if not cmd:
-                st.error("⚠️ Insira um comando estratégico antes de processar.")
-            else:
-                with st.status("🧠 Inicializando Motores Neurais AETHER KARV...", expanded=True) as status:
-                    st.write("Ingerindo dados e alocando tensores...")
-                    resultado_final = aether_karv_engine(comando=cmd, arquivos=up_files)
-                    st.write("Compilando Dossiê Estratégico...")
-                    status.update(label="Auditoria Concluída com Sucesso!", state="complete", expanded=False)
-                
-                st.session_state['res_aether'] = resultado_final
-                st.rerun() 
-            
-    with col_r:
+        if st.button("🚀 PROCESSAR AUDITORIA NEURAL", type="primary", use_container_width=True):
+            if cmd:
+                with st.status("🧠 Inicializando Motores Neurais AETHER KARV...", expanded=False):
+                    time.sleep(2)
+                st.session_state['res_aether'] = f"Processamento neural simulado concluído."
+                st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+
+with col_dos:
+    st.markdown('<div class="card-label">DOSSIÊ</div>', unsafe_allow_html=True)
+    with st.container():
+        st.markdown('<div class="operation-card">', unsafe_allow_html=True)
         if 'res_aether' in st.session_state:
-            st.markdown(f"<div class='card-panel'>{st.session_state['res_aether']}</div>", unsafe_allow_html=True)
-            
-            st.markdown("<h5 style='color:#10b981; font-size: 0.8rem; margin-top: 15px; letter-spacing: 1px; text-transform: uppercase;'>📥 Exportar Dados (Matrix)</h5>", unsafe_allow_html=True)
-            d1, d2, d3, d4 = st.columns(4)
-            d1.download_button("☁️ PDF", "mock pdf", file_name="aether_karv.pdf", use_container_width=True)
-            d2.download_button("📄 DOCX", "mock docx", file_name="aether_karv.docx", use_container_width=True)
-            d3.download_button("📊 XLSX", "mock xlsx", file_name="aether_karv.xlsx", use_container_width=True)
-            d4.download_button("📋 CSV", "mock csv", file_name="aether_karv.csv", use_container_width=True)
-            
-            st.markdown("<br>", unsafe_allow_html=True)
-            
-            if PLOTLY_READY:
-                st.markdown("<h5 style='color:#10b981; font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase;'>Telemetria Estratégica</h5>", unsafe_allow_html=True)
-                pc1, pc2 = st.columns(2)
-                with pc1:
-                    fig_donut = go.Figure(data=[go.Pie(labels=['Validados', 'Anomalias', 'Avisos', 'Dados Base'], values=[55, 5, 10, 30], hole=.72)])
-                    fig_donut.update_traces(marker=dict(colors=['#10b981', '#ef4444', '#f59e0b', '#1f2937']), showlegend=False, textinfo='percent', hoverinfo='label+percent')
-                    fig_donut.update_layout(margin=dict(t=5, b=5, l=5, r=5), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=180)
-                    st.plotly_chart(fig_donut, use_container_width=True, config={'displayModeBar': False})
-                with pc2:
-                    x_data = list(range(50))
-                    y_data = [100 - (i * 2) + np.random.normal(0, 2) for i in x_data]
-                    fig_line = go.Figure(data=go.Scatter(x=x_data, y=y_data, line=dict(color='#10b981', width=2), fill='tozeroy', fillcolor='rgba(16, 185, 129, 0.1)'))
-                    fig_line.update_layout(margin=dict(t=5, b=5, l=5, r=5), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=180, xaxis=dict(showgrid=False, visible=False), yaxis=dict(showgrid=True, gridcolor='#1f2937', zeroline=False))
-                    st.plotly_chart(fig_line, use_container_width=True, config={'displayModeBar': False})
+            st.markdown(f"<div style='color:#e2e8f0; font-size:1.1rem; padding:15px;'>{st.session_state['res_aether']}</div>", unsafe_allow_html=True)
         else:
-            # Layout do Dossiê Placeholder travado
             st.markdown("""
-            <div class="dossier-empty">
-                <p style="color: #f1f5f9; font-weight: 700; font-size: 1.05rem; text-align: center; margin: 0;">
-                    Dossiê Estratégico:<br>
-                    <span style="color: #64748b; font-weight: 400; font-size: 0.9rem;">Aguardando Processamento Neural...</span>
-                </p>
+            <div class="nexus-center">
+                <div class="scale-icon"><i class="fas fa-balance-scale"></i></div>
+                <h3 style="margin:0; font-weight:900; color:white; letter-spacing:1px;">MOTOR KARV PRONTO</h3>
+                <p style="color:#64748b; font-size:1rem; margin-top:5px;">Aguardando ingestão estratégica...</p>
             </div>
             """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class="download-bar">
+            <div class="download-pill"><i class="fas fa-file-pdf"></i> PDF Matrix</div>
+            <div class="download-pill"><i class="fas fa-file-word"></i> DOCX Grid</div>
+            <div class="download-pill"><i class="fas fa-file-excel"></i> XLSX Map</div>
+            <div class="download-pill"><i class="fas fa-file-csv"></i> CSV Table</div>
+        </div>
+        """, unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
