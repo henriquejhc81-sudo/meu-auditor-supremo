@@ -112,14 +112,14 @@ st.markdown(f"""
     .block-container {{ padding-top: 1.5rem !important; padding-bottom: 0rem !important; max-width: 90% !important; margin: 0 auto !important; overflow: hidden !important;}}
     [data-testid="stHeader"], [data-testid="collapsedControl"] {{ display: none !important; }}
 
-    /* 2. MENU CÁPSULAS - CORRIGIDO PARA EMOJIS */
+    /* 2. MENU CÁPSULAS - EMOJIS NATIVOS */
     div[role="radiogroup"] > div > label > div:first-child {{ display: none !important; }}
     
     div[data-testid="stRadio"] > div {{ 
         justify-content: center !important; gap: 12px !important; 
         background: rgba(15, 23, 42, 0.6) !important;
         padding: 5px !important; border-radius: 50px !important; border: 1px solid #1e293b !important;
-        width: fit-content !important; margin: 0 auto 15px auto !important; /* Margem inferior reduzida */
+        width: fit-content !important; margin: 0 auto 15px auto !important;
     }}
     div[data-testid="stRadio"] label {{
         background-color: transparent !important; color: #94a3b8 !important; padding: 10px 25px !important; transition: all 0.4s ease; margin: 0 !important; cursor: pointer;
@@ -140,10 +140,8 @@ st.markdown(f"""
     }}
     [data-testid="stFileUploadDropzone"]:hover {{ border-color: #10b981 !important; background-color: rgba(16, 185, 129, 0.1) !important;}}
     
-    /* Esconde o miolo original do uploader do Streamlit */
     [data-testid="stFileUploadDropzone"] div {{ display: none !important; }}
     
-    /* Cria nossa própria mensagem limpa por cima */
     [data-testid="stFileUploadDropzone"]::before {{
         content: '☁️ ARRASTE ARQUIVOS OU CLIQUE (PDF, DOCX, XLSX, CSV)';
         color: #cbd5e1; font-weight: 600; font-size: 0.9rem; font-family: 'Inter', sans-serif;
@@ -157,9 +155,9 @@ st.markdown(f"""
     }}
     .stTextArea textarea:focus {{ border-color: #10b981 !important; box-shadow: 0 0 10px rgba(16, 185, 129, 0.2) !important; }}
 
-    /* 5. PAINÉIS (TRANSPARENTES PARA SE FUNDIR COM A IMAGEM) */
+    /* 5. PAINÉIS (TRANSPARENTES) */
     .operation-card {{
-        background: transparent !important; border: none !important; padding: 15px; /* Padding ajustado */
+        background: transparent !important; border: none !important; padding: 15px; 
     }}
     
     button[kind="primary"] {{ 
@@ -202,10 +200,10 @@ header_html = f"""
 """
 st.markdown(header_html, unsafe_allow_html=True)
 
-# CORREÇÃO 1: USO DE EMOJIS AO INVÉS DE TAGS HTML
+# MENU CÁPSULAS - EMOJIS NATIVOS
 menu = st.radio("", ["🛡️ AUDITORIA", "🔍 FORENSE", "📐 ENGENHARIA"], index=0, label_visibility="collapsed", horizontal=True)
 
-# CORREÇÃO 3: ESPAÇADOR PARA ALINHAR COM O BACKGROUND
+# ESPAÇADOR PARA ALINHAR COM O BACKGROUND
 st.markdown("<div style='height: 45px;'></div>", unsafe_allow_html=True)
 
 # Grid de Operação
@@ -215,7 +213,7 @@ with col_ing:
     with st.container():
         st.markdown('<div class="operation-card">', unsafe_allow_html=True)
         
-        # CORREÇÃO 2: Uploader Limpo pelo CSS Hack
+        # Uploader Limpo pelo CSS Hack
         up = st.file_uploader(" ", accept_multiple_files=True, label_visibility="collapsed")
         
         st.markdown('<div style="margin-top:20px;"></div>', unsafe_allow_html=True)
@@ -233,4 +231,5 @@ with col_ing:
                     st.session_state.telemetria = f"Ativos Ingeridos: {num_arquivos} | Volume de Dados: {tamanho_dados} bytes"
                 st.rerun()
             else:
-                st.warning("Insira um comando
+                st.warning("Insira um comando estratégico para iniciar.")
+        st.markdown('</div>', unsafe_allow_html
