@@ -1,40 +1,23 @@
 import streamlit as st
 import pandas as pd
-import os, time, io, cv2, base64
-import numpy as np
+import os, time, base64
 import docx2txt
-from docx import Document
-from docx.shared import Inches
 
 # --- 🛡️ PROTOCOLO DE PRESERVAÇÃO & LIBS ---
 try:
-    from fpdf import FPDF
-    PDF_READY = True
-except ImportError:
-    PDF_READY = False
-
-try:
     from groq import Groq
-    import google.generativeai as genai
-    from duckduckgo_search import DDGS
 except ImportError:
     pass
 
-try:
-    import plotly.graph_objects as go
-    PLOTLY_READY = True
-except ImportError:
-    PLOTLY_READY = False
-
 # --- ⚙️ CONFIGURAÇÃO DE AMBIENTE ---
-st.set_page_config(page_title="AETHER KARV V106.1 Apex", page_icon="🛡️", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="AETHER KARV V107.0 Apex", page_icon="🛡️", layout="wide", initial_sidebar_state="collapsed")
 
 # Funções de Base64 para Imagens Locais
 def get_base64_image(file):
     if os.path.exists(file):
         with open(file, "rb") as f:
             return base64.b64encode(f.read()).decode()
-    return None
+    return ""
 
 # --- 🧠 ESTADO DA SESSÃO ---
 if "cmd_input" not in st.session_state:
@@ -44,12 +27,8 @@ if "res_aether" not in st.session_state:
 if "telemetria" not in st.session_state:
     st.session_state.telemetria = None
 
-def set_template(text):
-    st.session_state.cmd_input = text
-
 # --- ⚡ EXTRATOR NEXUS (LEITURA DE ARQUIVOS) ---
 def extrator_nexus(arquivos_upados):
-    """Extrai texto e dados reais dos arquivos injetados."""
     texto_extraido = ""
     sucesso = 0
     for arquivo in arquivos_upados:
@@ -72,7 +51,6 @@ def extrator_nexus(arquivos_upados):
 
 # --- ⚡ MOTOR AETHER KARV EVOLUÍDO (INTEGRAÇÃO GROQ) ---
 def aether_karv_engine(comando, contexto_arquivos):
-    """Motor neural Karv atualizado para chamadas reais."""
     if not contexto_arquivos.strip():
         contexto_arquivos = "[Nenhum dado de arquivo injetado. Operando apenas com o comando.]"
     
@@ -95,12 +73,18 @@ def aether_karv_engine(comando, contexto_arquivos):
         time.sleep(2.5) 
         return f"**AUDITORIA SINTÉTICA (MODO OFFLINE):**\nO sistema processou o comando `{comando[:20]}...` com sucesso. Para processamento neural real, ative a chave de API Groq no ambiente."
 
-# --- 🎨 DESIGN "CYBER APEX CONSOLE" ---
+# --- 🎨 CARREGAMENTO DE TODOS OS ATIVOS VISUAIS ---
 back_apex_b64 = get_base64_image("back_apex.png")
 logo_b64 = get_base64_image("logo.png")
+auditoria_b64 = get_base64_image("auditoria_link.png")
+forense_b64 = get_base64_image("forense_link.png")
+engenharia_b64 = get_base64_image("engenharia_link.png")
+upload_b64 = get_base64_image("upload.png")
+dossie_b64 = get_base64_image("dossie.png")
 
 bg_css = f"background-image: url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #020617;"
 
+# --- 🎨 INJEÇÃO DE CSS AVANÇADO ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
@@ -112,7 +96,7 @@ st.markdown(f"""
     .block-container {{ padding-top: 1.5rem !important; padding-bottom: 0rem !important; max-width: 90% !important; margin: 0 auto !important; overflow: hidden !important;}}
     [data-testid="stHeader"], [data-testid="collapsedControl"] {{ display: none !important; }}
 
-    /* MENU CÁPSULAS - EMOJIS NATIVOS */
+    /* MENU CÁPSULAS - CUSTOMIZADO PARA AS IMAGENS */
     div[role="radiogroup"] > div > label > div:first-child {{ display: none !important; }}
     
     div[data-testid="stRadio"] > div {{ 
@@ -123,31 +107,40 @@ st.markdown(f"""
     }}
     div[data-testid="stRadio"] label {{
         background-color: transparent !important; color: #94a3b8 !important; padding: 10px 25px !important; transition: all 0.4s ease; margin: 0 !important; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
     }}
     div[data-testid="stRadio"] label:has(input:checked) {{
         background: linear-gradient(90deg, #10b981, #34d399) !important;
         color: #020617 !important; font-weight: 800 !important; border-radius: 50px !important;
         box-shadow: 0 0 20px rgba(16, 185, 129, 0.5) !important;
     }}
-    div[data-testid="stRadio"] label p {{ font-size: 1.05rem !important; font-weight: 700 !important; white-space: nowrap; }}
+    div[data-testid="stRadio"] label p {{ font-size: 1.05rem !important; font-weight: 700 !important; margin: 0; display: flex; align-items: center; gap: 8px; }}
+    
+    /* IMAGENS DENTRO DOS BOTÕES RADIO */
+    .menu-icon {{ width: 22px; height: 22px; object-fit: contain; filter: drop-shadow(0px 0px 5px rgba(16, 185, 129, 0.8)); }}
+    div[data-testid="stRadio"] label:has(input:checked) .menu-icon {{ filter: brightness(0) saturate(100%) !important; }}
 
-    /* UPLOADER TÁTICO - CSS HACK AGRESSIVO */
+    /* UPLOADER TÁTICO - COM O ÍCONE DA NUVEM */
     [data-testid="stFileUploadDropzone"] {{ 
         background-color: transparent !important; 
         border: 2px dashed rgba(16, 185, 129, 0.4) !important; 
         border-radius: 12px !important; transition: 0.3s;
-        min-height: 100px !important; display: flex !important; justify-content: center !important; align-items: center !important;
+        min-height: 120px !important; display: flex !important; flex-direction: column; justify-content: center !important; align-items: center !important;
     }}
     [data-testid="stFileUploadDropzone"]:hover {{ border-color: #10b981 !important; background-color: rgba(16, 185, 129, 0.1) !important;}}
-    
     [data-testid="stFileUploadDropzone"] div {{ display: none !important; }}
     
     [data-testid="stFileUploadDropzone"]::before {{
-        content: '☁️ ARRASTE ARQUIVOS OU CLIQUE (PDF, DOCX, XLSX, CSV)';
-        color: #cbd5e1; font-weight: 600; font-size: 0.9rem; font-family: 'Inter', sans-serif;
-        position: absolute; pointer-events: none;
+        content: '';
+        background-image: url('data:image/png;base64,{upload_b64}');
+        background-size: contain; background-repeat: no-repeat; background-position: center;
+        width: 50px; height: 50px; display: block; margin: 0 auto 10px auto; pointer-events: none;
     }}
-    
+    [data-testid="stFileUploadDropzone"]::after {{
+        content: 'ARRASTE ARQUIVOS OU CLIQUE (PDF, DOCX, XLSX, CSV)';
+        color: #cbd5e1; font-weight: 600; font-size: 0.85rem; font-family: 'Inter', sans-serif; display: block; text-align: center; pointer-events: none;
+    }}
+
     /* INPUT AREA */
     .stTextArea label {{ font-size: 0.85rem; font-weight: 800; color: #ffffff; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }}
     .stTextArea textarea {{
@@ -155,10 +148,8 @@ st.markdown(f"""
     }}
     .stTextArea textarea:focus {{ border-color: #10b981 !important; box-shadow: 0 0 10px rgba(16, 185, 129, 0.2) !important; }}
 
-    /* PAINÉIS TRANSPARENTES PARA APARECER O BACK_APEX */
-    .operation-card {{
-        background: transparent !important; border: none !important; padding: 15px; 
-    }}
+    /* PAINÉIS TRANSPARENTES */
+    .operation-card {{ background: transparent !important; border: none !important; padding: 15px; }}
     
     button[kind="primary"] {{ 
         background: linear-gradient(90deg, #10b981, #34d399) !important;
@@ -170,50 +161,52 @@ st.markdown(f"""
 
     /* TÍTULO CENTRALIZADO */
     .header-container {{ text-align: center; margin-bottom: 10px; display: flex; flex-direction: column; align-items: center; }}
-    .logo-glow {{ width: 80px; height: 80px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 35px rgba(16,185,129,0.8); margin-bottom: 8px; border: 2px solid rgba(16,185,129,0.3); }}
+    .logo-glow {{ width: 80px; height: 80px; border-radius: 50%; object-fit: contain; filter: drop-shadow(0 0 20px rgba(16,185,129,0.8)); margin-bottom: 8px; }}
     .karv-title {{ margin: 0; font-weight: 900; font-size: 2.8rem; color: #ffffff; letter-spacing: -2px; line-height: 1; }}
     .karv-subtitle {{ color: #10b981; font-weight: 700; font-size: 1rem; letter-spacing: 4px; text-transform: uppercase; margin-top: 5px; }}
     
-    /* DOSSIÊ NEXUS */
+    /* DOSSIÊ NEXUS COM ÍCONE CUSTOMIZADO */
     .nexus-center {{ display: flex; flex-direction: column; align-items: center; justify-content: center; height: 320px; text-align: center; }}
-    .scale-icon {{ font-size: 4rem; color: #10b981; background: rgba(16, 185, 129, 0.1); width: 120px; height: 120px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #10b981; box-shadow: 0 0 50px rgba(16, 185, 129, 0.5); margin-bottom: 20px; }}
+    .dossie-icon {{ width: 110px; height: 110px; object-fit: contain; margin-bottom: 15px; filter: drop-shadow(0 0 25px rgba(16, 185, 129, 0.6)); }}
 
     /* DOWNLOAD PILLS */
     .download-bar {{ display: flex; justify-content: center; gap: 8px; margin-top: 20px; }}
     .download-pill {{ background: rgba(30, 41, 59, 0.7); border: 1px solid #334155; border-radius: 50px; padding: 6px 14px; color: #cbd5e1; font-size: 0.8rem; cursor: pointer; transition: 0.3s; font-weight: 600; }}
     .download-pill:hover {{ border-color: #10b981; color: #10b981; background: rgba(16, 185, 129, 0.05); }}
     
-    .karv-response {{ background: rgba(15,23,42,0.8); border-left: 4px solid #10b981; padding: 15px; border-radius: 5px; font-family: monospace; white-space: pre-wrap; margin-top: 10px; font-size: 0.95rem; text-align: left; }}
+    .karv-response {{ background: rgba(15,23,42,0.8); border-left: 4px solid #10b981; padding: 15px; border-radius: 5px; font-family: monospace; white-space: pre-wrap; margin-top: 10px; font-size: 0.95rem; text-align: left; overflow-y: auto; max-height: 350px; }}
     .telemetry-badge {{ display: inline-block; background: #1e293b; color: #34d399; font-size: 0.75rem; padding: 3px 8px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #34d399; text-align: center; width: 100%; }}
     </style>
     """, unsafe_allow_html=True)
 
 # --- 🚀 HEADER CENTRALIZADO ---
-logo_html = f'<img src="data:image/png;base64,{logo_b64}" class="logo-glow">' if logo_b64 else '<div class="logo-glow" style="display:flex;align-items:center;justify-content:center;color:#10b981;font-size:2.5rem;"><i class="fas fa-shield-halved"></i></div>'
-
-header_html = f"""
+logo_img = f'<img src="data:image/png;base64,{logo_b64}" class="logo-glow">' if logo_b64 else '🛡️'
+st.markdown(f"""
 <div class="header-container">
-    {logo_html}
+    {logo_img}
     <h1 class="karv-title">AETHER KARV</h1>
     <div class="karv-subtitle">Strategic Intelligence Hub</div>
 </div>
-"""
-st.markdown(header_html, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
-# MENU CÁPSULAS - EMOJIS NATIVOS (Se essa linha não aparecer com Emojis na sua tela, o código não atualizou!)
-menu = st.radio("", ["🛡️ AUDITORIA", "🔍 FORENSE", "📐 ENGENHARIA"], index=0, label_visibility="collapsed", horizontal=True)
+# CONFIGURAÇÃO DOS BOTÕES COM AS IMAGENS BASE64
+opt_audi = f"<img src='data:image/png;base64,{auditoria_b64}' class='menu-icon'> AUDITORIA" if auditoria_b64 else "🛡️ AUDITORIA"
+opt_fore = f"<img src='data:image/png;base64,{forense_b64}' class='menu-icon'> FORENSE" if forense_b64 else "🔍 FORENSE"
+opt_enge = f"<img src='data:image/png;base64,{engenharia_b64}' class='menu-icon'> ENGENHARIA" if engenharia_b64 else "📐 ENGENHARIA"
+
+menu = st.radio("", [opt_audi, opt_fore, opt_enge], index=0, label_visibility="collapsed", horizontal=True)
 
 # ESPAÇADOR PARA ALINHAR COM O BACKGROUND
 st.markdown("<div style='height: 45px;'></div>", unsafe_allow_html=True)
 
-# Grid de Operação
+# --- 🚀 GRID DE OPERAÇÃO ---
 col_ing, col_dos = st.columns(2, gap="large")
 
 with col_ing:
     with st.container():
         st.markdown('<div class="operation-card">', unsafe_allow_html=True)
         
-        # Uploader Limpo pelo CSS Hack
+        # Uploader (Estilizado pelo CSS acima)
         up = st.file_uploader(" ", accept_multiple_files=True, label_visibility="collapsed")
         
         st.markdown('<div style="margin-top:20px;"></div>', unsafe_allow_html=True)
@@ -251,9 +244,10 @@ with col_dos:
                 st.rerun()
             st.markdown("</div>", unsafe_allow_html=True)
         else:
-            st.markdown("""
+            dossie_img = f'<img src="data:image/png;base64,{dossie_b64}" class="dossie-icon">' if dossie_b64 else '<div style="font-size:4rem; margin-bottom:15px;">⚖️</div>'
+            st.markdown(f"""
             <div class="nexus-center">
-                <div class="scale-icon" style="font-size:3.5rem;">⚖️</div>
+                {dossie_img}
                 <h3 style="margin:0; font-weight:900; color:white; letter-spacing:1px; font-size: 1.2rem;">MOTOR KARV PRONTO</h3>
                 <p style="color:#64748b; font-size:0.9rem; margin-top:5px;">Aguardando ingestão...</p>
             </div>
