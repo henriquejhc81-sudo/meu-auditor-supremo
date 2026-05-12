@@ -10,8 +10,7 @@ except ImportError:
     pass
 
 # --- ⚙️ CONFIGURAÇÃO DE AMBIENTE ---
-# CORREÇÃO 1: Usando logo.png como ícone da aba do navegador (Favicon)
-st.set_page_config(page_title="AETHER KARV V107.0 Apex", page_icon="logo.png", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="AETHER KARV V107.2 Apex", page_icon="logo.png", layout="wide", initial_sidebar_state="collapsed")
 
 # Funções de Base64 para Imagens Locais
 def get_base64_image(file):
@@ -84,7 +83,7 @@ dossie_b64 = get_base64_image("dossie.png")
 
 bg_css = f"background-image: url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #020617;"
 
-# --- 🎨 INJEÇÃO DE CSS AVANÇADO ---
+# --- 🎨 INJEÇÃO DE CSS AVANÇADO CORRIGIDA ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
@@ -96,7 +95,7 @@ st.markdown(f"""
     .block-container {{ padding-top: 1.5rem !important; padding-bottom: 0rem !important; max-width: 90% !important; margin: 0 auto !important; overflow: hidden !important;}}
     [data-testid="stHeader"], [data-testid="collapsedControl"] {{ display: none !important; }}
 
-    /* MENU CÁPSULAS - CUSTOMIZADO PARA AS IMAGENS */
+    /* MENU CÁPSULAS - CUSTOMIZADO PARA AS IMAGENS VIA CSS */
     div[role="radiogroup"] > div > label > div:first-child {{ display: none !important; }}
     
     div[data-testid="stRadio"] > div {{ 
@@ -114,11 +113,29 @@ st.markdown(f"""
         color: #020617 !important; font-weight: 800 !important; border-radius: 50px !important;
         box-shadow: 0 0 20px rgba(16, 185, 129, 0.5) !important;
     }}
-    div[data-testid="stRadio"] label p {{ font-size: 1.05rem !important; font-weight: 700 !important; margin: 0; display: flex; align-items: center; gap: 8px; }}
+    div[data-testid="stRadio"] label p {{ font-size: 1.05rem !important; font-weight: 700 !important; margin: 0; display: flex; align-items: center; }}
     
-    /* IMAGENS DENTRO DOS BOTÕES RADIO */
-    .menu-icon {{ width: 22px; height: 22px; object-fit: contain; filter: drop-shadow(0px 0px 5px rgba(16, 185, 129, 0.8)); }}
-    div[data-testid="stRadio"] label:has(input:checked) .menu-icon {{ filter: brightness(0) saturate(100%) !important; }}
+    /* INJEÇÃO SEGURA DOS ÍCONES DOS BOTÕES VIA CSS */
+    div[data-testid="stRadio"] label:nth-child(1) p::before {{
+        content: ''; display: inline-block; width: 22px; height: 22px; margin-right: 8px;
+        background-image: url('data:image/png;base64,{auditoria_b64}');
+        background-size: contain; background-repeat: no-repeat; background-position: center;
+        filter: drop-shadow(0px 0px 5px rgba(16, 185, 129, 0.8));
+    }}
+    div[data-testid="stRadio"] label:nth-child(2) p::before {{
+        content: ''; display: inline-block; width: 22px; height: 22px; margin-right: 8px;
+        background-image: url('data:image/png;base64,{forense_b64}');
+        background-size: contain; background-repeat: no-repeat; background-position: center;
+        filter: drop-shadow(0px 0px 5px rgba(16, 185, 129, 0.8));
+    }}
+    div[data-testid="stRadio"] label:nth-child(3) p::before {{
+        content: ''; display: inline-block; width: 22px; height: 22px; margin-right: 8px;
+        background-image: url('data:image/png;base64,{engenharia_b64}');
+        background-size: contain; background-repeat: no-repeat; background-position: center;
+        filter: drop-shadow(0px 0px 5px rgba(16, 185, 129, 0.8));
+    }}
+    
+    div[data-testid="stRadio"] label:has(input:checked) p::before {{ filter: brightness(0) saturate(100%) !important; }}
 
     /* UPLOADER TÁTICO - COM O ÍCONE DA NUVEM */
     [data-testid="stFileUploadDropzone"] {{ 
@@ -160,7 +177,6 @@ st.markdown(f"""
     button[kind="primary"]:hover {{ transform: translateY(-1px); box-shadow: 0 15px 35px rgba(16, 185, 129, 0.5) !important; filter: brightness(1.1); }}
 
     /* TÍTULO CENTRALIZADO */
-    /* CORREÇÃO 2: Margin-top ajustado para respeitar o logo integrado no back_apex.png */
     .header-container {{ text-align: center; margin-bottom: 10px; display: flex; flex-direction: column; align-items: center; margin-top: 60px; }}
     .karv-title {{ margin: 0; font-weight: 900; font-size: 2.8rem; color: #ffffff; letter-spacing: -2px; line-height: 1; text-shadow: 0 0 15px rgba(16, 185, 129, 0.3); }}
     .karv-subtitle {{ color: #10b981; font-weight: 700; font-size: 1rem; letter-spacing: 4px; text-transform: uppercase; margin-top: 5px; }}
@@ -179,7 +195,7 @@ st.markdown(f"""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 🚀 HEADER CENTRALIZADO (Logo HTML removido) ---
+# --- 🚀 HEADER CENTRALIZADO ---
 st.markdown(f"""
 <div class="header-container">
     <h1 class="karv-title">AETHER KARV</h1>
@@ -187,12 +203,8 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# CONFIGURAÇÃO DOS BOTÕES COM AS IMAGENS BASE64
-opt_audi = f"<img src='data:image/png;base64,{auditoria_b64}' class='menu-icon'> AUDITORIA" if auditoria_b64 else "🛡️ AUDITORIA"
-opt_fore = f"<img src='data:image/png;base64,{forense_b64}' class='menu-icon'> FORENSE" if forense_b64 else "🔍 FORENSE"
-opt_enge = f"<img src='data:image/png;base64,{engenharia_b64}' class='menu-icon'> ENGENHARIA" if engenharia_b64 else "📐 ENGENHARIA"
-
-menu = st.radio("", [opt_audi, opt_fore, opt_enge], index=0, label_visibility="collapsed", horizontal=True)
+# CORREÇÃO CHAVE: MENU COM TEXTO LIMPO (As imagens agora são colocadas pelo CSS)
+menu = st.radio("", ["AUDITORIA", "FORENSE", "ENGENHARIA"], index=0, label_visibility="collapsed", horizontal=True)
 
 # ESPAÇADOR PARA ALINHAR COM O BACKGROUND
 st.markdown("<div style='height: 45px;'></div>", unsafe_allow_html=True)
@@ -204,7 +216,7 @@ with col_ing:
     with st.container():
         st.markdown('<div class="operation-card">', unsafe_allow_html=True)
         
-        # Uploader (Estilizado pelo CSS acima)
+        # Uploader 
         up = st.file_uploader(" ", accept_multiple_files=True, label_visibility="collapsed")
         
         st.markdown('<div style="margin-top:20px;"></div>', unsafe_allow_html=True)
