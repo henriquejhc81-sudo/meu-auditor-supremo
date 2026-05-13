@@ -9,7 +9,7 @@ try:
 except ImportError:
     pass
 
-st.set_page_config(page_title="AETHER OMNI V131", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="AETHER OMNI V132", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
 
 def get_base64_image(file):
     if os.path.exists(file):
@@ -72,81 +72,87 @@ def aether_karv_engine(comando, contexto_arquivos, lindb_ativada, agente_foco):
         time.sleep(2) 
         return f"**ANÁLISE JURÍDICA CONCLUÍDA:**\nFoco: {agente_foco}\nProcessamento finalizado com sucesso. {contexto_lindb}\n(Configure a API Key para acesso total)."
 
-# --- 🎨 CSS APEX V131: LEGAL PREMIUM EDITION ---
+# --- 🎨 CSS APEX V132: LOCKDOWN EDITION ---
 back_apex_b64 = get_base64_image("back_apex.png")
 
-# Fundo alterado para Azul Marinho Escuro (#0F172A) com leve transparência sobre a imagem
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
 
 css_code = f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* BLOQUEIO DE SCROLL */
+/* ⚠️ BLOQUEIO DE SCROLL ABSOLUTO NA PÁGINA ⚠️ */
 html, body {{ overflow: hidden !important; height: 100vh !important; width: 100vw !important; margin: 0; padding: 0; }}
 .stApp {{ {bg_css} color: #cbd5e1; font-family: 'Inter', sans-serif; height: 100vh !important; overflow: hidden !important; }}
 
-/* ELIMINA MARGENS DO STREAMLIT */
-.block-container {{ padding-top: 1rem !important; padding-bottom: 0rem !important; max-width: 96% !important; height: 100vh !important; display: flex; flex-direction: column; }}
+/* ⚠️ ELIMINAÇÃO DE MARGENS E FIXAÇÃO DE ALTURA ⚠️ */
+.block-container {{ padding: 0.8rem 1rem 0 1rem !important; max-width: 98% !important; height: 100vh !important; display: flex; flex-direction: column; overflow: hidden !important; }}
 [data-testid="stHeader"], footer {{ display: none !important; }}
 
 /* TOPBAR PREMIUM */
-.omni-topbar {{ display: flex; justify-content: space-between; align-items: center; background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(212, 175, 55, 0.15); padding: 8px 25px; margin-bottom: 15px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4); flex-shrink: 0; }}
+.omni-topbar {{ display: flex; justify-content: space-between; align-items: center; background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(212, 175, 55, 0.15); padding: 6px 20px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); flex-shrink: 0; }}
 .omni-brand {{ display: flex; align-items: center; gap: 12px; }}
-.omni-brand h1 {{ margin: 0; font-family: 'Inter', sans-serif; font-size: 1.2rem; color: #f8fafc; font-weight: 700; letter-spacing: 0.5px; }}
-.omni-brand span {{ color: #D4AF37; font-size: 0.7rem; font-weight: 600; letter-spacing: 1px; border: 1px solid rgba(212, 175, 55, 0.4); padding: 3px 8px; border-radius: 8px; background: rgba(212, 175, 55, 0.05); text-transform: uppercase; }}
-.omni-status {{ font-size: 0.75rem; color: #94a3b8; font-weight: 500; }}
+.omni-brand h1 {{ margin: 0; font-family: 'Inter', sans-serif; font-size: 1.1rem; color: #f8fafc; font-weight: 700; letter-spacing: 0.5px; }}
+.omni-brand span {{ color: #D4AF37; font-size: 0.65rem; font-weight: 700; letter-spacing: 1px; border: 1px solid rgba(212, 175, 55, 0.4); padding: 2px 6px; border-radius: 6px; background: rgba(212, 175, 55, 0.05); text-transform: uppercase; }}
+.omni-status {{ font-size: 0.7rem; color: #94a3b8; font-weight: 500; }}
 .omni-status span {{ color: #D4AF37; font-weight: 600; }}
 
-/* CONTAINERS ARREDONDADOS (12px) E SUAVES */
-[data-testid="column"] {{ background: rgba(30, 41, 59, 0.3) !important; backdrop-filter: blur(16px) !important; border: 1px solid rgba(255,255,255,0.05) !important; border-radius: 12px !important; padding: 15px 20px !important; height: calc(100vh - 90px) !important; display: flex; flex-direction: column; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); }}
+/* CONTAINERS ARREDONDADOS COM SCROLL INTERNO (A Mágica do Zero-Scroll) */
+[data-testid="column"] {{ background: rgba(30, 41, 59, 0.3) !important; backdrop-filter: blur(16px) !important; border: 1px solid rgba(255,255,255,0.05) !important; border-radius: 12px !important; padding: 12px 18px !important; height: calc(100vh - 75px) !important; display: flex; flex-direction: column; box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2); overflow-y: auto !important; overflow-x: hidden !important; }}
+
+/* Ocultar barra de rolagem esteticamente no Chrome/Safari, mas manter funcionalidade */
+[data-testid="column"]::-webkit-scrollbar {{ width: 6px; }}
+[data-testid="column"]::-webkit-scrollbar-thumb {{ background-color: rgba(212, 175, 55, 0.3); border-radius: 4px; }}
 
 /* TÍTULOS DE SESSÃO PREMIUM */
-.section-title {{ color: #f8fafc; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }}
-.section-title::before {{ content: ''; display: block; width: 4px; height: 12px; background: #D4AF37; border-radius: 4px; }}
+.section-title {{ color: #f8fafc; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 8px; margin-top: 5px; display: flex; align-items: center; gap: 6px; flex-shrink: 0; }}
+.section-title::before {{ content: ''; display: block; width: 3px; height: 10px; background: #D4AF37; border-radius: 4px; }}
 
-/* UPLOADER & TEXT AREA */
-[data-testid="stFileUploadDropzone"] {{ background-color: rgba(15, 23, 42, 0.4) !important; border: 1px dashed rgba(255,255,255,0.1) !important; border-radius: 8px !important; padding: 10px !important; min-height: 45px !important; transition: 0.3s; }}
+/* UPLOADER & SELECTBOX COMPRESSOS */
+[data-testid="stFileUploadDropzone"] {{ background-color: rgba(15, 23, 42, 0.4) !important; border: 1px dashed rgba(255,255,255,0.1) !important; border-radius: 6px !important; padding: 5px !important; min-height: 40px !important; transition: 0.3s; flex-shrink: 0; }}
 [data-testid="stFileUploadDropzone"] small {{ display: none !important; }}
 
-div[data-baseweb="select"] > div {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.8rem !important; border-radius: 8px !important; }}
+div[data-baseweb="select"] > div {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.75rem !important; border-radius: 6px !important; min-height: 32px !important; }}
 
-.stTextArea label, .stCheckbox label span, .stSelectbox label {{ font-size: 0.7rem !important; color: #cbd5e1 !important; font-weight: 600 !important; margin-bottom: 4px !important; }}
-.stTextArea textarea {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.85rem !important; border-radius: 8px !important; height: 100px !important; min-height: 100px !important; padding: 10px !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); }}
-.stTextArea textarea:focus {{ border-color: #D4AF37 !important; box-shadow: 0 0 10px rgba(212, 175, 55, 0.1) !important; }}
+.stTextArea label, .stCheckbox label span, .stSelectbox label {{ font-size: 0.65rem !important; color: #cbd5e1 !important; font-weight: 600 !important; margin-bottom: 2px !important; }}
+.stTextArea textarea {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.8rem !important; border-radius: 6px !important; height: 85px !important; min-height: 85px !important; padding: 8px !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); flex-shrink: 0; }}
+.stTextArea textarea:focus {{ border-color: #D4AF37 !important; box-shadow: 0 0 8px rgba(212, 175, 55, 0.1) !important; }}
 
 /* CHECKBOX */
-[data-testid="stCheckbox"] {{ background: rgba(0,0,0,0.1); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.03); margin-bottom: 5px; }}
+[data-testid="stCheckbox"] {{ background: rgba(0,0,0,0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.03); margin-bottom: 5px; flex-shrink: 0; }}
 
-/* BOTÃO DE PROCESSAR DOURADO/ROYAL */
-.stButton > button[kind="primary"] {{ background: linear-gradient(135deg, #B8860B, #D4AF37) !important; border-radius: 8px !important; font-weight: 700 !important; color: #020617 !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; padding: 10px !important; border: none !important; width: 100% !important; margin-top: auto !important; transition: 0.3s; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2); font-size: 0.9rem !important; }}
-.stButton > button[kind="primary"]:hover {{ transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4); filter: brightness(1.1); }}
+/* BOTÃO DE PROCESSAR COLADO NA BASE */
+.stButton > button[kind="primary"] {{ background: linear-gradient(135deg, #B8860B, #D4AF37) !important; border-radius: 6px !important; font-weight: 700 !important; color: #020617 !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; padding: 8px !important; border: none !important; width: 100% !important; margin-top: auto !important; transition: 0.3s; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2); font-size: 0.8rem !important; flex-shrink: 0; }}
+.stButton > button[kind="primary"]:hover {{ transform: translateY(-1px); box-shadow: 0 6px 15px rgba(212, 175, 55, 0.4); filter: brightness(1.1); }}
 
-/* KPIs HTML (Dourado Fosco) */
-.custom-kpi-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 15px; flex-shrink: 0; }}
-.kpi-box {{ background: rgba(15, 23, 42, 0.4); border-radius: 8px; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.03); border-left: 3px solid #D4AF37; padding: 10px; }}
-.kpi-title {{ color: #94a3b8; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; font-weight: 600; }}
-.kpi-value {{ color: #f8fafc; font-size: 1.1rem; font-weight: 500; }}
+/* KPIs (Dourado Fosco) - COMPRIMIDOS */
+.custom-kpi-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; flex-shrink: 0; }}
+.kpi-box {{ background: rgba(15, 23, 42, 0.4); border-radius: 6px; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.03); border-left: 2px solid #D4AF37; padding: 6px 10px; }}
+.kpi-title {{ color: #94a3b8; font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; font-weight: 600; }}
+.kpi-value {{ color: #f8fafc; font-size: 1rem; font-weight: 500; line-height: 1.1; }}
 .kpi-value.highlight {{ color: #D4AF37; font-weight: 700; }}
 
 /* AGENT GRID */
-.agent-grid {{ display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; flex-shrink: 0; }}
-.agent-badge {{ background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.3); color: #D4AF37; font-size: 0.65rem; font-weight: 600; padding: 4px 10px; border-radius: 6px; display: flex; align-items: center; gap: 4px; }}
-.agent-standby {{ background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); color: #94a3b8; font-size: 0.65rem; padding: 4px 10px; border-radius: 6px; display: flex; align-items: center; gap: 4px; }}
+.agent-grid {{ display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; flex-shrink: 0; }}
+.agent-badge {{ background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.3); color: #D4AF37; font-size: 0.6rem; font-weight: 600; padding: 2px 8px; border-radius: 4px; display: flex; align-items: center; gap: 4px; }}
+.agent-standby {{ background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); color: #94a3b8; font-size: 0.6rem; padding: 2px 8px; border-radius: 4px; display: flex; align-items: center; gap: 4px; }}
 
-/* DOSSIÊ CONSOLE */
-.console-output {{ background: rgba(15, 23, 42, 0.5) !important; border: 1px solid rgba(255,255,255,0.05) !important; border-radius: 8px !important; padding: 15px !important; flex-grow: 1; overflow-y: auto; font-size: 0.85rem; color: #f1f5f9; margin-bottom: 12px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.3); line-height: 1.6; }}
+/* DOSSIÊ CONSOLE - FLEX GROW */
+.console-output {{ background: rgba(15, 23, 42, 0.5) !important; border: 1px solid rgba(255,255,255,0.05) !important; border-radius: 6px !important; padding: 12px !important; flex-grow: 1; overflow-y: auto; font-size: 0.8rem; color: #f1f5f9; margin-bottom: 10px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.3); line-height: 1.5; }}
 [data-testid="stCodeBlock"] {{ background: transparent !important; border: none !important; padding: 0 !important; }}
 
 /* BOTÕES SECUNDÁRIOS NA BASE */
-.action-buttons-row {{ display: flex; gap: 10px; flex-shrink: 0; margin-top: auto; }}
-.stButton > button[kind="secondary"], .stDownloadButton > button {{ background: rgba(255,255,255,0.05) !important; color: #cbd5e1 !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 8px !important; font-size: 0.75rem !important; font-weight: 500 !important; padding: 6px !important; width: 100% !important; transition: 0.3s; margin: 0 !important; }}
+.action-buttons-row {{ display: flex; gap: 8px; flex-shrink: 0; margin-top: auto; }}
+.stButton > button[kind="secondary"], .stDownloadButton > button {{ background: rgba(255,255,255,0.05) !important; color: #cbd5e1 !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 6px !important; font-size: 0.7rem !important; font-weight: 500 !important; padding: 4px !important; width: 100% !important; transition: 0.3s; margin: 0 !important; }}
 .stButton > button[kind="secondary"]:hover, .stDownloadButton > button:hover {{ background: rgba(255,255,255,0.1) !important; color: #fff !important; border-color: #D4AF37 !important; }}
 
 /* STANDBY PLACEHOLDER - WELCOME CARDS */
-.standby-container {{ display:flex; flex-direction:column; align-items:center; justify-content:center; flex-grow:1; border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; background: rgba(15, 23, 42, 0.3); padding: 20px; }}
-.welcome-title {{ color: #f8fafc; font-size: 1.2rem; font-weight: 600; margin-bottom: 5px; }}
-.welcome-subtitle {{ color: #94a3b8; font-size: 0.85rem; margin-bottom: 20px; text-align: center; }}
+.standby-container {{ display:flex; flex-direction:column; align-items:center; justify-content:center; flex-grow:1; border: 1px dashed rgba(255,255,255,0.1); border-radius: 8px; background: rgba(15, 23, 42, 0.3); padding: 15px; margin-top: 5px; }}
+.welcome-title {{ color: #f8fafc; font-size: 1.05rem; font-weight: 600; margin-bottom: 3px; text-align: center; }}
+.welcome-subtitle {{ color: #94a3b8; font-size: 0.75rem; margin-bottom: 15px; text-align: center; }}
+
+/* Comprimindo botões de template para não vazar */
+.stButton button p {{ font-size: 0.75rem !important; margin: 0 !important; line-height: 1.2 !important; white-space: normal !important; }}
 </style>
 """
 st.markdown(css_code, unsafe_allow_html=True)
@@ -169,13 +175,13 @@ with col_setup:
     st.markdown('<div class="section-title">📁 Enviar Documentos e Processos</div>', unsafe_allow_html=True)
     up = st.file_uploader("Arraste contratos, petições ou planilhas...", accept_multiple_files=True, label_visibility="collapsed")
     
-    st.markdown('<div class="section-title" style="margin-top:15px;">⚖️ Configurações da Análise</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">⚖️ Configurações da Análise</div>', unsafe_allow_html=True)
     
-    agente_foco = st.selectbox("Especialidade do Assistente", ["Análise de Contratos", "Due Diligence Societária", "Compliance e Risco", "Auditoria Trabalhista", "Direito Público"])
+    agente_foco = st.selectbox("Especialidade do Assistente", ["Análise de Contratos", "Due Diligence Societária", "Compliance e Risco", "Auditoria Trabalhista", "Direito Público"], label_visibility="collapsed")
     ativar_lindb = st.checkbox("Aplicar Filtro de Proteção (Art. 22 LINDB)", value=True)
     
-    st.markdown('<div class="section-title" style="margin-top:15px;">💬 Instruções ou Pedidos Especiais</div>', unsafe_allow_html=True)
-    cmd = st.text_area("", key="cmd_input", placeholder="Ex: Verifique as cláusulas de rescisão e aponte os riscos...")
+    st.markdown('<div class="section-title">💬 Instruções ou Pedidos Especiais</div>', unsafe_allow_html=True)
+    cmd = st.text_area("", key="cmd_input", placeholder="Ex: Verifique as cláusulas de rescisão e aponte os riscos...", label_visibility="collapsed")
 
     if st.button("🚀 Iniciar Varredura Jurídica", type="primary"):
         if cmd:
@@ -232,11 +238,11 @@ with col_main:
         </div>
         """, unsafe_allow_html=True)
 
-    # --- LINHA 3: CONSOLE OUTPUT ---
-    st.markdown('<div class="section-title">Parecer Jurídico (Resultado)</div>', unsafe_allow_html=True)
+    # --- LINHA 3: CONSOLE OUTPUT CONDICIONAL (O pulo do gato para o Zero-Scroll) ---
     if st.session_state.res_aether:
+        st.markdown('<div class="section-title">Parecer Jurídico (Resultado)</div>', unsafe_allow_html=True)
         st.markdown('<div class="console-output">', unsafe_allow_html=True)
-        st.markdown(st.session_state.res_aether) # Usando markdown normal em vez de code para leitura mais agradável
+        st.markdown(st.session_state.res_aether) 
         st.markdown('</div>', unsafe_allow_html=True)
         
         b1, b2, b3 = st.columns([1,1,2])
@@ -248,7 +254,7 @@ with col_main:
                 st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--:--", "risco": "Aguardando"}
                 st.rerun()
     else:
-        # TELA DE BOAS-VINDAS E TEMPLATES
+        # TELA DE BOAS-VINDAS E TEMPLATES (Ocupa o espaço fluidamente)
         st.markdown('<div class="standby-container">', unsafe_allow_html=True)
         st.markdown('<div class="welcome-title">Como posso ajudar na sua análise hoje?</div>', unsafe_allow_html=True)
         st.markdown('<div class="welcome-subtitle">Escolha um atalho rápido ou digite sua instrução no painel à esquerda.</div>', unsafe_allow_html=True)
