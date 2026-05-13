@@ -10,7 +10,7 @@ except ImportError:
     pass
 
 # --- ⚙️ CONFIGURAÇÃO DE AMBIENTE ---
-st.set_page_config(page_title="AETHER KARV V115 Apex", page_icon="logo.png", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="AETHER KARV V116 Apex", page_icon="logo.png", layout="wide", initial_sidebar_state="collapsed")
 
 def get_base64_image(file):
     if os.path.exists(file):
@@ -74,85 +74,86 @@ def aether_karv_engine(comando, contexto_arquivos):
 
 # --- 🎨 CARREGAMENTO VISUAL ---
 back_apex_b64 = get_base64_image("back_apex.png")
-dossie_b64 = get_base64_image("dossie.png")
+auditoria_b64 = get_base64_image("auditoria_link.png")
+forense_b64 = get_base64_image("forense_link.png")
+engenharia_b64 = get_base64_image("engenharia_link.png")
+upload_b64 = get_base64_image("upload.png")
 
-# Fundo Global
-bg_css = f"background-image: url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center center; background-repeat: no-repeat; background-attachment: fixed;" if back_apex_b64 else "background-color: #020617;"
+bg_css = f"background-image: url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center top; background-repeat: no-repeat; background-attachment: fixed;" if back_apex_b64 else "background-color: #020617;"
 
-# --- 🎨 CSS APEX V115: NATIVO, ESTÁVEL E FLUIDO ---
-st.markdown(f"""
+# --- CSS BASE GLOBAL ---
+css_base = f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
 
-/* O Básico de Tela */
-.stApp {{ {bg_css} color: #f3f4f6; font-family: 'Inter', sans-serif; }}
-.block-container {{ padding-top: 2rem !important; max-width: 1200px !important; margin: 0 auto; }}
+.stApp {{ {bg_css} color: #f3f4f6; font-family: 'Inter', sans-serif; overflow-x: hidden; }}
+.block-container {{ padding-top: 1rem !important; padding-bottom: 2rem !important; max-width: 75rem !important; margin: 0 auto !important; display: flex; flex-direction: column; justify-content: center; min-height: 100vh; }}
 [data-testid="stHeader"] {{ display: none !important; }}
 
-/* Título */
-.header-container {{ text-align: center; margin-bottom: 2rem; margin-top: 1rem; }}
-.karv-title {{ margin: 0; font-weight: 900; font-size: 2.5rem; color: #ffffff; letter-spacing: -1px; text-shadow: 0 0 20px rgba(16, 185, 129, 0.5); }}
-.karv-subtitle {{ color: #10b981; font-weight: 700; font-size: 0.9rem; letter-spacing: 3px; text-transform: uppercase; margin-top: 5px; }}
+/* HEADER CENTRALIZADO */
+.header-container {{ text-align: center; margin-bottom: 20px; }}
+.karv-title {{ margin: 0; font-weight: 900; font-size: 2.5rem; color: #ffffff; letter-spacing: -1px; text-shadow: 0 0 15px rgba(16, 185, 129, 0.4); line-height: 1; }}
+.karv-subtitle {{ color: #10b981; font-weight: 700; font-size: 0.85rem; letter-spacing: 3px; text-transform: uppercase; margin-top: 5px; }}
 
-/* Customização do Menu Nativo do Streamlit */
-div[data-testid="stRadio"] > div {{
-    display: flex; flex-direction: row; justify-content: center; gap: 15px;
-    background: rgba(10, 18, 27, 0.8); border: 1px solid rgba(16,185,129,0.3);
-    padding: 10px 20px; border-radius: 50px; margin: 0 auto 30px auto; width: fit-content;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-}}
-div[data-testid="stRadio"] label {{ color: #94a3b8 !important; font-weight: bold; padding: 0 10px; cursor: pointer; }}
-div[data-testid="stRadio"] label[data-checked="true"] {{ color: #10b981 !important; text-shadow: 0 0 10px rgba(16,185,129,0.5); }}
+/* MENU CÁPSULAS */
+div[role="radiogroup"] {{ display: flex !important; flex-direction: row !important; justify-content: center !important; gap: 5px !important; background: rgba(10, 18, 27, 0.7) !important; border-radius: 50px !important; padding: 5px !important; border: 1px solid rgba(16,185,129,0.3) !important; width: fit-content !important; margin: 0 auto 20px auto !important; box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important; }}
+div[data-testid="stRadio"] div[role="radio"] div:first-of-type, .stRadio [data-baseweb="radio"] > div:first-child {{ display: none !important; }}
+div[data-testid="stRadio"] label {{ background-color: transparent !important; color: #94a3b8 !important; padding: 8px 25px !important; margin: 0 !important; cursor: pointer; border-radius: 50px; display: flex; align-items: center; justify-content: center; transition: 0.3s; }}
+div[data-testid="stRadio"] label:has(input:checked) {{ background: linear-gradient(90deg, #10b981, #34d399) !important; color: #020617 !important; font-weight: 800 !important; box-shadow: 0 0 15px rgba(16, 185, 129, 0.5) !important; }}
+div[data-testid="stRadio"] label p {{ font-size: 0.9rem !important; font-weight: 700 !important; margin: 0 !important; display: flex !important; align-items: center !important; }}
+div[data-testid="stRadio"] label:nth-child(1) p::before {{ content: ''; display: inline-block; width: 16px; height: 16px; margin-right: 6px; background-image: url('data:image/png;base64,{auditoria_b64}'); background-size: contain; background-repeat: no-repeat; }}
+div[data-testid="stRadio"] label:nth-child(2) p::before {{ content: ''; display: inline-block; width: 16px; height: 16px; margin-right: 6px; background-image: url('data:image/png;base64,{forense_b64}'); background-size: contain; background-repeat: no-repeat; }}
+div[data-testid="stRadio"] label:nth-child(3) p::before {{ content: ''; display: inline-block; width: 16px; height: 16px; margin-right: 6px; background-image: url('data:image/png;base64,{engenharia_b64}'); background-size: contain; background-repeat: no-repeat; }}
+div[data-testid="stRadio"] label p::before {{ filter: drop-shadow(0px 0px 3px rgba(16, 185, 129, 0.8)); }}
+div[data-testid="stRadio"] label:has(input:checked) p::before {{ filter: brightness(0) !important; }}
 
-/* Estilização Geral de Caixas e Textos */
-[data-testid="stVerticalBlock"] > div > div > div > div > div[data-testid="stVerticalBlock"] {{
-    background: rgba(10, 18, 27, 0.7);
-    border: 1px solid rgba(16, 185, 129, 0.2);
-    padding: 25px;
-    border-radius: 15px;
-    backdrop-filter: blur(10px);
-    box-shadow: inset 0 0 20px rgba(16,185,129,0.05);
-}}
+/* ELEMENTOS INTERNOS DOS PAINÉIS */
+.panel-header {{ color: #ffffff; font-weight: 800; font-size: 1rem; letter-spacing: 1px; margin-bottom: 15px; text-transform: uppercase; border-bottom: 1px solid rgba(16,185,129,0.3); padding-bottom: 5px; }}
+.stFileUploader {{ min-height: 90px !important; }}
+[data-testid="stFileUploadDropzone"] {{ background-color: transparent !important; border: 2px dashed rgba(16, 185, 129, 0.4) !important; border-radius: 10px !important; position: relative; overflow: hidden; height: 90px !important; min-height: 90px !important; padding: 0 !important; }}
+[data-testid="stFileUploadDropzone"]:hover {{ border-color: #10b981 !important; background-color: rgba(16, 185, 129, 0.05) !important; }}
+.stFileUploader section > button, .stFileUploader section > span, .stFileUploader section > small, .stFileUploader section > svg, .stFileUploader div[data-testid="stText"] {{ display: none !important; opacity: 0 !important; }}
+[data-testid="stFileUploadDropzone"]::before {{ content: ''; position: absolute; top: 15px; left: 50%; transform: translateX(-50%); background-image: url('data:image/png;base64,{upload_b64}'); background-size: contain; background-repeat: no-repeat; background-position: center; width: 30px; height: 30px; z-index: 1; pointer-events: none; }}
+[data-testid="stFileUploadDropzone"]::after {{ content: 'ARRASTE ARQUIVOS OU CLIQUE PARA UPLOAD'; position: absolute; bottom: 20px; left: 0; right: 0; text-align: center; color: #8b9eb3; font-size: 0.75rem; font-weight: 600; z-index: 1; pointer-events: none; }}
+.stTextArea label {{ font-size: 0.75rem !important; margin-bottom: 5px !important; margin-top: 10px !important; font-weight: 800 !important; letter-spacing: 1px; color: #fff !important; }}
+.stTextArea textarea {{ background-color: rgba(7, 11, 20, 0.8) !important; border: 1px solid rgba(16, 185, 129, 0.3) !important; color: #ffffff !important; font-size: 0.85rem !important; border-radius: 8px !important; padding: 10px !important; height: 90px !important; min-height: 90px !important; resize: none; }}
+.stTextArea textarea:focus {{ border-color: #10b981 !important; box-shadow: 0 0 10px rgba(16, 185, 129, 0.2) !important; outline: none !important; }}
 
-/* Estilização do Uploader Nativo */
-[data-testid="stFileUploadDropzone"] {{
-    background-color: rgba(10, 18, 27, 0.5) !important;
-    border: 1px dashed rgba(16, 185, 129, 0.5) !important;
-    border-radius: 10px !important;
-    color: #10b981 !important;
-}}
-[data-testid="stFileUploadDropzone"]:hover {{
-    border-color: #10b981 !important;
-    background-color: rgba(16, 185, 129, 0.1) !important;
-}}
-[data-testid="stFileUploadDropzone"] button {{
-    background-color: #10b981 !important; color: #020617 !important; border: none !important; font-weight: bold !important;
-}}
-
-/* Text Area (Comando) */
-.stTextArea label {{ font-size: 0.85rem !important; font-weight: 800 !important; color: #fff !important; text-transform: uppercase !important; letter-spacing: 1px; margin-bottom: 5px !important; }}
-.stTextArea textarea {{ background-color: rgba(0, 0, 0, 0.5) !important; border: 1px solid rgba(16, 185, 129, 0.3) !important; color: #ffffff !important; border-radius: 8px !important; padding: 15px !important; }}
-.stTextArea textarea:focus {{ border-color: #10b981 !important; box-shadow: 0 0 10px rgba(16, 185, 129, 0.3) !important; outline: none !important; }}
-
-/* Botão Principal Verde */
-.stButton > button {{
-    background: linear-gradient(90deg, #10b981, #34d399) !important; border-radius: 50px !important; font-weight: 900 !important; color: #020617 !important;
-    text-transform: uppercase !important; letter-spacing: 1px !important; padding: 15px !important; border: none !important; width: 100% !important; margin-top: 15px !important; transition: all 0.3s ease;
-}}
+/* BOTÃO PROCESSAR */
+.stButton > button {{ background: linear-gradient(90deg, #10b981, #34d399) !important; border-radius: 50px !important; font-weight: 900 !important; color: #020617 !important; text-transform: uppercase !important; letter-spacing: 1px !important; padding: 10px !important; border: none !important; font-size: 0.9rem !important; width: 100% !important; margin-top: 10px !important; box-shadow: 0 5px 15px rgba(16, 185, 129, 0.2) !important; transition: all 0.3s ease; }}
 .stButton > button:hover {{ transform: translateY(-2px); filter: brightness(1.1); box-shadow: 0 10px 20px rgba(16, 185, 129, 0.4) !important; }}
 
-/* Elementos do Dossiê */
-.nexus-center {{ display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; min-height: 250px; text-align: center; }}
-.dossie-icon {{ width: 90px; height: 90px; object-fit: contain; margin-bottom: 15px; filter: drop-shadow(0 0 20px rgba(16, 185, 129, 0.6)); }}
-.karv-response {{ background: rgba(0, 0, 0, 0.6); border-left: 3px solid #10b981; padding: 15px; border-radius: 8px; font-family: monospace; white-space: pre-wrap; margin-top: 10px; font-size: 0.85rem; text-align: left; overflow-y: auto; max-height: 300px; color: #cbd5e1; }}
-.telemetry-badge {{ display: inline-block; background: rgba(16, 185, 129, 0.1); color: #34d399; font-size: 0.8rem; padding: 5px 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid rgba(16, 185, 129, 0.3); font-weight: bold; }}
+/* DOSSIÊ ESPECÍFICOS */
+.telemetry-badge {{ display: inline-block; background: rgba(16, 185, 129, 0.1); color: #34d399; font-size: 0.75rem; padding: 5px 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid rgba(16, 185, 129, 0.3); font-weight: bold; width: 100%; text-align: center; }}
+[data-testid="stCodeBlock"] {{ background: rgba(0, 0, 0, 0.6) !important; border: 1px solid #10b981 !important; border-radius: 8px !important; margin-bottom: 15px; }}
 
-/* Cabeçalhos Nativos das Colunas */
-h3 {{ color: #ffffff !important; font-weight: 800 !important; font-size: 1.1rem !important; letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid rgba(16,185,129,0.3); padding-bottom: 8px; margin-bottom: 20px !important; }}
+/* BOTÕES DE DOWNLOAD TIPO PILL */
+[data-testid="stDownloadButton"] button {{
+    background: rgba(30, 41, 59, 0.6) !important; border: 1px solid rgba(16,185,129,0.4) !important; border-radius: 50px !important; padding: 5px 15px !important; color: #cbd5e1 !important; font-size: 0.8rem !important; font-weight: 600 !important; transition: 0.3s !important; box-shadow: none !important; width: 100% !important; margin: 0 !important; text-transform: none !important;
+}}
+[data-testid="stDownloadButton"] button:hover {{ border-color: #10b981 !important; color: #10b981 !important; background: rgba(16, 185, 129, 0.1) !important; transform: translateY(-1px) !important; }}
 </style>
-""", unsafe_allow_html=True)
+"""
+st.markdown(css_base, unsafe_allow_html=True)
 
-# --- INÍCIO DA INTERFACE ---
+# --- CSS CONDICIONAL (MÁGICA DA REVELAÇÃO PROGRESSIVA) ---
+if not st.session_state.res_aether:
+    # MODO ZEN: Apenas a coluna central aparece com o Ingestor
+    st.markdown("""
+    <style>
+    [data-testid="column"]:nth-child(1), [data-testid="column"]:nth-child(3) { display: none !important; }
+    [data-testid="column"]:nth-child(2) { background: rgba(10, 18, 27, 0.75) !important; border: 1px solid rgba(16, 185, 129, 0.4) !important; border-radius: 15px !important; padding: 30px !important; backdrop-filter: blur(15px); box-shadow: 0 10px 40px rgba(0,0,0,0.5), inset 0 0 20px rgba(16, 185, 129, 0.05); }
+    </style>
+    """, unsafe_allow_html=True)
+else:
+    # MODO DUAL: Tela dividida para mostrar o Dossiê
+    st.markdown("""
+    <style>
+    [data-testid="column"] { background: rgba(10, 18, 27, 0.65) !important; border: 1px solid rgba(16, 185, 129, 0.3) !important; border-radius: 12px !important; padding: 25px !important; backdrop-filter: blur(12px); box-shadow: inset 0 0 20px rgba(16, 185, 129, 0.05); }
+    </style>
+    """, unsafe_allow_html=True)
+
+# --- CABEÇALHO ---
 st.markdown("""
 <div class="header-container">
     <h1 class="karv-title">AETHER KARV</h1>
@@ -160,48 +161,55 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-menu = st.radio("Navegação Tática", ["🛡️ AUDITORIA", "🔍 FORENSE", "⚙️ ENGENHARIA"], index=0, label_visibility="collapsed", horizontal=True)
+menu = st.radio("", ["AUDITORIA", "FORENSE", "ENGENHARIA"], index=0, label_visibility="collapsed", horizontal=True)
 
-col_ing, col_dos = st.columns(2, gap="large")
+# --- LÓGICA DE INTERFACE DINÂMICA ---
+def renderizar_painel_ingestao():
+    st.markdown('<div class="panel-header">INGESTÃO ESTRATÉGICA</div>', unsafe_allow_html=True)
+    up = st.file_uploader(" ", accept_multiple_files=True, label_visibility="collapsed")
+    cmd = st.text_area("COMANDO JURÍDICO ESTRATÉGICO:", key="cmd_input", placeholder="Ex: Faça uma análise cruzada dos contratos e aponte cláusulas de rescisão abusivas...")
 
-with col_ing:
-    with st.container():
-        st.markdown("### INGESTÃO")
-        up = st.file_uploader("Arquivos Base (PDF, DOCX, XLSX, CSV)", accept_multiple_files=True, label_visibility="collapsed")
+    if st.button("🚀 PROCESSAR AUDITORIA NEURAL"):
+        if cmd:
+            with st.status("🧠 Inicializando Motores Neurais AETHER KARV...", expanded=False):
+                texto_arquivos, num_arquivos = extrator_nexus(up) if up else ("", 0)
+                resposta = aether_karv_engine(cmd, texto_arquivos)
+                st.session_state.res_aether = resposta
+                st.session_state.telemetria = f"Ativos Ingeridos: {num_arquivos} | Volume Processado: {len(texto_arquivos)} bytes"
+            st.rerun()
+        else:
+            st.warning("Insira um comando estratégico para iniciar a operação.")
+
+if not st.session_state.res_aether:
+    # MODO ZEN: 3 Colunas invisíveis, usamos a do meio para centralizar
+    col_vazia1, col_centro, col_vazia2 = st.columns([1, 2, 1], gap="large")
+    with col_centro:
+        renderizar_painel_ingestao()
+else:
+    # MODO DUAL: Resultados Prontos
+    col_ing, col_dos = st.columns(2, gap="large")
+    
+    with col_ing:
+        renderizar_painel_ingestao()
         
-        st.markdown("<br>", unsafe_allow_html=True)
-        cmd = st.text_area("COMANDO JURÍDICO ESTRATÉGICO:", key="cmd_input", placeholder="Descreva sua análise jurídica profunda...")
-
-        if st.button("🚀 PROCESSAR AUDITORIA NEURAL"):
-            if cmd:
-                with st.status("🧠 Inicializando Motores AETHER KARV...", expanded=False):
-                    texto_arquivos, num_arquivos = extrator_nexus(up) if up else ("", 0)
-                    resposta = aether_karv_engine(cmd, texto_arquivos)
-                    st.session_state.res_aether = resposta
-                    st.session_state.telemetria = f"Ativos Ingeridos: {num_arquivos} | Volume: {len(texto_arquivos)} bytes"
-                st.rerun()
-            else:
-                st.warning("Insira um comando estratégico para iniciar.")
-
-with col_dos:
-    with st.container():
-        st.markdown("### DOSSIÊ")
+    with col_dos:
+        st.markdown('<div class="panel-header">DOSSIÊ CONCLUÍDO</div>', unsafe_allow_html=True)
         
-        if st.session_state.res_aether:
-            st.markdown("<div style='text-align:center;'>", unsafe_allow_html=True)
-            if st.session_state.telemetria:
-                st.markdown(f"<div class='telemetry-badge'>🛰️ TELEMETRIA: {st.session_state.telemetria}</div>", unsafe_allow_html=True)
-            st.markdown(f"<div class='karv-response'>{st.session_state.res_aether}</div>", unsafe_allow_html=True)
-            if st.button("🔄 NOVA OPERAÇÃO", key="btn_nova"):
+        if st.session_state.telemetria:
+            st.markdown(f"<div class='telemetry-badge'>🛰️ TELEMETRIA: {st.session_state.telemetria}</div>", unsafe_allow_html=True)
+        
+        # St.code gera o botão de "Copy" perfeitamente funcional!
+        st.code(st.session_state.res_aether, language="markdown")
+        
+        st.markdown("<div style='margin-top: 15px;'></div>", unsafe_allow_html=True)
+        
+        # Botões funcionais de Download
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            st.download_button("📄 BAIXAR TXT", data=st.session_state.res_aether, file_name="auditoria_aether.txt", mime="text/plain")
+        with c2:
+            st.download_button("📝 BAIXAR MD", data=st.session_state.res_aether, file_name="auditoria_aether.md", mime="text/markdown")
+        with c3:
+            if st.button("🔄 NOVA OPERAÇÃO", use_container_width=True):
                 st.session_state.res_aether, st.session_state.telemetria = None, None
                 st.rerun()
-            st.markdown("</div>", unsafe_allow_html=True)
-        else:
-            dossie_img = f'<img src="data:image/png;base64,{dossie_b64}" class="dossie-icon">' if dossie_b64 else '<div style="font-size:4rem; margin-bottom:15px;">⚖️</div>'
-            st.markdown(f"""
-            <div class="nexus-center">
-                {dossie_img}
-                <h4 style="margin:0; font-weight:900; color:#f8fafc; letter-spacing:1px;">MOTOR KARV PRONTO</h4>
-                <p style="color:#64748b; font-size:0.9rem; margin-top:5px;">Aguardando ingestão e comando...</p>
-            </div>
-            """, unsafe_allow_html=True)
