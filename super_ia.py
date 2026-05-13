@@ -9,7 +9,7 @@ try:
 except ImportError:
     pass
 
-st.set_page_config(page_title="AETHER OMNI V132", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="AETHER KARV V133", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
 
 def get_base64_image(file):
     if os.path.exists(file):
@@ -60,7 +60,7 @@ def aether_karv_engine(comando, contexto_arquivos, lindb_ativada, agente_foco):
     if groq_api_key:
         try:
             client = Groq(api_key=groq_api_key)
-            prompt_tatico = f"Você é o AETHER OMNI, um assistente jurídico de elite. Foco Primário: {agente_foco}. Atue como especialistas paralelos.{contexto_lindb}\nComando: {comando}\nDados: {contexto_arquivos}"
+            prompt_tatico = f"Você é o AETHER KARV, um assistente jurídico de elite. Foco Primário: {agente_foco}. Atue como especialistas paralelos.{contexto_lindb}\nComando: {comando}\nDados: {contexto_arquivos}"
             chat_completion = client.chat.completions.create(
                 messages=[{"role": "user", "content": prompt_tatico}],
                 model="llama3-70b-8192", temperature=0.2,
@@ -72,7 +72,7 @@ def aether_karv_engine(comando, contexto_arquivos, lindb_ativada, agente_foco):
         time.sleep(2) 
         return f"**ANÁLISE JURÍDICA CONCLUÍDA:**\nFoco: {agente_foco}\nProcessamento finalizado com sucesso. {contexto_lindb}\n(Configure a API Key para acesso total)."
 
-# --- 🎨 CSS APEX V132: LOCKDOWN EDITION ---
+# --- 🎨 CSS APEX V133: LOCKDOWN EDITION ---
 back_apex_b64 = get_base64_image("back_apex.png")
 
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -92,8 +92,7 @@ html, body {{ overflow: hidden !important; height: 100vh !important; width: 100v
 /* TOPBAR PREMIUM */
 .omni-topbar {{ display: flex; justify-content: space-between; align-items: center; background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(212, 175, 55, 0.15); padding: 6px 20px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); flex-shrink: 0; }}
 .omni-brand {{ display: flex; align-items: center; gap: 12px; }}
-.omni-brand h1 {{ margin: 0; font-family: 'Inter', sans-serif; font-size: 1.1rem; color: #f8fafc; font-weight: 700; letter-spacing: 0.5px; }}
-.omni-brand span {{ color: #D4AF37; font-size: 0.65rem; font-weight: 700; letter-spacing: 1px; border: 1px solid rgba(212, 175, 55, 0.4); padding: 2px 6px; border-radius: 6px; background: rgba(212, 175, 55, 0.05); text-transform: uppercase; }}
+.omni-brand h1 {{ margin: 0; font-family: 'Inter', sans-serif; font-size: 1.2rem; color: #f8fafc; font-weight: 800; letter-spacing: 1px; }}
 .omni-status {{ font-size: 0.7rem; color: #94a3b8; font-weight: 500; }}
 .omni-status span {{ color: #D4AF37; font-weight: 600; }}
 
@@ -122,7 +121,7 @@ div[data-baseweb="select"] > div {{ background-color: rgba(15, 23, 42, 0.6) !imp
 [data-testid="stCheckbox"] {{ background: rgba(0,0,0,0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.03); margin-bottom: 5px; flex-shrink: 0; }}
 
 /* BOTÃO DE PROCESSAR COLADO NA BASE */
-.stButton > button[kind="primary"] {{ background: linear-gradient(135deg, #B8860B, #D4AF37) !important; border-radius: 6px !important; font-weight: 700 !important; color: #020617 !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; padding: 8px !important; border: none !important; width: 100% !important; margin-top: auto !important; transition: 0.3s; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2); font-size: 0.8rem !important; flex-shrink: 0; }}
+.stButton > button[kind="primary"] {{ background: linear-gradient(135deg, #B8860B, #D4AF37) !important; border-radius: 6px !important; font-weight: 700 !important; color: #020617 !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; padding: 8px !important; border: none !important; width: 100% !important; margin-top: auto !important; transition: 0.3s; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2); font-size: 0.85rem !important; flex-shrink: 0; }}
 .stButton > button[kind="primary"]:hover {{ transform: translateY(-1px); box-shadow: 0 6px 15px rgba(212, 175, 55, 0.4); filter: brightness(1.1); }}
 
 /* KPIs (Dourado Fosco) - COMPRIMIDOS */
@@ -141,7 +140,7 @@ div[data-baseweb="select"] > div {{ background-color: rgba(15, 23, 42, 0.6) !imp
 .console-output {{ background: rgba(15, 23, 42, 0.5) !important; border: 1px solid rgba(255,255,255,0.05) !important; border-radius: 6px !important; padding: 12px !important; flex-grow: 1; overflow-y: auto; font-size: 0.8rem; color: #f1f5f9; margin-bottom: 10px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.3); line-height: 1.5; }}
 [data-testid="stCodeBlock"] {{ background: transparent !important; border: none !important; padding: 0 !important; }}
 
-/* BOTÕES SECUNDÁRIOS NA BASE */
+/* BOTÕES SECUNDÁRIOS NA BASE DO TERMINAL */
 .action-buttons-row {{ display: flex; gap: 8px; flex-shrink: 0; margin-top: auto; }}
 .stButton > button[kind="secondary"], .stDownloadButton > button {{ background: rgba(255,255,255,0.05) !important; color: #cbd5e1 !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 6px !important; font-size: 0.7rem !important; font-weight: 500 !important; padding: 4px !important; width: 100% !important; transition: 0.3s; margin: 0 !important; }}
 .stButton > button[kind="secondary"]:hover, .stDownloadButton > button:hover {{ background: rgba(255,255,255,0.1) !important; color: #fff !important; border-color: #D4AF37 !important; }}
@@ -160,7 +159,7 @@ st.markdown(css_code, unsafe_allow_html=True)
 # --- TOPBAR ---
 st.markdown(f"""
 <div class="omni-topbar">
-    <div class="omni-brand"><h1>AETHER OMNI</h1><span>LEGAL INTELLIGENCE</span></div>
+    <div class="omni-brand"><h1>AETHER KARV</h1></div>
     <div class="omni-status">SESSÃO: <span>CRIPTOGRAFADA (AES-256)</span></div>
 </div>
 """, unsafe_allow_html=True)
@@ -238,7 +237,7 @@ with col_main:
         </div>
         """, unsafe_allow_html=True)
 
-    # --- LINHA 3: CONSOLE OUTPUT CONDICIONAL (O pulo do gato para o Zero-Scroll) ---
+    # --- LINHA 3: CONSOLE OUTPUT CONDICIONAL ---
     if st.session_state.res_aether:
         st.markdown('<div class="section-title">Parecer Jurídico (Resultado)</div>', unsafe_allow_html=True)
         st.markdown('<div class="console-output">', unsafe_allow_html=True)
@@ -254,7 +253,7 @@ with col_main:
                 st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--:--", "risco": "Aguardando"}
                 st.rerun()
     else:
-        # TELA DE BOAS-VINDAS E TEMPLATES (Ocupa o espaço fluidamente)
+        # TELA DE BOAS-VINDAS E TEMPLATES
         st.markdown('<div class="standby-container">', unsafe_allow_html=True)
         st.markdown('<div class="welcome-title">Como posso ajudar na sua análise hoje?</div>', unsafe_allow_html=True)
         st.markdown('<div class="welcome-subtitle">Escolha um atalho rápido ou digite sua instrução no painel à esquerda.</div>', unsafe_allow_html=True)
