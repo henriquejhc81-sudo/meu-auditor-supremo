@@ -3,13 +3,13 @@ import pandas as pd
 import os, time, base64
 import docx2txt
 
-# --- 🛡️ PROTOCOLO DE PRESERVAÇÃO ---
+# --- 🛡️ PROTOCOLO DE PRESERVAÇÃO & LIBS ---
 try:
     from groq import Groq
 except ImportError:
     pass
 
-st.set_page_config(page_title="AETHER KARV V119", page_icon="logo.png", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="AETHER KARV V120", page_icon="logo.png", layout="wide", initial_sidebar_state="collapsed")
 
 def get_base64_image(file):
     if os.path.exists(file):
@@ -17,10 +17,12 @@ def get_base64_image(file):
             return base64.b64encode(f.read()).decode()
     return ""
 
+# --- 🧠 ESTADO DA SESSÃO ---
 if "cmd_input" not in st.session_state: st.session_state.cmd_input = ""
 if "res_aether" not in st.session_state: st.session_state.res_aether = None
 if "telemetria" not in st.session_state: st.session_state.telemetria = None
 
+# --- ⚡ EXTRATOR NEXUS ---
 def extrator_nexus(arquivos_upados):
     texto_extraido = ""
     sucesso = 0
@@ -42,6 +44,7 @@ def extrator_nexus(arquivos_upados):
             texto_extraido += f"\n[ERRO DE LEITURA EM {arquivo.name}: {str(e)}]"
     return texto_extraido, sucesso
 
+# --- ⚡ MOTOR AETHER KARV ---
 def aether_karv_engine(comando, contexto_arquivos):
     if not contexto_arquivos.strip():
         contexto_arquivos = "[Nenhum dado de arquivo injetado. Operando apenas com o comando.]"
@@ -61,89 +64,100 @@ def aether_karv_engine(comando, contexto_arquivos):
         time.sleep(2.5) 
         return f"**AUDITORIA SINTÉTICA (MODO OFFLINE):**\nO sistema processou o comando `{comando[:20]}...` com sucesso."
 
-# --- 🎨 IMAGENS ---
+# --- 🎨 IMAGENS E FUNDO ---
 back_apex_b64 = get_base64_image("back_apex.png")
-dossie_b64 = get_base64_image("dossie.png")
+bg_css = f"background-image: url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-repeat: no-repeat; background-attachment: fixed;" if back_apex_b64 else "background-color: #020617;"
 
-bg_css = f"background-image: url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center top; background-repeat: no-repeat; background-attachment: fixed;" if back_apex_b64 else "background-color: #020617;"
-
-# --- 🎨 CSS APEX V119: ALINHAMENTO FANTASMA ---
+# --- 🎨 CSS APEX V120: GLASSMORPHISM NATIVO (Indestrutível) ---
 css_code = f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
 
-.stApp {{ {bg_css} color: #f3f4f6; font-family: 'Inter', sans-serif; overflow-x: hidden; }}
-
-/* ⚠️ ATENÇÃO COMANDANTE: AJUSTE O NUMERO ABAIXO PARA SUBIR OU DESCER TUDO NA TELA */
-.block-container {{ padding-top: 11rem !important; max-width: 1200px !important; margin: 0 auto; padding-bottom: 0 !important; }}
-
+/* RESET GERAL */
+.stApp {{ {bg_css} color: #f3f4f6; font-family: 'Inter', sans-serif; }}
+.block-container {{ padding-top: 4rem !important; padding-bottom: 2rem !important; max-width: 1200px !important; margin: 0 auto; }}
 [data-testid="stHeader"] {{ display: none !important; }}
 
-/* ESCONDE A PALAVRA "Seletor" DO MENU */
-div[data-testid="stRadio"] > label {{ display: none !important; }}
+/* HEADER TÍTULO */
+.header-container {{ text-align: center; margin-bottom: 2rem; }}
+.karv-title {{ margin: 0; font-weight: 900; font-size: 3rem; color: #ffffff; letter-spacing: -1px; text-shadow: 0 0 20px rgba(16, 185, 129, 0.5); line-height: 1; }}
+.karv-subtitle {{ color: #10b981; font-weight: 700; font-size: 1rem; letter-spacing: 4px; text-transform: uppercase; margin-top: 5px; }}
 
-/* MENU CÁPSULAS (Sem fundo, para encaixar na cápsula do seu desenho) */
+/* MENU CÁPSULAS NATIVO E CENTRALIZADO */
 div[role="radiogroup"] {{ 
-    display: flex !important; flex-direction: row !important; justify-content: center !important; gap: 20px !important; 
-    background: transparent !important; border: none !important; box-shadow: none !important; 
-    width: fit-content !important; margin: 0 auto 60px auto !important; /* 60px empurra os painéis para baixo */
+    display: flex !important; flex-direction: row !important; justify-content: center !important; gap: 10px !important; 
+    background: rgba(10, 18, 27, 0.8) !important; border-radius: 50px !important; padding: 8px !important; 
+    border: 1px solid rgba(16,185,129,0.3) !important; width: fit-content !important; margin: 0 auto 40px auto !important; 
+    backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
 }}
 div[role="radiogroup"] label div[dir="auto"]:first-child, div[role="radio"] div:first-child, span[data-baseweb="radio"] {{ display: none !important; }}
+div[data-testid="stRadio"] label {{ background-color: transparent !important; color: #8b9eb3 !important; padding: 10px 30px !important; margin: 0 !important; cursor: pointer; border-radius: 50px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; }}
+div[data-testid="stRadio"] label:has(input:checked) {{ background: linear-gradient(90deg, #10b981, #34d399) !important; color: #020617 !important; font-weight: 900 !important; box-shadow: 0 0 20px rgba(16, 185, 129, 0.4) !important; }}
+div[data-testid="stRadio"] label p {{ font-size: 1rem !important; font-weight: 700 !important; margin: 0 !important; text-transform: uppercase; letter-spacing: 1px; }}
 
-/* BOTÕES DO MENU (Verde sutil quando clicado) */
-div[data-testid="stRadio"] label {{ background-color: transparent !important; color: #8b9eb3 !important; padding: 8px 30px !important; margin: 0 !important; cursor: pointer; border-radius: 50px; display: flex; align-items: center; justify-content: center; transition: 0.3s; }}
-div[data-testid="stRadio"] label:has(input:checked) {{ background: rgba(16, 185, 129, 0.15) !important; border: 1px solid #10b981 !important; color: #10b981 !important; font-weight: 800 !important; box-shadow: 0 0 15px rgba(16, 185, 129, 0.3) !important; }}
-div[data-testid="stRadio"] label p {{ font-size: 1rem !important; font-weight: 700 !important; margin: 0 !important; display: flex !important; align-items: center !important; text-transform: uppercase; letter-spacing: 1px; }}
-
-/* ⚠️ A MÁGICA: COLUNAS INVISÍVEIS PARA NÃO SOBREPOR SEU DESENHO ⚠️ */
+/* ⚠️ A MÁGICA DO VIDRO: CAIXAS CRIADAS PELO CSS ⚠️ */
 [data-testid="column"] {{
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    backdrop-filter: none !important;
-    padding: 20px 45px !important; /* Espaço para o conteúdo não vazar das bordas do seu desenho */
+    background: rgba(11, 17, 26, 0.75) !important;
+    border: 1px solid rgba(16, 185, 129, 0.3) !important;
+    border-radius: 16px !important;
+    padding: 30px !important;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(16, 185, 129, 0.05) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
 }}
 
-/* UPLOADER LIMPO (Encaixa na sua área desenhada) */
+/* TÍTULOS DOS PAINÉIS */
+.panel-header {{ color: #ffffff; font-weight: 800; font-size: 1.1rem; letter-spacing: 1px; margin-bottom: 20px; text-transform: uppercase; border-bottom: 1px solid rgba(16,185,129,0.3); padding-bottom: 10px; }}
+
+/* UPLOADER DE ARQUIVOS */
 [data-testid="stFileUploadDropzone"] {{
-    background-color: rgba(7, 11, 20, 0.6) !important;
-    border: 1px dashed rgba(16, 185, 129, 0.4) !important;
-    border-radius: 8px !important;
-    padding: 20px !important;
+    background-color: rgba(0, 0, 0, 0.4) !important;
+    border: 2px dashed rgba(16, 185, 129, 0.4) !important;
+    border-radius: 12px !important;
+    padding: 30px !important;
+    transition: all 0.3s ease;
 }}
 [data-testid="stFileUploadDropzone"]:hover {{ border-color: #10b981 !important; background-color: rgba(16, 185, 129, 0.1) !important; }}
 
-/* TEXT AREA */
-.stTextArea label {{ font-size: 0.8rem !important; margin-bottom: 5px !important; margin-top: 10px !important; font-weight: 800 !important; letter-spacing: 1px; color: #fff !important; text-transform: uppercase; }}
-.stTextArea textarea {{ background-color: rgba(7, 11, 20, 0.8) !important; border: 1px solid rgba(16, 185, 129, 0.3) !important; color: #ffffff !important; font-size: 0.9rem !important; border-radius: 8px !important; padding: 15px !important; height: 100px !important; min-height: 100px !important; resize: none; }}
-.stTextArea textarea:focus {{ border-color: #10b981 !important; box-shadow: 0 0 10px rgba(16, 185, 129, 0.2) !important; outline: none !important; }}
+/* CAIXA DE COMANDO */
+.stTextArea label {{ font-size: 0.85rem !important; margin-bottom: 8px !important; margin-top: 15px !important; font-weight: 800 !important; letter-spacing: 1px; color: #fff !important; text-transform: uppercase; }}
+.stTextArea textarea {{ background-color: rgba(0, 0, 0, 0.5) !important; border: 1px solid rgba(16, 185, 129, 0.3) !important; color: #ffffff !important; font-size: 0.95rem !important; border-radius: 10px !important; padding: 15px !important; height: 120px !important; min-height: 120px !important; resize: none; }}
+.stTextArea textarea:focus {{ border-color: #10b981 !important; box-shadow: 0 0 15px rgba(16, 185, 129, 0.3) !important; outline: none !important; }}
 
-/* BOTÃO DE PROCESSAR */
+/* BOTÃO VERDE PRINCIPAL */
 .stButton > button {{
-    background: linear-gradient(90deg, #10b981, #34d399) !important; border-radius: 50px !important; font-weight: 900 !important; color: #020617 !important; text-transform: uppercase !important; letter-spacing: 1px !important; padding: 12px !important; border: none !important; font-size: 0.95rem !important; width: 100% !important; margin-top: 15px !important; box-shadow: 0 5px 15px rgba(16, 185, 129, 0.2) !important; transition: all 0.3s ease;
+    background: linear-gradient(90deg, #10b981, #34d399) !important; border-radius: 50px !important; font-weight: 900 !important; color: #020617 !important; text-transform: uppercase !important; letter-spacing: 1.5px !important; padding: 15px !important; border: none !important; font-size: 1rem !important; width: 100% !important; margin-top: 20px !important; box-shadow: 0 5px 20px rgba(16, 185, 129, 0.3) !important; transition: all 0.3s ease;
 }}
-.stButton > button:hover {{ transform: translateY(-2px); filter: brightness(1.1); box-shadow: 0 10px 20px rgba(16, 185, 129, 0.4) !important; }}
+.stButton > button:hover {{ transform: translateY(-3px); filter: brightness(1.1); box-shadow: 0 10px 25px rgba(16, 185, 129, 0.5) !important; }}
 
-/* TÍTULOS E ELEMENTOS INTERNOS */
-.panel-header {{ color: #ffffff; font-weight: 800; font-size: 1rem; letter-spacing: 1px; margin-bottom: 15px; text-transform: uppercase; border-bottom: 1px solid rgba(16,185,129,0.3); padding-bottom: 5px; }}
-.telemetry-badge {{ display: inline-block; background: rgba(16, 185, 129, 0.1); color: #34d399; font-size: 0.8rem; padding: 6px 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid rgba(16, 185, 129, 0.3); font-weight: bold; width: 100%; text-align: center; }}
-[data-testid="stCodeBlock"] {{ background: rgba(0, 0, 0, 0.6) !important; border: 1px solid rgba(16,185,129,0.5) !important; border-radius: 8px !important; margin-bottom: 20px; }}
-.nexus-center {{ display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; min-height: 250px; text-align: center; }}
+/* ELEMENTOS DO DOSSIÊ */
+.telemetry-badge {{ display: inline-block; background: rgba(16, 185, 129, 0.15); color: #34d399; font-size: 0.85rem; padding: 8px 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid rgba(16, 185, 129, 0.4); font-weight: bold; width: 100%; text-align: center; letter-spacing: 1px; }}
+[data-testid="stCodeBlock"] {{ background: rgba(0, 0, 0, 0.7) !important; border: 1px solid rgba(16,185,129,0.5) !important; border-radius: 10px !important; margin-bottom: 20px; }}
+.nexus-center {{ display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; min-height: 350px; text-align: center; }}
 </style>
 """
 
 st.markdown(css_code, unsafe_allow_html=True)
 
-# --- INTERFACE TÁTICA ---
-# Como o logo já está no fundo, não precisamos desenhá-lo.
+# --- HEADER TÍTULO ---
+st.markdown("""
+<div class="header-container">
+    <h1 class="karv-title">AETHER KARV</h1>
+    <div class="karv-subtitle">Strategic Intelligence Hub</div>
+</div>
+""", unsafe_allow_html=True)
 
-menu = st.radio("Seletor", ["AUDITORIA", "FORENSE", "ENGENHARIA"], index=0, horizontal=True)
+# --- MENU NAVEGAÇÃO ---
+menu = st.radio("Seletor", ["🛡️ AUDITORIA", "🔍 FORENSE", "⚙️ ENGENHARIA"], index=0, horizontal=True)
 
+# --- ESTRUTURA DE COLUNAS (As Caixas de Vidro) ---
 col_ing, col_dos = st.columns(2, gap="large")
 
 with col_ing:
     st.markdown('<div class="panel-header">INGESTÃO NEXUS</div>', unsafe_allow_html=True)
-    up = st.file_uploader("Arquivos Base", accept_multiple_files=True, label_visibility="collapsed")
+    
+    up = st.file_uploader("Upload de Arquivos", accept_multiple_files=True, label_visibility="collapsed")
+    
     cmd = st.text_area("COMANDO JURÍDICO ESTRATÉGICO:", key="cmd_input", placeholder="Descreva sua análise jurídica profunda...")
 
     if st.button("🚀 PROCESSAR AUDITORIA"):
@@ -158,7 +172,7 @@ with col_ing:
             st.warning("Insira um comando estratégico para iniciar.")
 
 with col_dos:
-    st.markdown('<div class="panel-header">DOSSIÊ CONCLUÍDO</div>', unsafe_allow_html=True)
+    st.markdown('<div class="panel-header">DOSSIÊ DE INTELIGÊNCIA</div>', unsafe_allow_html=True)
     
     if st.session_state.res_aether:
         st.markdown(f"<div class='telemetry-badge'>🛰️ TELEMETRIA: {st.session_state.telemetria}</div>", unsafe_allow_html=True)
@@ -166,9 +180,9 @@ with col_dos:
         
         c1, c2, c3 = st.columns(3)
         with c1:
-            st.download_button("📄 TXT", data=st.session_state.res_aether, file_name="dossie.txt", mime="text/plain")
+            st.download_button("📄 TXT", data=st.session_state.res_aether, file_name="dossie.txt", mime="text/plain", use_container_width=True)
         with c2:
-            st.download_button("📝 MD", data=st.session_state.res_aether, file_name="dossie.md", mime="text/markdown")
+            st.download_button("📝 MD", data=st.session_state.res_aether, file_name="dossie.md", mime="text/markdown", use_container_width=True)
         with c3:
             if st.button("🔄 RESET", use_container_width=True):
                 st.session_state.res_aether, st.session_state.telemetria = None, None
@@ -176,7 +190,7 @@ with col_dos:
     else:
         st.markdown(f"""
         <div class="nexus-center">
-            <h3 style="margin:0; font-weight:900; color:#f8fafc; letter-spacing:1px; font-size: 1.1rem;">⚖️ MOTOR KARV PRONTO</h3>
-            <p style="color:#64748b; font-size:0.9rem; margin-top:5px; font-weight: 500;">Aguardando ingestão e comando...</p>
+            <h3 style="margin:0; font-weight:900; color:#f8fafc; letter-spacing:1px; font-size: 1.3rem;">⚖️ MOTOR KARV PRONTO</h3>
+            <p style="color:#64748b; font-size:0.95rem; margin-top:10px; font-weight: 500;">Aguardando ingestão de dados e comando...</p>
         </div>
         """, unsafe_allow_html=True)
