@@ -9,7 +9,7 @@ try:
 except ImportError:
     pass
 
-st.set_page_config(page_title="AETHER KARV V123", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="AETHER KARV V124", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
 
 def get_base64_image(file):
     if os.path.exists(file):
@@ -70,63 +70,65 @@ def aether_karv_engine(comando, contexto_arquivos):
 
 # --- 🎨 IMAGENS E FUNDO ---
 back_apex_b64 = get_base64_image("back_apex.png")
-# O linear-gradient escurece levemente a imagem de fundo para dar foco à interface
-bg_css = f"background: linear-gradient(rgba(2, 6, 23, 0.4), rgba(2, 6, 23, 0.4)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-repeat: no-repeat; background-attachment: fixed;" if back_apex_b64 else "background-color: #020617;"
 
-# --- 🎨 CSS APEX V123: ROBUSTEZ TOTAL ---
+# TÉCNICA DE PROFUNDIDADE: Escurecemos a imagem de fundo em 60% para ela não "gritar" na tela.
+bg_css = f"background: linear-gradient(rgba(2, 6, 23, 0.6), rgba(2, 6, 23, 0.6)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-repeat: no-repeat; background-attachment: fixed;" if back_apex_b64 else "background-color: #020617;"
+
+# --- 🎨 CSS APEX V124: LIMPEZA ABSOLUTA ---
 css_code = f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
 
 /* RESET GERAL */
 .stApp {{ {bg_css} color: #f3f4f6; font-family: 'Inter', sans-serif; }}
-.block-container {{ padding-top: 3rem !important; padding-bottom: 2rem !important; max-width: 1100px !important; margin: 0 auto; }}
+
+/* ⚠️ EMPURRA TUDO PARA BAIXO PARA NÃO SOBREPOR O LOGO DA IMAGEM ⚠️ */
+.block-container {{ padding-top: 15rem !important; padding-bottom: 2rem !important; max-width: 1150px !important; margin: 0 auto; }}
+
 [data-testid="stHeader"] {{ display: none !important; }}
 
-/* HEADER TÍTULO */
-.header-container {{ text-align: center; margin-bottom: 2rem; }}
-.karv-title {{ margin: 0; font-weight: 900; font-size: 3.2rem; color: #ffffff; letter-spacing: -1px; text-shadow: 0 0 20px rgba(16, 185, 129, 0.5); line-height: 1; }}
-.karv-subtitle {{ color: #10b981; font-weight: 700; font-size: 1.1rem; letter-spacing: 4px; text-transform: uppercase; margin-top: 5px; }}
+/* ESCONDE O TÍTULO DO MENU ("Seletor") */
+div[data-testid="stRadio"] > label {{ display: none !important; }}
 
-/* MENU CÁPSULAS NATIVO (Estilo Pílula Central) */
+/* MENU CÁPSULAS NATIVO (Escuro e opaco para não misturar com o fundo) */
 div[role="radiogroup"] {{ 
     display: flex !important; flex-direction: row !important; justify-content: center !important; gap: 5px !important; 
-    background: rgba(10, 18, 27, 0.8) !important; border-radius: 50px !important; padding: 6px !important; 
+    background: rgba(5, 10, 18, 0.95) !important; border-radius: 50px !important; padding: 6px !important; 
     border: 1px solid rgba(16,185,129,0.4) !important; width: fit-content !important; margin: 0 auto 40px auto !important; 
-    backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.6) !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8) !important;
 }}
 div[role="radiogroup"] label div[dir="auto"]:first-child, div[role="radio"] div:first-child, span[data-baseweb="radio"] {{ display: none !important; }}
 div[data-testid="stRadio"] label {{ background-color: transparent !important; color: #8b9eb3 !important; padding: 10px 35px !important; margin: 0 !important; cursor: pointer; border-radius: 50px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; }}
 div[data-testid="stRadio"] label:has(input:checked) {{ background: linear-gradient(90deg, #10b981, #34d399) !important; color: #020617 !important; font-weight: 900 !important; box-shadow: 0 0 20px rgba(16, 185, 129, 0.4) !important; }}
 div[data-testid="stRadio"] label p {{ font-size: 0.95rem !important; font-weight: 700 !important; margin: 0 !important; text-transform: uppercase; letter-spacing: 1px; }}
 
-/* CAIXAS DE VIDRO (PAINÉIS DE INGESTÃO E DOSSIÊ) */
+/* ⚠️ CAIXAS DE VIDRO BLINDADO (PAINÉIS COM 95% DE OPACIDADE) ⚠️ */
 [data-testid="column"] {{
-    background: rgba(11, 17, 26, 0.65) !important;
+    background: rgba(5, 10, 18, 0.95) !important; /* Quase preto sólido para bloquear a poluição do fundo */
     border: 1px solid rgba(16, 185, 129, 0.3) !important;
     border-radius: 16px !important;
-    padding: 25px !important;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(16, 185, 129, 0.05) !important;
-    backdrop-filter: blur(16px) !important;
-    -webkit-backdrop-filter: blur(16px) !important;
+    padding: 30px !important;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(16, 185, 129, 0.05) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
 }}
 
 /* TÍTULOS DOS PAINÉIS */
-.panel-header {{ color: #ffffff; font-weight: 800; font-size: 1rem; letter-spacing: 1px; margin-bottom: 20px; text-transform: uppercase; border-bottom: 1px solid rgba(16,185,129,0.3); padding-bottom: 10px; display: flex; align-items: center; }}
+.panel-header {{ color: #ffffff; font-weight: 800; font-size: 1.05rem; letter-spacing: 1px; margin-bottom: 25px; text-transform: uppercase; border-bottom: 1px solid rgba(16,185,129,0.3); padding-bottom: 10px; display: flex; align-items: center; }}
 
 /* UPLOADER DE ARQUIVOS */
 [data-testid="stFileUploadDropzone"] {{
-    background-color: rgba(0, 0, 0, 0.3) !important;
+    background-color: rgba(0, 0, 0, 0.5) !important;
     border: 2px dashed rgba(16, 185, 129, 0.4) !important;
     border-radius: 12px !important;
-    padding: 20px !important;
+    padding: 25px !important;
     transition: all 0.3s ease;
 }}
 [data-testid="stFileUploadDropzone"]:hover {{ border-color: #10b981 !important; background-color: rgba(16, 185, 129, 0.1) !important; }}
 
 /* CAIXA DE COMANDO */
 .stTextArea label {{ font-size: 0.8rem !important; margin-bottom: 8px !important; margin-top: 15px !important; font-weight: 800 !important; letter-spacing: 1px; color: #fff !important; text-transform: uppercase; }}
-.stTextArea textarea {{ background-color: rgba(0, 0, 0, 0.4) !important; border: 1px solid rgba(16, 185, 129, 0.3) !important; color: #ffffff !important; font-size: 0.9rem !important; border-radius: 10px !important; padding: 15px !important; height: 130px !important; min-height: 130px !important; resize: none; }}
+.stTextArea textarea {{ background-color: rgba(0, 0, 0, 0.6) !important; border: 1px solid rgba(16, 185, 129, 0.3) !important; color: #ffffff !important; font-size: 0.9rem !important; border-radius: 10px !important; padding: 15px !important; height: 130px !important; min-height: 130px !important; resize: none; }}
 .stTextArea textarea:focus {{ border-color: #10b981 !important; box-shadow: 0 0 15px rgba(16, 185, 129, 0.3) !important; outline: none !important; }}
 
 /* BOTÃO VERDE PRINCIPAL (PROCESSAR) */
@@ -143,25 +145,19 @@ div[data-testid="stRadio"] label p {{ font-size: 0.95rem !important; font-weight
 
 /* ELEMENTOS DO DOSSIÊ */
 .telemetry-badge {{ display: inline-block; background: rgba(16, 185, 129, 0.15); color: #34d399; font-size: 0.8rem; padding: 8px 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid rgba(16, 185, 129, 0.4); font-weight: bold; width: 100%; text-align: center; letter-spacing: 1px; }}
-[data-testid="stCodeBlock"] {{ background: rgba(0, 0, 0, 0.5) !important; border: 1px solid rgba(16,185,129,0.5) !important; border-radius: 8px !important; margin-bottom: 20px; }}
+[data-testid="stCodeBlock"] {{ background: rgba(0, 0, 0, 0.7) !important; border: 1px solid rgba(16,185,129,0.5) !important; border-radius: 8px !important; margin-bottom: 20px; }}
 .nexus-center {{ display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; min-height: 380px; text-align: center; }}
 </style>
 """
 
 st.markdown(css_code, unsafe_allow_html=True)
 
-# --- CABEÇALHO DO COCKPIT ---
-st.markdown("""
-<div class="header-container">
-    <h1 class="karv-title">AETHER KARV</h1>
-    <div class="karv-subtitle">Strategic Intelligence Hub</div>
-</div>
-""", unsafe_allow_html=True)
+# Removemos o título "AETHER KARV" gerado por código para não duplicar com a sua imagem!
 
 # --- NAVEGAÇÃO DE MÓDULOS ---
 menu = st.radio("Seletor", ["🛡️ AUDITORIA", "🔍 FORENSE", "⚙️ ENGENHARIA"], index=0, horizontal=True)
 
-# --- ESTRUTURA DE COLUNAS (Painéis de Vidro Nativos) ---
+# --- ESTRUTURA DE COLUNAS (Painéis Sólidos) ---
 col_ing, col_dos = st.columns(2, gap="large")
 
 # === PAINEL ESQUERDO: INGESTÃO ===
