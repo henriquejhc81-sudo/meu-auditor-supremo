@@ -10,7 +10,7 @@ except ImportError:
     pass
 
 # --- ⚙️ CONFIGURAÇÃO DE AMBIENTE ---
-st.set_page_config(page_title="AETHER KARV V113 Apex", page_icon="logo.png", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="AETHER KARV V114 Apex", page_icon="logo.png", layout="wide", initial_sidebar_state="collapsed")
 
 def get_base64_image(file):
     if os.path.exists(file):
@@ -83,7 +83,7 @@ dossie_b64 = get_base64_image("dossie.png")
 # Fundo forçado para preencher a tela perfeitamente
 bg_css = f"background-image: url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center top; background-repeat: no-repeat; background-attachment: fixed;" if back_apex_b64 else "background-color: #020617;"
 
-# --- 🎨 CSS APEX V113: BLINDAGEM SINTÁTICA ---
+# --- 🎨 CSS APEX V114: BLINDAGEM SINTÁTICA ---
 css_code = f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
@@ -179,4 +179,52 @@ st.markdown("""
 
 menu = st.radio("", ["AUDITORIA", "FORENSE", "ENGENHARIA"], index=0, label_visibility="collapsed", horizontal=True)
 
-col_ing, col_dos = st.columns(2
+# AQUI ESTAVA O SEU ERRO DE CÓPIA. A LINHA ABAIXO ESTÁ BLINDADA:
+col_ing, col_dos = st.columns(2, gap="large")
+
+with col_ing:
+    st.markdown('<div class="panel-header">INGESTÃO</div>', unsafe_allow_html=True)
+    up = st.file_uploader(" ", accept_multiple_files=True, label_visibility="collapsed")
+    cmd = st.text_area("COMANDO JURÍDICO ESTRATÉGICO:", key="cmd_input", placeholder="Descreva sua análise jurídica estratégica profunda...")
+
+    if st.button("🚀 PROCESSAR AUDITORIA NEURAL"):
+        if cmd:
+            with st.status("🧠 Inicializando Motores Neurais AETHER KARV...", expanded=False):
+                texto_arquivos, num_arquivos = extrator_nexus(up) if up else ("", 0)
+                resposta = aether_karv_engine(cmd, texto_arquivos)
+                st.session_state.res_aether = resposta
+                st.session_state.telemetria = f"Ativos Ingeridos: {num_arquivos} | Volume: {len(texto_arquivos)} bytes"
+            st.rerun()
+        else:
+            st.warning("Insira um comando estratégico para iniciar.")
+
+with col_dos:
+    st.markdown('<div class="panel-header">DOSSIÊ</div>', unsafe_allow_html=True)
+    
+    if st.session_state.res_aether:
+        st.markdown("<div style='text-align:center;'>", unsafe_allow_html=True)
+        if st.session_state.telemetria:
+            st.markdown(f"<div class='telemetry-badge'>🛰️ TELEMETRIA: {st.session_state.telemetria}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='karv-response'>{st.session_state.res_aether}</div>", unsafe_allow_html=True)
+        if st.button("🔄 NOVA OPERAÇÃO"):
+            st.session_state.res_aether, st.session_state.telemetria = None, None
+            st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
+    else:
+        dossie_img = f'<img src="data:image/png;base64,{dossie_b64}" class="dossie-icon">' if dossie_b64 else '<div style="font-size:3rem; margin-bottom:10px;">⚖️</div>'
+        st.markdown(f"""
+        <div class="nexus-center">
+            {dossie_img}
+            <h3 style="margin:0; font-weight:900; color:#f8fafc; letter-spacing:1px; font-size: 1.1rem;">MOTOR KARV PRONTO</h3>
+            <p style="color:#64748b; font-size:0.85rem; margin-top:5px; font-weight: 500;">Aguardando ingestão e comando estratégico...</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="download-bar">
+        <div class="download-pill">📄 PDF</div>
+        <div class="download-pill">📝 DOCX</div>
+        <div class="download-pill">📊 XLSX</div>
+        <div class="download-pill">📉 CSV</div>
+    </div>
+    """, unsafe_allow_html=True)
