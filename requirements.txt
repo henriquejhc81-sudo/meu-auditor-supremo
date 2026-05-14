@@ -10,8 +10,7 @@ docx2txt
 faiss-cpu
 opencv-python-headless
 markdown
-reportlab
-xhtml2pdf
+fpdf2
 PyPDF2
 langchain
 langchain-community
