@@ -9,7 +9,6 @@ duckduckgo-search
 docx2txt
 faiss-cpu
 opencv-python-headless
-markdown
 fpdf2
 PyPDF2
 langchain
