@@ -1,36 +1,52 @@
 import streamlit as st
 import pandas as pd
 import os, time, base64, io
-import docx2txt
 import concurrent.futures
-from docx import Document
-from docx.shared import Pt, RGBColor
 
-# --- 🧠 LIBS DA FASE 2: RAG, VISÃO E IA ---
-import cv2
-import numpy as np
-from PIL import Image
-try:
-    import pytesseract
-except ImportError:
-    pass # OCR Degradado graciosamente se não instalado
-try:
-    import PyPDF2
-except ImportError:
-    pass
-
-# Langchain & FAISS (Memória Vetorial)
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import FAISS
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
-
+# --- 🛡️ PROTOCOLO DE PRESERVAÇÃO & LIBS TÁTICAS (BLINDADAS) ---
 try:
     from groq import Groq
 except ImportError:
     pass
 
+try:
+    import docx2txt
+    from docx import Document
+    from docx.shared import Pt, RGBColor
+except ImportError:
+    st.error("⚠️ Biblioteca 'python-docx' ou 'docx2txt' ausente. Verifique o requirements.txt.")
+
+try:
+    import PyPDF2
+except ImportError:
+    pass
+
+# --- 👁️ VISÃO COMPUTACIONAL (BLINDADA) ---
+try:
+    import cv2
+    import numpy as np
+    from PIL import Image
+    import pytesseract
+    MODULO_VISAO = True
+except ImportError:
+    MODULO_VISAO = False
+
+# --- 🧠 MEMÓRIA VETORIAL / RAG (BLINDADA CONTRA O ERRO DA TELA PRETA) ---
+try:
+    # Tenta importar da nova estrutura primeiro, depois da antiga
+    try:
+        from langchain_text_splitters import RecursiveCharacterTextSplitter
+    except ImportError:
+        from langchain.text_splitter import RecursiveCharacterTextSplitter
+        
+    from langchain_community.vectorstores import FAISS
+    from langchain_google_genai import GoogleGenerativeAIEmbeddings
+    MODULO_RAG = True
+except ImportError as e:
+    MODULO_RAG = False
+
 # --- ⚙️ CONFIGURAÇÃO DE SEGURANÇA ---
-st.set_page_config(page_title="AETHER OMNI V300", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="AETHER OMNI V301", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
 
 GROQ_KEY = st.secrets.get("GROQ_API_KEY", os.environ.get("GROQ_API_KEY", ""))
 GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
@@ -50,7 +66,7 @@ if "telemetria" not in st.session_state or st.session_state.telemetria is None:
 def set_template(texto):
     st.session_state.cmd_input = texto
 
-# --- 👁️ MOTOR DE INGESTÃO MULTIMODAL & OCR (NEXUS V3) ---
+# --- 👁️ MOTOR DE INGESTÃO MULTIMODAL & OCR (NEXUS V3.1) ---
 def extrator_nexus_v3(arquivos_upados):
     texto_extraido = ""
     sucesso = 0
@@ -58,22 +74,17 @@ def extrator_nexus_v3(arquivos_upados):
     
     for arquivo in arquivos_upados:
         try:
-            # 1. Planilhas e Dados Estruturados
             if arquivo.name.endswith('.csv'):
                 df = pd.read_csv(arquivo)
                 texto_extraido += f"\n\n--- DADOS CSV: {arquivo.name} ---\n{df.to_string(index=False)}"
             elif arquivo.name.endswith('.xlsx'):
                 df = pd.read_excel(arquivo)
                 texto_extraido += f"\n\n--- DADOS XLSX: {arquivo.name} ---\n{df.to_string(index=False)}"
-            
-            # 2. Documentos de Texto
             elif arquivo.name.endswith('.docx'):
                 texto = docx2txt.process(arquivo)
                 texto_extraido += f"\n\n--- DOCX: {arquivo.name} ---\n{texto}"
             elif arquivo.name.endswith('.txt'):
                 texto_extraido += f"\n\n--- TXT: {arquivo.name} ---\n{arquivo.getvalue().decode('utf-8')}"
-            
-            # 3. PDF Híbrido
             elif arquivo.name.endswith('.pdf'):
                 try:
                     pdf_reader = PyPDF2.PdfReader(arquivo)
@@ -84,21 +95,19 @@ def extrator_nexus_v3(arquivos_upados):
                     texto_extraido += f"\n\n--- PDF: {arquivo.name} ---\n{texto_pdf}"
                 except:
                     texto_extraido += f"\n[AETHER: Falha na leitura nativa do PDF: {arquivo.name}]"
-            
-            # 4. VISÃO COMPUTACIONAL (OCR para Imagens)
             elif arquivo.name.lower().endswith(('.png', '.jpg', '.jpeg')):
-                try:
-                    imagem = Image.open(arquivo)
-                    # Convertendo para array do OpenCV para pré-processamento
-                    img_cv = cv2.cvtColor(np.array(imagem), cv2.COLOR_RGB2BGR)
-                    gray = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
-                    # Aplica OCR Tesseract (Requer tesseract instalado no SO)
-                    texto_ocr = pytesseract.image_to_string(gray, lang='por')
-                    texto_extraido += f"\n\n--- IMAGEM OCR (Visão Ativada): {arquivo.name} ---\n{texto_ocr}"
-                    usou_ocr = True
-                except Exception as e_ocr:
-                    texto_extraido += f"\n[AETHER: Módulo OCR inativo ou imagem ilegível: {arquivo.name}]"
-            
+                if MODULO_VISAO:
+                    try:
+                        imagem = Image.open(arquivo)
+                        img_cv = cv2.cvtColor(np.array(imagem), cv2.COLOR_RGB2BGR)
+                        gray = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
+                        texto_ocr = pytesseract.image_to_string(gray, lang='por')
+                        texto_extraido += f"\n\n--- IMAGEM OCR (Visão Ativada): {arquivo.name} ---\n{texto_ocr}"
+                        usou_ocr = True
+                    except Exception as e_ocr:
+                        texto_extraido += f"\n[AETHER: Falha na extração de texto da imagem: {arquivo.name}]"
+                else:
+                    texto_extraido += f"\n[AETHER ALERTA: Arquivo visual ignorado. Módulo OCR offline no servidor.]"
             sucesso += 1
         except Exception as e:
             texto_extraido += f"\n[ERRO CRÍTICO EM {arquivo.name}: {str(e)}]"
@@ -107,28 +116,23 @@ def extrator_nexus_v3(arquivos_upados):
 
 # --- 🧠 MEMÓRIA VETORIAL (RAG COM FAISS & LANGCHAIN) ---
 def processar_com_rag(texto, comando):
-    """Fatia documentos gigantes e busca só o que importa usando Matemática Vetorial"""
+    if not MODULO_RAG:
+        return texto[:90000] + "\n\n[ALERTA AETHER: Módulo de Memória Vetorial (RAG/Langchain) indisponível. Operando em modo de leitura bruta truncada.]"
+    
     if not GEMINI_KEY:
-        return texto[:90000] + "\n[ALERTA: Chave Gemini ausente. RAG desativado. Texto truncado para evitar estouro de memória.]"
+        return texto[:90000] + "\n\n[ALERTA AETHER: Chave Gemini ausente. RAG desativado. Texto truncado para evitar estouro de memória.]"
     
     try:
-        # Fatiamento inteligente (Chunks com overlap para não cortar frases no meio)
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=4000, chunk_overlap=400)
         chunks = text_splitter.split_text(texto)
-        
-        # Cria embeddings (Transforma o texto em coordenadas matemáticas)
         embeddings = GoogleGenerativeAIEmbeddings(google_api_key=GEMINI_KEY, model="models/embedding-001")
-        
-        # Cria o banco de dados vetorial FAISS na memória RAM
         vector_store = FAISS.from_texts(chunks, embeddings)
-        
-        # Busca no banco de dados os chunks que mais se parecem com o comando do usuário
-        docs_relevantes = vector_store.similarity_search(comando, k=8) # Pega os 8 melhores pedaços
+        docs_relevantes = vector_store.similarity_search(comando, k=8)
         
         contexto_filtrado = "\n...\n".join([doc.page_content for doc in docs_relevantes])
-        return f"[AETHER RAG FILTER ACTIVE: Exibindo apenas fragmentos matematicamente relevantes para a análise]\n\n{contexto_filtrado}"
+        return f"[AETHER RAG FILTER ACTIVE: Exibindo apenas fragmentos matematicamente relevantes para a investigação]\n\n{contexto_filtrado}"
     except Exception as e:
-        return texto[:90000] + f"\n[ALERTA RAG: Falha no processamento vetorial ({str(e)}). Operando em modo texto bruto.]"
+        return texto[:90000] + f"\n\n[ALERTA AETHER RAG: Falha no processamento vetorial ({str(e)}). Operando em modo texto bruto.]"
 
 # --- 🤖 AGENTE EXECUTOR ---
 def chamar_agente_groq(nome_agente, system_prompt, comando, contexto):
@@ -142,7 +146,7 @@ def chamar_agente_groq(nome_agente, system_prompt, comando, contexto):
                 {"role": "user", "content": full_prompt}
             ],
             model="llama3-70b-8192",
-            temperature=0.1, # Temperatura baixa = Respostas mais analíticas e menos criativas
+            temperature=0.1, 
         )
         return completion.choices[0].message.content
     except Exception as e:
@@ -152,18 +156,15 @@ def chamar_agente_groq(nome_agente, system_prompt, comando, contexto):
 def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, agente_foco):
     if not contexto_arquivos.strip(): contexto_arquivos = "Nenhum documento fornecido. Opere em modo de consulta livre."
     
-    # Ativação do RAG se o texto for muito grande (Ex: Processos de 200 páginas)
     if len(contexto_arquivos) > 60000:
         contexto_arquivos = processar_com_rag(contexto_arquivos, comando)
     
     blindagem = "DIRETRIZ DE COMPLIANCE: Aplique rigorosamente a interpretação do Art. 22 da LINDB, considerando os obstáculos práticos do gestor público." if lindb_ativada else ""
     
-    # Prompts de Personalidade Nível Sênior
     agente_1_sys = f"Você é um Auditor Sênior de Riscos Financeiros e Contratuais. Especialidade: {agente_foco}. Procure inconsistências, multas abusivas, riscos operacionais e financeiros. Seja direto, use tópicos e linguagem técnica corporativa. {blindagem}"
     agente_2_sys = f"Você é um Advogado Sênior de Contencioso Estratégico. Especialidade: {agente_foco}. Analise as evidências buscando brechas na lei, teses de defesa, nulidades formais e aplique jurisprudência padrão dos tribunais superiores (STJ/STF). {blindagem}"
     
     resultados = {}
-    # Multithreading: 2 IAs trabalhando ao mesmo tempo
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
         future_risco = executor.submit(chamar_agente_groq, "AGENTE RISK", agente_1_sys, comando, contexto_arquivos)
         future_legal = executor.submit(chamar_agente_groq, "AGENTE LEGAL", agente_2_sys, comando, contexto_arquivos)
@@ -171,7 +172,6 @@ def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, agente_foco):
         resultados["risco"] = future_risco.result()
         resultados["legal"] = future_legal.result()
         
-    # Síntese Master (Aether Omni)
     agente_3_sys = "Você é o AETHER OMNI, o cérebro coordenador. Você recebeu dois relatórios (um de risco e um jurídico). Sua missão é fundir os dois em um DOSSIÊ EXECUTIVO DE ALTO NÍVEL, estruturado em Markdown profissional. Não mencione 'o agente 1 disse' ou 'o agente 2 disse'. Aja como o autor unificado do documento final."
     contexto_sintese = f"--- RELATÓRIO DO DEPARTAMENTO DE RISCO ---\n{resultados['risco']}\n\n--- RELATÓRIO DO DEPARTAMENTO JURÍDICO ---\n{resultados['legal']}"
     
@@ -188,7 +188,7 @@ def gerar_docx_aether(texto_markdown):
     font.size = Pt(11)
     
     header = doc.add_heading('AETHER OMNI - PARECER EXECUTIVO', 0)
-    header.runs[0].font.color.rgb = RGBColor(212, 175, 55) # Dourado Premium
+    header.runs[0].font.color.rgb = RGBColor(212, 175, 55) 
     doc.add_paragraph(f"Auditoria Neural Finalizada em: {time.strftime('%Y-%m-%d %H:%M:%S')} UTC")
     doc.add_paragraph("Classificação: CONFIDENCIAL / PRIVILÉGIO ADVOGADO-CLIENTE")
     doc.add_paragraph("_"*65)
@@ -210,7 +210,7 @@ def gerar_docx_aether(texto_markdown):
     return buffer
 
 # ==========================================
-# 🎨 CSS APEX V132 (INTOCADO - PRESERVADO 100%)
+# 🎨 CSS APEX V132 (INTOCADO - ZERO SCROLL)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -263,7 +263,7 @@ div[data-baseweb="select"] > div {{ background-color: rgba(15, 23, 42, 0.6) !imp
 st.markdown(css_code, unsafe_allow_html=True)
 
 # ==========================================
-# INTERFACE
+# INTERFACE PRINCIPAL
 # ==========================================
 st.markdown(f"""
 <div class="omni-topbar">
@@ -290,13 +290,8 @@ with col_setup:
             st.error("⚠️ CHAVE API GROQ NÃO ENCONTRADA. Configure o st.secrets.")
         elif cmd:
             with st.spinner("Iniciando varredura profunda (RAG & Multi-Agent)..."):
-                # 1. Extração Multimodal (Lê Texto, PDF, Excel e IMAGENS via OCR)
                 texto_arquivos, num_arquivos, usou_ocr = extrator_nexus_v3(up) if up else ("", 0, False)
-                
-                # 2. Orquestração Real em Paralelo com RAG Embutido
                 resposta = orquestrador_omni(cmd, texto_arquivos, ativar_lindb, agente_foco)
-                
-                # 3. Geração Automática do DOCX de Elite
                 docx_buffer = gerar_docx_aether(resposta)
                 
                 st.session_state.res_aether = resposta
@@ -306,7 +301,7 @@ with col_setup:
                     "volume": f"{len(texto_arquivos)/1024:.1f} KB",
                     "tempo": time.strftime("%H:%M:%S"),
                     "risco": "Varredura Completa",
-                    "ocr": "ATIVADO" if usou_ocr else "Standby"
+                    "ocr": "ATIVADO" if usou_ocr else ("Standby" if MODULO_VISAO else "OFFLINE (S/ Lib)")
                 }
             st.rerun() 
         else:
@@ -317,7 +312,7 @@ with col_main:
     st.markdown(f"""
     <div class="custom-kpi-grid">
         <div class="kpi-box"><span class="kpi-title">Documentos Lidos</span><span class="kpi-value">{t['arquivos']}</span></div>
-        <div class="kpi-box"><span class="kpi-title">Volume (RAG Act)</span><span class="kpi-value">{t['volume']}</span></div>
+        <div class="kpi-box"><span class="kpi-title">Volume Processado</span><span class="kpi-value">{t['volume']}</span></div>
         <div class="kpi-box"><span class="kpi-title">Módulo Visão (OCR)</span><span class="kpi-value">{t['ocr']}</span></div>
         <div class="kpi-box"><span class="kpi-title">Status da Missão</span><span class="kpi-value highlight">{t['risco']}</span></div>
     </div>
@@ -326,12 +321,12 @@ with col_main:
     st.markdown('<div class="section-title">Status dos Módulos Especialistas</div>', unsafe_allow_html=True)
     
     if st.session_state.res_aether:
-        st.markdown("""
+        st.markdown(f"""
         <div class="agent-grid">
             <div class="agent-badge">✓ AGENTE RISCO: CONCLUÍDO</div>
             <div class="agent-badge">✓ AGENTE JURÍDICO: CONCLUÍDO</div>
             <div class="agent-badge">✓ AETHER (SÍNTESE): ATIVO</div>
-            <div class="agent-badge">✓ MEMÓRIA VETORIAL (RAG): OK</div>
+            <div class="agent-badge">✓ MEMÓRIA (RAG): {'OK' if MODULO_RAG else 'OFFLINE'}</div>
         </div>
         """, unsafe_allow_html=True)
         
