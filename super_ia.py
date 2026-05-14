@@ -31,9 +31,8 @@ try:
 except ImportError:
     MODULO_VISAO = False
 
-# --- 🧠 MEMÓRIA VETORIAL / RAG (BLINDADA CONTRA O ERRO DA TELA PRETA) ---
+# --- 🧠 MEMÓRIA VETORIAL / RAG (BLINDADA) ---
 try:
-    # Tenta importar da nova estrutura primeiro, depois da antiga
     try:
         from langchain_text_splitters import RecursiveCharacterTextSplitter
     except ImportError:
@@ -46,7 +45,7 @@ except ImportError as e:
     MODULO_RAG = False
 
 # --- ⚙️ CONFIGURAÇÃO DE SEGURANÇA ---
-st.set_page_config(page_title="AETHER OMNI V301", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="AETHER OMNI V302", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
 
 GROQ_KEY = st.secrets.get("GROQ_API_KEY", os.environ.get("GROQ_API_KEY", ""))
 GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
@@ -145,7 +144,8 @@ def chamar_agente_groq(nome_agente, system_prompt, comando, contexto):
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": full_prompt}
             ],
-            model="llama3-70b-8192",
+            # ⚠️ ATUALIZAÇÃO DO MOTOR: O modelo antigo foi aposentado pela Groq. Atualizado para o Llama 3.1.
+            model="llama-3.1-70b-versatile",
             temperature=0.1, 
         )
         return completion.choices[0].message.content
@@ -210,7 +210,7 @@ def gerar_docx_aether(texto_markdown):
     return buffer
 
 # ==========================================
-# 🎨 CSS APEX V132 (INTOCADO - ZERO SCROLL)
+# 🎨 CSS APEX V132 (PRESERVADO - ZERO SCROLL)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
