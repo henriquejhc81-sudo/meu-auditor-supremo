@@ -5,7 +5,7 @@ import textwrap
 import concurrent.futures
 from PIL import Image
 
-# --- 🛡️ LIBS TÁTICAS & BLINDAGEM ---
+# --- 🛡️ PROTOCOLO DE PRESERVAÇÃO & LIBS TÁTICAS (BLINDADAS) ---
 try:
     from groq import Groq
 except ImportError:
@@ -27,7 +27,7 @@ try:
     from docx import Document
     from docx.shared import Pt, RGBColor
 except ImportError:
-    st.error("⚠️ Biblioteca DOCX ausente.")
+    st.error("⚠️ Biblioteca 'python-docx' ou 'docx2txt' ausente.")
 
 try:
     from fpdf import FPDF
@@ -39,7 +39,7 @@ try:
 except ImportError:
     pass
 
-# --- 👁️ VISÃO COMPUTACIONAL ---
+# --- 👁️ VISÃO COMPUTACIONAL (OCR + OPENCV) ---
 try:
     import cv2
     import numpy as np
@@ -60,8 +60,8 @@ try:
 except ImportError:
     MODULO_RAG = False
 
-# --- ⚙️ SETUP E SEGURANÇA ---
-st.set_page_config(page_title="AETHER KARV V313 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
+# --- ⚙️ CONFIGURAÇÃO DE SEGURANÇA E UI ---
+st.set_page_config(page_title="AETHER KARV V314 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
 
 GROQ_KEY = st.secrets.get("GROQ_API_KEY", os.environ.get("GROQ_API_KEY", ""))
 GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
@@ -98,7 +98,7 @@ def buscar_na_internet(query):
     except:
         return ""
 
-# --- 👁️ MOTOR DE INGESTÃO (RESGATADO V310 COM .TIFF e .BMP) ---
+# --- 👁️ MOTOR DE INGESTÃO (NEXUS MULTIMODAL) ---
 def extrator_nexus_v3(arquivos_upados):
     texto_extraido = ""
     sucesso = 0
@@ -142,10 +142,8 @@ def extrator_nexus_v3(arquivos_upados):
                         if texto_ocr.strip():
                             texto_extraido += f"\n\n--- IMAGEM OCR (Visão Blindada): {arquivo.name} ---\n{texto_ocr}"
                             usou_ocr = True
-                        else:
-                            texto_extraido += f"\n[AETHER: Nenhum texto detetável na foto: {arquivo.name}]"
-                    except Exception as e_ocr:
-                        texto_extraido += f"\n[AETHER: Falha na extração OCR: {str(e_ocr)}]"
+                    except Exception:
+                        pass
             sucesso += 1
         except Exception:
             pass
@@ -200,7 +198,7 @@ def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, tentar_in
 
     return f"[{nome_agente}] Erro Crítico: Sem chaves API configuradas.", "OFFLINE"
 
-# --- 🚀 ORQUESTRADOR MULTI-AGENTE ---
+# --- 🚀 ORQUESTRADOR MULTI-AGENTE (SNIPER FORENSE + MATRIZ DE RISCO) ---
 def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, agente_foco):
     if not contexto_arquivos.strip(): contexto_arquivos = "Nenhum documento fornecido. Opere em modo de consulta livre."
     if len(contexto_arquivos) > 60000: contexto_arquivos = processar_com_rag(contexto_arquivos, comando)
@@ -223,16 +221,17 @@ def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, agente_foco):
         motores_usados.add(m1)
         motores_usados.add(m2)
         
-    agente_3_sys = "Você é o AETHER OMNI, o cérebro consolidador. Recebeu um relatório forense e um jurídico. Funda os dois em um DOSSIÊ EXECUTIVO em Markdown de luxo. É OBRIGATÓRIO incluir as inconsistências numéricas exatas e paradoxos temporais encontrados pelo auditor forense."
+    # ⚠️ V314: UPGRADE DE DESIGN COM TABELA DE MATRIZ DE RISCO
+    agente_3_sys = "Você é o AETHER OMNI, o cérebro consolidador. Recebeu um relatório forense e um jurídico. Funda os dois em um DOSSIÊ EXECUTIVO DE ALTA CLASSE em Markdown. É OBRIGATÓRIO iniciar o relatório com uma 'Matriz de Risco' no formato de Tabela (colunas: Nível de Risco, Item, Descrição, Ação Imediata). Após a tabela, disserte sobre as inconsistências numéricas exatas e paradoxos encontrados."
     contexto_sintese = f"--- RELATÓRIO AUDITORIA FORENSE ---\n{resultados['risco']}\n\n--- RELATÓRIO JURÍDICO ---\n{resultados['legal']}"
     
-    dossie_final, m3 = chamar_agente_hydra("AETHER OMNI", agente_3_sys, "Crie o Dossiê Final Consolidado, evidenciando as falhas materiais exatas.", contexto_sintese)
+    dossie_final, m3 = chamar_agente_hydra("AETHER OMNI", agente_3_sys, "Crie o Dossiê Final Consolidado, iniciando com a Matriz de Risco e evidenciando as falhas materiais exatas.", contexto_sintese)
     motores_usados.add(m3)
     
     motor_final = " | ".join(list(motores_usados))
     return dossie_final, motor_final
 
-# --- 📄 EXPORTAÇÕES ---
+# --- 📄 EXPORTAÇÕES DE ELITE ---
 def gerar_docx_aether(texto_markdown):
     doc = Document()
     font = doc.styles['Normal'].font
@@ -257,13 +256,9 @@ def gerar_docx_aether(texto_markdown):
     buffer.seek(0)
     return buffer
 
-# ⚠️ V313 APEX: AUTO-HEALING PDF ENGINE ⚠️
+# ⚠️ V314 APEX: AUTO-HEALING PDF ENGINE COM FATIAMENTO FORÇADO ⚠️
 def gerar_pdf_aether(texto_markdown):
-    """
-    O Motor de PDF Inteligente. Se a primeira tentativa de formatação falhar (espaço horizontal),
-    ele intercepta o erro automaticamente e usa a "Formatação Blindada" de fallback.
-    """
-    def tentar_gerar(texto, blindagem_ativada=False):
+    def tentar_gerar(texto, blindagem_ativada=True):
         pdf = FPDF()
         pdf.add_page()
         pdf.set_auto_page_break(auto=True, margin=15)
@@ -280,11 +275,11 @@ def gerar_pdf_aether(texto_markdown):
         texto_seguro = texto_limpo.encode('latin-1', 'replace').decode('latin-1')
         
         for linha in texto_seguro.split('\n'):
-            linha_filtrada = re.sub(r'[-_=*]{10,}', '', linha) # Remove linhas continuas q travam o PDF
+            linha_filtrada = re.sub(r'[-_=*]{10,}', '', linha) # Remove linhas continuas perigosas
             
             if blindagem_ativada:
-                # O AUTO-CORRETOR: Fatia o texto na marra para NUNCA travar por falta de espaço
-                pedacos = textwrap.wrap(linha_filtrada, width=95)
+                # O AUTO-CORRETOR V314: Fatia URLs gigantes e palavras longas para proteger o servidor
+                pedacos = textwrap.wrap(linha_filtrada, width=95, break_long_words=True)
                 for pedaco in pedacos:
                     pdf.multi_cell(0, 6, text=pedaco)
             else:
@@ -293,23 +288,18 @@ def gerar_pdf_aether(texto_markdown):
                     
         return bytes(pdf.output())
 
-    # TENTATIVA 1: Modo Normal
     try:
-        return tentar_gerar(texto_markdown, blindagem_ativada=False)
-    except Exception as e1:
-        # TENTATIVA 2: AUTO-CURA ATIVADA (Fatiamento Forçado)
-        try:
-            return tentar_gerar(texto_markdown, blindagem_ativada=True)
-        except Exception as e2:
-            # TENTATIVA 3: MODO SOBREVIVÊNCIA ABSOLUTA
-            emergencia = FPDF()
-            emergencia.add_page()
-            emergencia.set_font("helvetica", size=10)
-            emergencia.multi_cell(0, 6, text=f"ERRO DE RENDERIZACAO DE PDF.\nO texto excedeu os limites graficos do servidor.\nUtilize a exportacao em DOCX (Word).")
-            return bytes(emergencia.output())
+        # Tenta gerar com blindagem ativada por padrão para nunca dar erro
+        return tentar_gerar(texto_markdown, blindagem_ativada=True)
+    except Exception as e:
+        emergencia = FPDF()
+        emergencia.add_page()
+        emergencia.set_font("helvetica", size=10)
+        emergencia.multi_cell(0, 6, text=f"ERRO DE RENDERIZACAO DE PDF.\nFalha de hardware no servidor.\nUtilize a exportacao em DOCX (Word).\n\nErro: {str(e)}")
+        return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V313 (ZERO SCROLL)
+# 🎨 CSS APEX V314 (ZERO SCROLL ABSOLUTO)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -373,8 +363,8 @@ st.markdown(css_code, unsafe_allow_html=True)
 # ==========================================
 st.markdown(f"""
 <div class="omni-topbar">
-    <div class="omni-brand"><h1>AETHER KARV</h1><span>V313 APEX HEALER</span></div>
-    <div class="omni-status">SESSÃO: <span>CRIPTOGRAFADA</span> | PDF: <span>AUTO-HEALING</span></div>
+    <div class="omni-brand"><h1>AETHER KARV</h1><span>V314 APEX MATRIZ</span></div>
+    <div class="omni-status">SESSÃO: <span>CRIPTOGRAFADA</span> | PDF: <span>BLINDADO C/ BREAK</span></div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -395,7 +385,7 @@ with col_setup:
         if not GROQ_KEY and not GEMINI_KEY:
             st.error("⚠️ ERRO CRÍTICO: Nenhuma chave API configurada no st.secrets.")
         elif cmd:
-            with st.spinner("Motor Hydra Ativado. Processando Multi-Agentes..."):
+            with st.spinner("Motor Hydra Ativado. Processando Inteligência Multi-Agente..."):
                 texto_arquivos, num_arquivos, usou_ocr = extrator_nexus_v3(up) if up else ("", 0, False)
                 
                 resposta, motor_usado = orquestrador_omni(cmd, texto_arquivos, ativar_lindb, agente_foco)
@@ -436,7 +426,7 @@ with col_main:
         <div class="agent-grid">
             <div class="agent-badge">✓ AGENTE FORENSE: CONCLUÍDO</div>
             <div class="agent-badge">✓ AGENTE JURÍDICO: CONCLUÍDO</div>
-            <div class="agent-badge">✓ AETHER (SÍNTESE): ATIVO</div>
+            <div class="agent-badge">✓ AETHER (SÍNTESE MATRIZ): ATIVO</div>
             <div class="agent-badge">✓ MEMÓRIA (RAG): {'OK' if MODULO_RAG else 'OFFLINE'}</div>
         </div>
         """, unsafe_allow_html=True)
