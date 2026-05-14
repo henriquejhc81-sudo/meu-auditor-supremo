@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import os, time, base64, io
+import os, time, base64, io, re
 import concurrent.futures
 
 # --- 🛡️ PROTOCOLO DE PRESERVAÇÃO & LIBS TÁTICAS (BLINDADAS) ---
@@ -50,7 +50,7 @@ except ImportError as e:
     MODULO_RAG = False
 
 # --- ⚙️ CONFIGURAÇÃO DE SEGURANÇA ---
-st.set_page_config(page_title="AETHER OMNI V306", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="AETHER OMNI V307", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
 
 GROQ_KEY = st.secrets.get("GROQ_API_KEY", os.environ.get("GROQ_API_KEY", ""))
 GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
@@ -174,15 +174,15 @@ def chamar_agente_groq(nome_agente, system_prompt, comando, contexto):
     except Exception as e:
         return f"[{nome_agente}] Falha de comunicação: {str(e)}"
 
-# --- 🚀 ORQUESTRADOR MULTI-AGENTE (ASYNC) COM UPGRADE FORENSE PESADO ---
+# --- 🚀 ORQUESTRADOR MULTI-AGENTE (ASYNC) COM UPGRADE FORENSE V307 ---
 def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, agente_foco):
     if not contexto_arquivos.strip(): contexto_arquivos = "Nenhum documento fornecido. Opere em modo de consulta livre."
     if len(contexto_arquivos) > 60000: contexto_arquivos = processar_com_rag(contexto_arquivos, comando)
     
     blindagem = "DIRETRIZ DE COMPLIANCE: Aplique rigorosamente a interpretação do Art. 22 da LINDB, avaliando responsabilização e contexto real do gestor." if lindb_ativada else ""
     
-    # ⚠️ UPGRADE V306: INJEÇÃO DE "MALDADE" FORENSE E MATEMÁTICA ⚠️
-    agente_1_sys = f"Você é um Auditor Forense Investigativo Sênior. Especialidade: {agente_foco}. CRUZE DADOS COM EXTREMO RIGOR: 1) Verifique OBRIGATORIAMENTE se valores numéricos (R$) batem exatamente com seus valores por extenso. 2) Analise paradoxos cronológicos (ex: leis citadas no futuro ou datas incompatíveis). 3) Aponte multas abusivas e falhas financeiras. Seja implacável e cirúrgico na detecção de fraude e erro material. {blindagem}"
+    # ⚠️ UPGRADE V307: FORÇANDO A COMPARAÇÃO LITERAL ⚠️
+    agente_1_sys = f"Você é um Auditor Forense Investigativo Sênior. Especialidade: {agente_foco}. OBRIGAÇÃO CRÍTICA: Leia cada número no contrato. Se houver um valor numérico (ex: R$ 150.000), você DEVE obrigatoriamente ler o que está escrito por extenso ao lado dele. Se não baterem, aponte a fraude imediatamente. Analise as datas de assinatura vs leis citadas para evitar paradoxos temporais. Aponte multas absurdas. {blindagem}"
     
     agente_2_sys = f"Você é um Advogado Sênior Especialista em Contratos Públicos/Privados. Especialidade: {agente_foco}. Analise buscando nulidades contratuais, furos de competência (como foros internacionais ou taxas de câmbio para contratos locais), violações a leis de licitação e pegadinhas legais. Aponte explicitamente os erros na estrutura jurídica. {blindagem}"
     
@@ -194,10 +194,10 @@ def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, agente_foco):
         resultados["risco"] = future_risco.result()
         resultados["legal"] = future_legal.result()
         
-    agente_3_sys = "Você é o AETHER OMNI, o cérebro consolidador. Você recebeu um relatório forense e um jurídico. Funda os dois em um DOSSIÊ EXECUTIVO DE ALTO NÍVEL em Markdown. Aja como o autor unificado. É ABSOLUTAMENTE OBRIGATÓRIO incluir as inconsistências numéricas (erros de valores por extenso), paradoxos de data e fraudes apontadas pelo Agente Forense."
+    agente_3_sys = "Você é o AETHER OMNI, o cérebro consolidador. Funda os dois relatórios (auditoria e jurídico) em um DOSSIÊ EXECUTIVO DE ALTO NÍVEL em Markdown. Aja como o autor unificado. É ABSOLUTAMENTE OBRIGATÓRIO incluir as inconsistências numéricas (erros de valores por extenso) e fraudes apontadas pelo Agente Forense."
     contexto_sintese = f"--- RELATÓRIO AUDITORIA FORENSE ---\n{resultados['risco']}\n\n--- RELATÓRIO JURÍDICO ---\n{resultados['legal']}"
     
-    dossie_final = chamar_agente_groq("AETHER OMNI", agente_3_sys, "Crie o Dossiê Final Consolidado. NUNCA omita os erros matemáticos e de datas encontrados.", contexto_sintese)
+    dossie_final = chamar_agente_groq("AETHER OMNI", agente_3_sys, "Crie o Dossiê Final Consolidado, não perca nenhuma inconsistência matemática apontada.", contexto_sintese)
     return dossie_final
 
 # --- 📄 EXPORTAÇÃO DOCX (WORD) ---
@@ -228,9 +228,9 @@ def gerar_docx_aether(texto_markdown):
     buffer.seek(0)
     return buffer
 
-# --- 📕 EXPORTAÇÃO PDF BLINDADA V306 ---
+# --- 📕 EXPORTAÇÃO PDF BLINDADA V307 (FIM DO ERRO DE HORIZONTAL SPACE) ---
 def gerar_pdf_aether(texto_markdown):
-    """Gera o PDF aplicando sanitização total de caracteres para evitar corrompimento"""
+    """Gera o PDF com filtro anti-colapso para caracteres longos ou não suportados"""
     try:
         pdf = FPDF()
         pdf.add_page()
@@ -244,33 +244,32 @@ def gerar_pdf_aether(texto_markdown):
         pdf.set_text_color(0, 0, 0)
         pdf.ln(5)
         
-        # Limpeza de Markdown
         texto_limpo = texto_markdown.replace('**', '').replace('### ', '').replace('## ', '').replace('# ', '')
-        
-        # ⚠️ BLINDAGEM DE CODIFICAÇÃO PARA NÃO CORROMPER O ARQUIVO NO DOWNLOAD ⚠️
         texto_seguro = texto_limpo.encode('latin-1', 'replace').decode('latin-1')
         
         for linha in texto_seguro.split('\n'):
-            pdf.multi_cell(0, 6, text=linha)
+            # V307: Elimina linhas contínuas gigantes (ex: ____________) que quebram o renderizador do FPDF
+            linha_filtrada = re.sub(r'[-_]{10,}', '', linha)
+            linha_filtrada = linha_filtrada.replace('\t', '    ')
+            if linha_filtrada.strip():
+                pdf.multi_cell(0, 6, text=linha_filtrada)
         
-        # FPDF2 usa bytearray nativo no output. O cast para bytes() garante compatibilidade de download
         try:
             return bytes(pdf.output())
         except TypeError:
             return pdf.output(dest='S').encode('latin-1')
     except Exception as e:
-        # Fallback de emergência absoluto
         fallback_pdf = FPDF()
         fallback_pdf.add_page()
         fallback_pdf.set_font("helvetica", size=10)
-        fallback_pdf.multi_cell(0, 6, text=f"ERRO DE RENDERIZACAO DE PDF NO SERVIDOR.\n\nPor favor, utilize a exportacao em DOCX (Word) ou TXT.\n\nDetalhe do erro interno: {str(e)}")
+        fallback_pdf.multi_cell(0, 6, text=f"ERRO DE RENDERIZACAO DE PDF NO SERVIDOR.\n\nUtilize a exportacao em DOCX (Word).\n\nErro: {str(e)}")
         try:
             return bytes(fallback_pdf.output())
         except:
             return fallback_pdf.output(dest='S').encode('latin-1')
 
 # ==========================================
-# 🎨 CSS APEX V306 (MANTIDO ZERO SCROLL)
+# 🎨 CSS APEX V307 (MANTIDO ZERO SCROLL E DESIGN PREMIUM)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -286,6 +285,7 @@ html, body {{ overflow: hidden !important; height: 100vh !important; width: 100v
 .omni-topbar {{ display: flex; justify-content: space-between; align-items: center; background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(212, 175, 55, 0.15); padding: 6px 20px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); flex-shrink: 0; }}
 .omni-brand {{ display: flex; align-items: center; gap: 12px; }}
 .omni-brand h1 {{ margin: 0; font-family: 'Inter', sans-serif; font-size: 1.1rem; color: #f8fafc; font-weight: 700; letter-spacing: 0.5px; }}
+.omni-brand span {{ color: #D4AF37; font-size: 0.65rem; font-weight: 700; letter-spacing: 1px; border: 1px solid rgba(212, 175, 55, 0.4); padding: 2px 6px; border-radius: 6px; background: rgba(212, 175, 55, 0.05); text-transform: uppercase; }}
 .omni-status {{ font-size: 0.7rem; color: #94a3b8; font-weight: 500; }}
 .omni-status span {{ color: #D4AF37; font-weight: 600; }}
 
@@ -355,11 +355,9 @@ with col_setup:
         if not GROQ_KEY:
             st.error("⚠️ CHAVE API GROQ NÃO ENCONTRADA. Configure o st.secrets.")
         elif cmd:
-            with st.spinner("Iniciando varredura profunda forense..."):
+            with st.spinner("Iniciando varredura profunda (RAG & Multi-Agent com Healer Engine)..."):
                 texto_arquivos, num_arquivos, usou_ocr = extrator_nexus_v3(up) if up else ("", 0, False)
                 resposta = orquestrador_omni(cmd, texto_arquivos, ativar_lindb, agente_foco)
-                
-                # Geração de arquivos exportáveis
                 docx_buffer = gerar_docx_aether(resposta)
                 pdf_buffer = gerar_pdf_aether(resposta)
                 
@@ -393,7 +391,7 @@ with col_main:
     if st.session_state.res_aether:
         st.markdown(f"""
         <div class="agent-grid">
-            <div class="agent-badge">✓ AGENTE FORENSE: CONCLUÍDO</div>
+            <div class="agent-badge">✓ AGENTE RISCO: CONCLUÍDO</div>
             <div class="agent-badge">✓ AGENTE JURÍDICO: CONCLUÍDO</div>
             <div class="agent-badge">✓ AETHER (SÍNTESE): ATIVO</div>
             <div class="agent-badge">✓ MEMÓRIA (RAG): {'OK' if MODULO_RAG else 'OFFLINE'}</div>
@@ -416,7 +414,6 @@ with col_main:
 
         st.markdown('<div class="section-title" style="margin-top:10px;">Parecer Jurídico (Resultado)</div>', unsafe_allow_html=True)
         
-        # CONTAINER NATIVO DE ROLAGEM 
         with st.container(height=350):
             st.markdown(st.session_state.res_aether)
             
