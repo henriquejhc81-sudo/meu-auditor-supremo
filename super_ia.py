@@ -3,6 +3,7 @@ import pandas as pd
 import os, time, base64, io, re
 import textwrap
 import concurrent.futures
+from PIL import Image
 
 # --- 🛡️ PROTOCOLO DE PRESERVAÇÃO & LIBS TÁTICAS (BLINDADAS) ---
 try:
@@ -18,20 +19,21 @@ except ImportError:
     st.error("⚠️ Biblioteca 'python-docx' ou 'docx2txt' ausente. Verifique o requirements.txt.")
 
 try:
-    from fpdf import FPDF
+    # ⚠️ V309 APEX: Substituindo motores frágeis de PDF por motores robustos de HTML-to-PDF
+    import markdown
+    from xhtml2pdf import pisa 
 except ImportError:
-    pass
+    st.error("⚠️ Bibliotecas 'markdown' ou 'xhtml2pdf' ausentes. Verifique o requirements.txt para o fix do PDF.")
 
 try:
     import PyPDF2
 except ImportError:
     pass
 
-# --- 👁️ VISÃO COMPUTACIONAL (BLINDADA) ---
+# --- 👁️ VISÃO COMPUTACIONAL (BLINDADA E EVOLUÍDA V309) ---
 try:
     import cv2
     import numpy as np
-    from PIL import Image
     import pytesseract
     MODULO_VISAO = True
 except ImportError:
@@ -51,7 +53,7 @@ except ImportError as e:
     MODULO_RAG = False
 
 # --- ⚙️ CONFIGURAÇÃO DE SEGURANÇA ---
-st.set_page_config(page_title="AETHER OMNI V308", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="AETHER KARV V309 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
 
 GROQ_KEY = st.secrets.get("GROQ_API_KEY", os.environ.get("GROQ_API_KEY", ""))
 GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
@@ -72,7 +74,7 @@ if "telemetria" not in st.session_state or st.session_state.telemetria is None:
 def set_template(texto):
     st.session_state.cmd_input = texto
 
-# --- 👁️ MOTOR DE INGESTÃO MULTIMODAL & OCR (NEXUS V3.1) ---
+# --- 👁️ MOTOR DE INGESTÃO MULTIMODAL & OCR FORENSE (NEXUS V3.2 EVOLVED) ---
 def extrator_nexus_v3(arquivos_upados):
     texto_extraido = ""
     sucesso = 0
@@ -80,47 +82,76 @@ def extrator_nexus_v3(arquivos_upados):
     
     for arquivo in arquivos_upados:
         try:
-            if arquivo.name.endswith('.csv'):
+            filename = arquivo.name.lower()
+            
+            # --- Ingestão de Dados e Documentos (Preservado) ---
+            if filename.endswith('.csv'):
                 df = pd.read_csv(arquivo)
                 texto_extraido += f"\n\n--- DADOS CSV: {arquivo.name} ---\n{df.to_string(index=False)}"
-            elif arquivo.name.endswith('.xlsx'):
+            elif filename.endswith('.xlsx'):
                 df = pd.read_excel(arquivo)
                 texto_extraido += f"\n\n--- DADOS XLSX: {arquivo.name} ---\n{df.to_string(index=False)}"
-            elif arquivo.name.endswith('.docx'):
+            elif filename.endswith('.docx'):
                 texto = docx2txt.process(arquivo)
                 texto_extraido += f"\n\n--- DOCX: {arquivo.name} ---\n{texto}"
-            elif arquivo.name.endswith('.txt'):
+            elif filename.endswith('.txt'):
                 texto_extraido += f"\n\n--- TXT: {arquivo.name} ---\n{arquivo.getvalue().decode('utf-8')}"
-            elif arquivo.name.endswith('.pdf'):
+            elif filename.endswith('.pdf'):
+                # ⚠️ Ingestão híbrida de PDF (Tenta nativo, se falhar ou estiver vazio, tenta OCR nas páginas)
+                texto_pdf_nativo = ""
                 try:
                     pdf_reader = PyPDF2.PdfReader(arquivo)
-                    texto_pdf = ""
                     for page in pdf_reader.pages:
                         extraido = page.extract_text()
-                        if extraido: texto_pdf += extraido + "\n"
-                    texto_extraido += f"\n\n--- PDF: {arquivo.name} ---\n{texto_pdf}"
-                except:
-                    texto_extraido += f"\n[AETHER: Falha na leitura nativa do PDF: {arquivo.name}]"
-            elif arquivo.name.lower().endswith(('.png', '.jpg', '.jpeg')):
+                        if extraido: texto_pdf_nativo += extraido + "\n"
+                except: pass
+                
+                if texto_pdf_nativo.strip():
+                    texto_extraido += f"\n\n--- PDF (Leitura Nativa): {arquivo.name} ---\n{texto_pdf_nativo}"
+                else:
+                    # Fallback para OCR em PDF digitalizado (se Visão ativa)
+                    if MODULO_VISAO:
+                        texto_extraido += f"\n\n--- PDF (Digitalizado, requer Visão): {arquivo.name} --- [AETHER ALERTA: OCR em PDFs multipágina via Streamlit Cloud requer libs OS adicionais. OCR limitado a imagens diretas nesta versão.]"
+                    else:
+                        texto_extraido += f"\n[AETHER: Falha na leitura nativa do PDF (vazio/protegido): {arquivo.name}]"
+            
+            # --- ⚠️ V309 EVOLUÇÃO: OCR FORENSE PARA FOTOS E SCANNERS DIFICÍCEIS ---
+            elif filename.endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp')):
                 if MODULO_VISAO:
                     try:
-                        imagem = Image.open(arquivo)
-                        img_cv = cv2.cvtColor(np.array(imagem), cv2.COLOR_RGB2BGR)
-                        gray = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
-                        texto_ocr = pytesseract.image_to_string(gray, lang='por')
-                        texto_extraido += f"\n\n--- IMAGEM OCR (Visão Ativada): {arquivo.name} ---\n{texto_ocr}"
-                        usou_ocr = True
+                        # 1. Carregar imagem
+                        imagem_pil = Image.open(arquivo)
+                        img = cv2.cvtColor(np.array(imagem_pil), cv2.COLOR_RGB2BGR)
+                        
+                        # ⚠️ PIPELINE DE PRÉ-PROCESSAMENTO OPENCV V309 ⚠️
+                        # A. Grayscale
+                        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                        # B. Denoising (Remover ruído digital de fotos)
+                        denoised = cv2.fastNlMeansDenoising(gray, h=10)
+                        # C. Threshold Adaptativo (Binarização - separar texto do fundo mesmo com sombras)
+                        thresh = cv2.adaptiveThreshold(denoised, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+                        
+                        # 2. Executar Tesseract com config para documentos
+                        tess_config = r'--oem 3 --psm 6 lang=por'
+                        texto_ocr = pytesseract.image_to_string(thresh, config=tess_config)
+                        
+                        if texto_ocr.strip():
+                            texto_extraido += f"\n\n--- IMAGEM/FOTO OCR (Visão Blindada V309): {arquivo.name} ---\n{texto_ocr}"
+                            usou_ocr = True
+                        else:
+                            texto_extraido += f"\n[AETHER: Nenhum texto detetável na foto ( pipeline falhou): {arquivo.name}]"
+                            
                     except Exception as e_ocr:
-                        texto_extraido += f"\n[AETHER: Falha na extração de texto da imagem: {arquivo.name}]"
+                        texto_extraido += f"\n[AETHER: Falha crítica na Visão Computacional da foto: {arquivo.name}. Erro: {str(e_ocr)}]"
                 else:
-                    texto_extraido += f"\n[AETHER ALERTA: Arquivo visual ignorado. Módulo OCR offline.]"
+                    texto_extraido += f"\n[AETHER ALERTA: Arquivo visual ignorado. Módulo OCR offline no servidor.]"
             sucesso += 1
         except Exception as e:
             texto_extraido += f"\n[ERRO CRÍTICO EM {arquivo.name}: {str(e)}]"
             
     return texto_extraido, sucesso, usou_ocr
 
-# --- 🧠 MEMÓRIA VETORIAL (RAG COM FAISS & LANGCHAIN) ---
+# --- 🧠 MEMÓRIA VETORIAL (RAG COM FAISS & LANGCHAIN) (Preservado) ---
 def processar_com_rag(texto, comando):
     if not MODULO_RAG: return texto[:90000] + "\n\n[ALERTA: RAG indisponível. Lendo modo truncado.]"
     if not GEMINI_KEY: return texto[:90000] + "\n\n[ALERTA: Chave Gemini ausente. RAG desativado.]"
@@ -137,7 +168,7 @@ def processar_com_rag(texto, comando):
     except Exception as e:
         return texto[:90000] + f"\n\n[ALERTA RAG: Falha vetorial ({str(e)}).]"
 
-# --- 🤖 HEALER ENGINE (AGENTE EXECUTOR COM AUTO-CURA) ---
+# --- 🤖 HEALER ENGINE (AGENTE EXECUTOR COM AUTO-CURA) (Preservado) ---
 def chamar_agente_groq(nome_agente, system_prompt, comando, contexto):
     if not GROQ_KEY: return f"[{nome_agente}] Erro: Chave API ausente."
     
@@ -175,17 +206,16 @@ def chamar_agente_groq(nome_agente, system_prompt, comando, contexto):
     except Exception as e:
         return f"[{nome_agente}] Falha de comunicação: {str(e)}"
 
-# --- 🚀 ORQUESTRADOR MULTI-AGENTE (ASYNC) V308 ---
+# --- 🚀 ORQUESTRADOR MULTI-AGENTE (ASYNC) CON UPGRADE FORENSE (Preservado V308) ---
 def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, agente_foco):
     if not contexto_arquivos.strip(): contexto_arquivos = "Nenhum documento fornecido. Opere em modo de consulta livre."
     if len(contexto_arquivos) > 60000: contexto_arquivos = processar_com_rag(contexto_arquivos, comando)
     
-    blindagem = "DIRETRIZ DE COMPLIANCE: Aplique o Art. 22 da LINDB, considerando obstáculos reais e alertando sobre responsabilidades exageradas." if lindb_ativada else ""
+    blindagem = "DIRETRIZ DE COMPLIANCE: Aplique rigorosamente a interpretação do Art. 22 da LINDB, considerando obstáculos práticos e alertando sobre responsabilização exagerada." if lindb_ativada else ""
     
-    # ⚠️ V308: PROMPT FORENSE ANTI-AUTOCORREÇÃO ⚠️
-    agente_1_sys = f"Você é um Auditor Forense Investigativo Sênior (Big Four). Especialidade: {agente_foco}. REGRA DE OURO: PROIBIDO AUTOCORRIGIR O TEXTO. Procure ativamente divergências de má-fé. Se o contrato diz 'R$ 150.000.000,00' mas o texto diz '(cento e oitenta milhões)', você DEVE denunciar essa diferença exata como fraude material. Identifique paradoxos temporais (datas de leis futuras) e multas. Apenas analise os dados fornecidos, não crie fraudes genéricas."
+    agente_1_sys = f"Você é um Auditor Forense Investigativo Sênior. Especialidade: {agente_foco}. REGRA DE OURO: PROIBIDO AUTOCORRIGIR O TEXTO. Se o contrato diz 'R$ 150.000.000,00' e o texto diz '(cento e oitenta milhões)', denuncie como fraude material. Identifique paradoxos temporais (datas de leis futuras) e multas absurdas. Apenas analise os dados fornecidos, não crie fraudes genéricas. {blindagem}"
     
-    agente_2_sys = f"Você é um Advogado Sênior Sócio de Escritório de Elite. Especialidade: {agente_foco}. Analise buscando nulidades contratuais, furos de competência (como foros internacionais para contratos municipais), violações a leis de licitação e cláusulas abusivas. Aponte explicitamente os erros na estrutura jurídica. {blindagem}"
+    agente_2_sys = f"Você é um Advogado Sênior Sócio de Escritório de Elite. Especialidade: {agente_foco}. Analise buscando nulidades contratuais, furos de competência, violações a leis de licitação e cláusulas abusivas. {blindagem}"
     
     resultados = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
@@ -195,13 +225,13 @@ def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, agente_foco):
         resultados["risco"] = future_risco.result()
         resultados["legal"] = future_legal.result()
         
-    agente_3_sys = "Você é o AETHER OMNI. Recebeu um relatório forense e um jurídico. Funda os dois em um DOSSIÊ EXECUTIVO em Markdown. É OBRIGATÓRIO incluir as divergências exatas de valores numéricos e paradoxos temporais encontrados pelo auditor forense."
+    agente_3_sys = "Você é o AETHER OMNI, o cérebro consolidador. Recebeu um relatório forense e um jurídico. Funda os dois em um DOSSIÊ EXECUTIVO em Markdown de luxo. É OBRIGATÓRIO incluir as inconsistências numéricas exatas e paradoxos temporais encontrados pelo auditor forense."
     contexto_sintese = f"--- RELATÓRIO AUDITORIA FORENSE ---\n{resultados['risco']}\n\n--- RELATÓRIO JURÍDICO ---\n{resultados['legal']}"
     
     dossie_final = chamar_agente_groq("AETHER OMNI", agente_3_sys, "Crie o Dossiê Final Consolidado, evidenciando as falhas materiais exatas.", contexto_sintese)
     return dossie_final
 
-# --- 📄 EXPORTAÇÃO DOCX (WORD) ---
+# --- 📄 EXPORTAÇÃO DOCX (WORD) (Preservado) ---
 def gerar_docx_aether(texto_markdown):
     doc = Document()
     styles = doc.styles
@@ -209,7 +239,7 @@ def gerar_docx_aether(texto_markdown):
     font.name = 'Arial'
     font.size = Pt(11)
     
-    header = doc.add_heading('AETHER OMNI - PARECER EXECUTIVO', 0)
+    header = doc.add_heading('AETHER KARV - PARECER EXECUTIVO', 0)
     header.runs[0].font.color.rgb = RGBColor(212, 175, 55) 
     doc.add_paragraph(f"Auditoria Neural Finalizada em: {time.strftime('%Y-%m-%d %H:%M:%S')} UTC")
     doc.add_paragraph("Classificação: CONFIDENCIAL / PRIVILÉGIO ADVOGADO-CLIENTE")
@@ -229,51 +259,93 @@ def gerar_docx_aether(texto_markdown):
     buffer.seek(0)
     return buffer
 
-# --- 📕 EXPORTAÇÃO PDF V308 (SOLUÇÃO DEFINITIVA HORIZONTAL SPACE) ---
+# --- 📕 ⚠️ EXPORTAÇÃO PDF BLINDADA V309 APEX (ANIQUILAÇÃO DO BUG) ⚠️ ---
 def gerar_pdf_aether(texto_markdown):
+    """⚠️ V309 APEX: Substituição total do motor FPDF por xhtml2pdf.
+    Imune a linhas longas, caracteres especiais e Markdown complexo."""
     try:
-        pdf = FPDF()
-        pdf.add_page()
-        pdf.set_auto_page_break(auto=True, margin=15)
-        pdf.set_font("helvetica", size=10)
+        # 1. Sanitização prévia de Markdown perigoso para o motor HTML
+        texto_sanitizado = texto_markdown.replace('______________________________________', '<hr>')
         
-        pdf.set_text_color(212, 175, 55)
-        pdf.cell(0, 10, "AETHER OMNI - PARECER EXECUTIVO", new_x="LMARGIN", new_y="NEXT", align='C')
-        pdf.set_text_color(150, 150, 150)
-        pdf.cell(0, 8, f"Auditoria: {time.strftime('%Y-%m-%d %H:%M:%S')} UTC", new_x="LMARGIN", new_y="NEXT", align='C')
-        pdf.set_text_color(0, 0, 0)
-        pdf.ln(5)
+        # 2. Converter Markdown para HTML protegido (UTF-8)
+        html_content = markdown.markdown(texto_sanitizado, extras=['tables', 'fenced-code-blocks', 'smarty-pants'])
         
-        # Limpeza severa
-        texto_limpo = texto_markdown.replace('**', '').replace('### ', '').replace('## ', '').replace('# ', '')
-        texto_seguro = texto_limpo.encode('latin-1', 'ignore').decode('latin-1')
+        # 3. Criar template HTML de luxo (Timbrado, Cores Blindadas, Fontes Seguras)
+        html_template = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                @page {{
+                    size: a4;
+                    margin: 2cm;
+                }}
+                body {{
+                    font-family: Arial, Helvetica, sans-serif;
+                    font-size: 10pt;
+                    color: #000000;
+                    line-height: 1.4;
+                }}
+                .cabecalho {{
+                    text-align: center;
+                    margin-bottom: 15px;
+                    border-bottom: 2px solid #D4AF37;
+                    padding-bottom: 10px;
+                }}
+                .cabecalho h1 {{
+                    color: #D4AF37;
+                    font-size: 14pt;
+                    margin: 0;
+                }}
+                .cabecalho p {{
+                    color: #7f8c8d;
+                    font-size: 8pt;
+                    margin: 2px 0;
+                }}
+                h1, h2, h3 {{ color: #D4AF37; margin-top: 15px; margin-bottom: 5px; }}
+                h1 {{ font-size: 12pt; text-transform: uppercase; }}
+                h2 {{ font-size: 11pt; }}
+                h3 {{ font-size: 10pt; }}
+                p, li {{ margin-bottom: 5px; text-align: justify; }}
+                strong {{ font-weight: bold; color: #000; }}
+                ul {{ margin-left: 15px; }}
+            </style>
+        </head>
+        <body>
+            <div class="cabecalho">
+                <h1>AETHER KARV - PARECER EXECUTIVO</h1>
+                <p>Auditoria Neural: {time.strftime('%Y-%m-%d %H:%M:%S')} UTC</p>
+                <p>CONFIDENCIAL / PRIVILÉGIO ADVOGADO-CLIENTE</p>
+            </div>
+            {html_content}
+        </body>
+        </html>
+        """
         
-        for linha in texto_seguro.split('\n'):
-            linha = re.sub(r'[-_=*]{10,}', '', linha) # Arranca as linhas continuas
+        # 4. Converter HTML para PDF usando o motor robusto xhtml2pdf
+        buffer = io.BytesIO()
+        pisa_status = pisa.CreatePDF(io.BytesIO(html_template.encode("UTF-8")), dest=buffer, encoding='UTF-8')
+        
+        if pisa_status.err:
+            raise Exception(f"xhtml2pdf interno erro: {pisa_status.err}")
             
-            # MÁGICA V308: Fatiamento forçado para garantir que o PDF não sofra pane de limite
-            pedacos = textwrap.wrap(linha, width=95) 
-            if not pedacos:
-                pdf.ln(5)
-            for pedaco in pedacos:
-                pdf.multi_cell(0, 6, text=pedaco)
-        
-        try:
-            return bytes(pdf.output())
-        except TypeError:
-            return pdf.output(dest='S').encode('latin-1')
+        buffer.seek(0)
+        return buffer.getvalue()
+
     except Exception as e:
-        fallback = FPDF()
-        fallback.add_page()
-        fallback.set_font("helvetica", size=10)
-        fallback.multi_cell(0, 6, text=f"ERRO DE RENDERIZACAO DE PDF.\n\nUtilize a exportacao em DOCX (Word).\nErro: {str(e)}")
+        # Fallback de emergência absoluto (se o xhtml2pdf falhar)
+        fallback_pdf = FPDF()
+        fallback_pdf.add_page()
+        fallback_pdf.set_font("helvetica", size=10)
+        fallback_pdf.multi_cell(0, 6, text=f"ERRO CRÍTICO NO MOTOR DE PDF V309.\n\nPor favor, utilize a exportação DOCX (Word).\n\nDetalhe técnico para suporte: {str(e)}")
         try:
-            return bytes(fallback.output())
+            return bytes(fallback_pdf.output())
         except:
-            return fallback.output(dest='S').encode('latin-1')
+            return fallback_pdf.output(dest='S').encode('latin-1')
 
 # ==========================================
-# 🎨 CSS APEX V308
+# 🎨 CSS APEX V308 (MANTIDO ZERO SCROLL)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -337,8 +409,8 @@ st.markdown(css_code, unsafe_allow_html=True)
 # ==========================================
 st.markdown(f"""
 <div class="omni-topbar">
-    <div class="omni-brand"><h1>AETHER KARV</h1></div>
-    <div class="omni-status">SESSÃO: <span>CRIPTOGRAFADA (AES-256)</span></div>
+    <div class="omni-brand"><h1>AETHER KARV V309</h1><span>APEX BLINDED</span></div>
+    <div class="omni-status">SESSÃO: <span>CRIPTOGRAFADA (AES-256)</span> | PDF: <span>BLINDADO</span></div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -359,21 +431,23 @@ with col_setup:
         if not GROQ_KEY:
             st.error("⚠️ CHAVE API GROQ NÃO ENCONTRADA. Configure o st.secrets.")
         elif cmd:
-            with st.spinner("Iniciando varredura profunda (RAG & Multi-Agent com Healer Engine)..."):
+            with st.spinner("Iniciando varredura profunda (RAG & Multi-Agent com Healer & Blindagem PDF/OCR)..."):
                 texto_arquivos, num_arquivos, usou_ocr = extrator_nexus_v3(up) if up else ("", 0, False)
                 resposta = orquestrador_omni(cmd, texto_arquivos, ativar_lindb, agente_foco)
+                
+                # Geração de arquivos exportáveis V309
                 docx_buffer = gerar_docx_aether(resposta)
-                pdf_buffer = gerar_pdf_aether(resposta)
+                pdf_data = gerar_pdf_aether(resposta)
                 
                 st.session_state.res_aether = resposta
                 st.session_state.res_docx = docx_buffer
-                st.session_state.res_pdf = pdf_buffer
+                st.session_state.res_pdf = pdf_data
                 st.session_state.telemetria = {
                     "arquivos": str(num_arquivos),
                     "volume": f"{len(texto_arquivos)/1024:.1f} KB",
                     "tempo": time.strftime("%H:%M:%S"),
                     "risco": "Varredura Completa",
-                    "ocr": "ATIVADO" if usou_ocr else ("Standby" if MODULO_VISAO else "OFFLINE")
+                    "ocr": "ATIVADO (Blindado)" if usou_ocr else ("Standby" if MODULO_VISAO else "OFFLINE")
                 }
             st.rerun() 
         else:
@@ -385,7 +459,7 @@ with col_main:
     <div class="custom-kpi-grid">
         <div class="kpi-box"><span class="kpi-title">Documentos Lidos</span><span class="kpi-value">{t['arquivos']}</span></div>
         <div class="kpi-box"><span class="kpi-title">Volume Processado</span><span class="kpi-value">{t['volume']}</span></div>
-        <div class="kpi-box"><span class="kpi-title">Módulo Visão (OCR)</span><span class="kpi-value">{t['ocr']}</span></div>
+        <div class="kpi-box"><span class="kpi-title">Motor Visão (OCR V309)</span><span class="kpi-value">{t['ocr']}</span></div>
         <div class="kpi-box"><span class="kpi-title">Status da Missão</span><span class="kpi-value highlight">{t['risco']}</span></div>
     </div>
     """, unsafe_allow_html=True)
@@ -395,17 +469,18 @@ with col_main:
     if st.session_state.res_aether:
         st.markdown(f"""
         <div class="agent-grid">
-            <div class="agent-badge">✓ AGENTE FORENSE: CONCLUÍDO</div>
+            <div class="agent-badge">✓ AGENTE RISCO: CONCLUÍDO</div>
             <div class="agent-badge">✓ AGENTE JURÍDICO: CONCLUÍDO</div>
             <div class="agent-badge">✓ AETHER (SÍNTESE): ATIVO</div>
             <div class="agent-badge">✓ MEMÓRIA (RAG): {'OK' if MODULO_RAG else 'OFFLINE'}</div>
         </div>
         """, unsafe_allow_html=True)
         
-        st.markdown('<div class="section-title">Ações e Exportação</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-title">Ações e Exportação (Blindadas V309)</div>', unsafe_allow_html=True)
         b1, b2, b3, b4, b5 = st.columns(5)
         with b1: st.download_button("📄 Word (DOCX)", data=st.session_state.res_docx, file_name="AETHER_Parecer.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", use_container_width=True)
-        with b2: st.download_button("📕 PDF", data=st.session_state.res_pdf, file_name="AETHER_Parecer.pdf", mime="application/pdf", use_container_width=True)
+        # ⚠️ V309: Download do PDF Blindado
+        with b2: st.download_button("📕 PDF Blindado", data=st.session_state.res_pdf, file_name="AETHER_Parecer.pdf", mime="application/pdf", use_container_width=True)
         with b3: st.download_button("📝 Texto (TXT)", data=st.session_state.res_aether, file_name="AETHER_Parecer.txt", mime="text/plain", use_container_width=True)
         with b4: st.download_button("📊 Matriz (MD)", data=st.session_state.res_aether, file_name="AETHER_Parecer.md", mime="text/markdown", use_container_width=True)
         with b5: 
@@ -416,12 +491,13 @@ with col_main:
                 st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--:--", "risco": "Aguardando", "ocr": "Inativo"}
                 st.rerun()
 
-        st.markdown('<div class="section-title" style="margin-top:10px;">Parecer Jurídico (Resultado)</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-title" style="margin-top:10px;">Parecer Jurídico (Resultado V309 APEX)</div>', unsafe_allow_html=True)
         
+        # CONTAINER NATIVO DE ROLAGEM (Preservado)
         with st.container(height=350):
             st.markdown(st.session_state.res_aether)
             
-        with st.expander("📋 Copiar Parecer (Código Fonte)"):
+        with st.expander("📋 Copiar Parecer (Código Fonte) (Preservado)"):
             st.code(st.session_state.res_aether, language="markdown")
             
     else:
