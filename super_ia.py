@@ -45,7 +45,7 @@ except ImportError as e:
     MODULO_RAG = False
 
 # --- ⚙️ CONFIGURAÇÃO DE SEGURANÇA ---
-st.set_page_config(page_title="AETHER OMNI V302", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="AETHER OMNI V303", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
 
 GROQ_KEY = st.secrets.get("GROQ_API_KEY", os.environ.get("GROQ_API_KEY", ""))
 GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
@@ -133,24 +133,46 @@ def processar_com_rag(texto, comando):
     except Exception as e:
         return texto[:90000] + f"\n\n[ALERTA AETHER RAG: Falha no processamento vetorial ({str(e)}). Operando em modo texto bruto.]"
 
-# --- 🤖 AGENTE EXECUTOR ---
+# --- 🤖 HEALER ENGINE (AGENTE EXECUTOR COM AUTO-CURA E FALLBACK INVISÍVEL) ---
 def chamar_agente_groq(nome_agente, system_prompt, comando, contexto):
     if not GROQ_KEY: return f"[{nome_agente}] Erro: Chave API ausente. Configure st.secrets."
+    
+    # ⚠️ MÁGICA DA V303: Arsenal de Modelos. Se um cair, ele tenta o próximo invisivelmente.
+    arsenal_modelos = [
+        "llama-3.3-70b-versatile",    # Modelo mais novo e poderoso
+        "llama-3.2-90b-text-preview", # Backup super-inteligente
+        "llama-3.1-8b-instant",       # Rápido e confiável
+        "mixtral-8x7b-32768"          # Arquitetura diferente para garantia total
+    ]
+    
     try:
         client = Groq(api_key=GROQ_KEY)
         full_prompt = f"DIRETRIZ DE INVESTIGAÇÃO: {comando}\n\nEVIDÊNCIAS COLETADAS:\n{contexto}"
-        completion = client.chat.completions.create(
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": full_prompt}
-            ],
-            # ⚠️ ATUALIZAÇÃO DO MOTOR: O modelo antigo foi aposentado pela Groq. Atualizado para o Llama 3.1.
-            model="llama-3.1-70b-versatile",
-            temperature=0.1, 
-        )
-        return completion.choices[0].message.content
+        
+        for modelo_ativo in arsenal_modelos:
+            try:
+                completion = client.chat.completions.create(
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": full_prompt}
+                    ],
+                    model=modelo_ativo,
+                    temperature=0.1, 
+                )
+                return completion.choices[0].message.content
+            except Exception as e:
+                erro_msg = str(e).lower()
+                # Se o modelo foi desligado ou não existe, ignora e tenta o próximo do arsenal
+                if "decommissioned" in erro_msg or "not found" in erro_msg or "offline" in erro_msg:
+                    continue 
+                else:
+                    # Se for outro erro (ex: falta de internet), mostra o erro
+                    return f"[{nome_agente}] Falha na rede/API: {str(e)}"
+        
+        return f"[{nome_agente}] Healer Engine: Todos os modelos da frota estão offline no momento."
+        
     except Exception as e:
-        return f"[{nome_agente}] Falha de rede/API: {str(e)}"
+        return f"[{nome_agente}] Falha de comunicação principal: {str(e)}"
 
 # --- 🚀 ORQUESTRADOR MULTI-AGENTE (ASYNC) ---
 def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, agente_foco):
@@ -289,7 +311,7 @@ with col_setup:
         if not GROQ_KEY:
             st.error("⚠️ CHAVE API GROQ NÃO ENCONTRADA. Configure o st.secrets.")
         elif cmd:
-            with st.spinner("Iniciando varredura profunda (RAG & Multi-Agent)..."):
+            with st.spinner("Iniciando varredura profunda (RAG & Multi-Agent com Healer Engine)..."):
                 texto_arquivos, num_arquivos, usou_ocr = extrator_nexus_v3(up) if up else ("", 0, False)
                 resposta = orquestrador_omni(cmd, texto_arquivos, ativar_lindb, agente_foco)
                 docx_buffer = gerar_docx_aether(resposta)
