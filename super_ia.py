@@ -61,7 +61,7 @@ except ImportError:
     MODULO_RAG = False
 
 # --- ⚙️ CONFIGURAÇÃO DE SEGURANÇA E UI ---
-st.set_page_config(page_title="AETHER KARV V314 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="AETHER KARV V315 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
 
 GROQ_KEY = st.secrets.get("GROQ_API_KEY", os.environ.get("GROQ_API_KEY", ""))
 GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
@@ -198,16 +198,16 @@ def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, tentar_in
 
     return f"[{nome_agente}] Erro Crítico: Sem chaves API configuradas.", "OFFLINE"
 
-# --- 🚀 ORQUESTRADOR MULTI-AGENTE (SNIPER FORENSE + MATRIZ DE RISCO) ---
+# --- 🚀 ORQUESTRADOR MULTI-AGENTE (V315: TONE SÊNIOR + TABELAS MARkDOWN FORÇADAS) ---
 def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, agente_foco):
     if not contexto_arquivos.strip(): contexto_arquivos = "Nenhum documento fornecido. Opere em modo de consulta livre."
     if len(contexto_arquivos) > 60000: contexto_arquivos = processar_com_rag(contexto_arquivos, comando)
     
-    blindagem = "DIRETRIZ DE COMPLIANCE: Aplique rigorosamente a interpretação do Art. 22 da LINDB, considerando obstáculos práticos e alertando sobre responsabilização exagerada." if lindb_ativada else ""
+    blindagem = "Aplique rigorosamente o Art. 22 da LINDB para invalidar cláusulas que punam gestores por fatores macroeconômicos fora de seu controle." if lindb_ativada else ""
     
-    agente_1_sys = f"Você é um Auditor Forense Investigativo Sênior. Especialidade: {agente_foco}. REGRA DE OURO: PROIBIDO AUTOCORRIGIR O TEXTO. Se o contrato diz 'R$ 150.000.000,00' e o texto diz '(cento e oitenta milhões)', denuncie como fraude material. Identifique paradoxos temporais (datas de leis futuras) e multas absurdas. Apenas analise os dados fornecidos, não crie fraudes genéricas. {blindagem}"
+    agente_1_sys = f"Você é um Auditor Forense Investigativo Sênior. Especialidade: {agente_foco}. REGRA DE OURO: PROIBIDO AUTOCORRIGIR O TEXTO. Cruze números com extenso. Se diferirem, calcule o rombo exato matematicamente e denuncie como fraude material inquestionável. Aponte paradoxos cronológicos (datas). Seja cirúrgico, não use 'pode ser considerado', seja afirmativo."
     
-    agente_2_sys = f"Você é um Advogado Sênior Sócio de Escritório de Elite. Especialidade: {agente_foco}. Analise buscando nulidades contratuais, furos de competência (como foros internacionais ou taxas de câmbio para contratos locais), violações a leis de licitação e pegadinhas legais. Aponte explicitamente os erros na estrutura jurídica. {blindagem}"
+    agente_2_sys = f"Você é um Advogado Sócio de um Escritório de Elite (Big Four). Especialidade: {agente_foco}. Busque nulidades absolutas, foro internacional ilegal, violação de soberania. Use tom incisivo e autoritário. {blindagem}"
     
     resultados = {}
     motores_usados = set()
@@ -221,17 +221,24 @@ def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, agente_foco):
         motores_usados.add(m1)
         motores_usados.add(m2)
         
-    # ⚠️ V314: UPGRADE DE DESIGN COM TABELA DE MATRIZ DE RISCO
-    agente_3_sys = "Você é o AETHER OMNI, o cérebro consolidador. Recebeu um relatório forense e um jurídico. Funda os dois em um DOSSIÊ EXECUTIVO DE ALTA CLASSE em Markdown. É OBRIGATÓRIO iniciar o relatório com uma 'Matriz de Risco' no formato de Tabela (colunas: Nível de Risco, Item, Descrição, Ação Imediata). Após a tabela, disserte sobre as inconsistências numéricas exatas e paradoxos encontrados."
+    agente_3_sys = """Você é o AETHER OMNI, Inteligência Jurídica Suprema.
+Crie um DOSSIÊ EXECUTIVO DE ALTA CLASSE.
+REGRA DE DESIGN ABSOLUTA 1: O relatório DEVE começar com uma Tabela Markdown perfeita. Use EXATAMENTE este formato com os pipes (|):
+| Nível de Risco | Item | Descrição Resumida | Ação Imediata |
+|---|---|---|---|
+| Crítico | Fraude Material | [rombo calculado] | Invalidar |
+
+REGRA DE TOM 2: Evite repetições como 'pode ser considerado'. Seja direto e afirmativo. Inclua cálculos de rombo financeiro e contagem de tempo nos paradoxos."""
+    
     contexto_sintese = f"--- RELATÓRIO AUDITORIA FORENSE ---\n{resultados['risco']}\n\n--- RELATÓRIO JURÍDICO ---\n{resultados['legal']}"
     
-    dossie_final, m3 = chamar_agente_hydra("AETHER OMNI", agente_3_sys, "Crie o Dossiê Final Consolidado, iniciando com a Matriz de Risco e evidenciando as falhas materiais exatas.", contexto_sintese)
+    dossie_final, m3 = chamar_agente_hydra("AETHER OMNI", agente_3_sys, "Crie o Dossiê Final consolidado obedecendo as regras de tabela e tom.", contexto_sintese)
     motores_usados.add(m3)
     
     motor_final = " | ".join(list(motores_usados))
     return dossie_final, motor_final
 
-# --- 📄 EXPORTAÇÕES DE ELITE ---
+# --- 📄 EXPORTAÇÕES (DOCX TIMBRADO DE ELITE) ---
 def gerar_docx_aether(texto_markdown):
     doc = Document()
     font = doc.styles['Normal'].font
@@ -243,10 +250,14 @@ def gerar_docx_aether(texto_markdown):
     doc.add_paragraph("Classificação: CONFIDENCIAL / PRIVILÉGIO ADVOGADO-CLIENTE")
     doc.add_paragraph("_"*65)
     
+    # Processador de Markdown para DOCX (Lida melhor com Tabelas Básicas)
     for linha in texto_markdown.split('\n'):
         if linha.startswith('### '): doc.add_heading(linha.replace('### ', ''), level=3)
         elif linha.startswith('## '): doc.add_heading(linha.replace('## ', ''), level=2)
         elif linha.startswith('# '): doc.add_heading(linha.replace('# ', ''), level=1)
+        elif linha.startswith('|') and '---' not in linha: # Linhas de tabela
+             doc.add_paragraph().add_run(linha.replace('|', '  -  ')).italic = True
+        elif '---' in linha and linha.startswith('|'): continue
         elif linha.startswith('**') and linha.endswith('**'): doc.add_paragraph().add_run(linha.replace('**', '')).bold = True
         elif linha.strip() == '': continue
         else: doc.add_paragraph(linha.replace('**', ''))
@@ -256,9 +267,9 @@ def gerar_docx_aether(texto_markdown):
     buffer.seek(0)
     return buffer
 
-# ⚠️ V314 APEX: AUTO-HEALING PDF ENGINE COM FATIAMENTO FORÇADO ⚠️
+# ⚠️ V315 APEX: PDF TABLE-CRASHER (Tratamento Anti-Colapso para Tabelas Markdown) ⚠️
 def gerar_pdf_aether(texto_markdown):
-    def tentar_gerar(texto, blindagem_ativada=True):
+    try:
         pdf = FPDF()
         pdf.add_page()
         pdf.set_auto_page_break(auto=True, margin=15)
@@ -271,35 +282,38 @@ def gerar_pdf_aether(texto_markdown):
         pdf.set_text_color(0, 0, 0)
         pdf.ln(5)
         
+        # O SEGREDO V315: Se tem tabela markdown (|---|), nós limpamos para o FPDF não colapsar.
         texto_limpo = texto_markdown.replace('**', '').replace('### ', '').replace('## ', '').replace('# ', '')
         texto_seguro = texto_limpo.encode('latin-1', 'replace').decode('latin-1')
         
         for linha in texto_seguro.split('\n'):
-            linha_filtrada = re.sub(r'[-_=*]{10,}', '', linha) # Remove linhas continuas perigosas
+            linha_filtrada = re.sub(r'[-_=*]{10,}', '', linha) # Tira linhas solidas
             
-            if blindagem_ativada:
-                # O AUTO-CORRETOR V314: Fatia URLs gigantes e palavras longas para proteger o servidor
+            # Se a linha for o cabeçalho/divisória da tabela markdown, ignora para não quebrar
+            if re.match(r'^\|[-\s\|]+\|$', linha_filtrada.strip()):
+                continue
+                
+            # Se for linha de conteúdo de tabela, troca o pipe por traço para ficar linear e bonito
+            if linha_filtrada.strip().startswith('|') and linha_filtrada.strip().endswith('|'):
+                linha_filtrada = linha_filtrada.strip().strip('|').replace('|', '  •  ')
+
+            if linha_filtrada.strip():
+                # Fatia links e URLs brutais automaticamente
                 pedacos = textwrap.wrap(linha_filtrada, width=95, break_long_words=True)
                 for pedaco in pedacos:
                     pdf.multi_cell(0, 6, text=pedaco)
-            else:
-                if linha_filtrada.strip():
-                    pdf.multi_cell(0, 6, text=linha_filtrada)
                     
         return bytes(pdf.output())
 
-    try:
-        # Tenta gerar com blindagem ativada por padrão para nunca dar erro
-        return tentar_gerar(texto_markdown, blindagem_ativada=True)
     except Exception as e:
         emergencia = FPDF()
         emergencia.add_page()
         emergencia.set_font("helvetica", size=10)
-        emergencia.multi_cell(0, 6, text=f"ERRO DE RENDERIZACAO DE PDF.\nFalha de hardware no servidor.\nUtilize a exportacao em DOCX (Word).\n\nErro: {str(e)}")
+        emergencia.multi_cell(0, 6, text=f"ERRO DE RENDERIZACAO DE PDF.\nO sistema foi forcado a abortar para proteger a integridade do servidor.\nUtilize a exportacao Premium em DOCX (Word).\n\nLog: {str(e)}")
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V314 (ZERO SCROLL ABSOLUTO)
+# 🎨 CSS APEX V315 (ZERO SCROLL ABSOLUTO E ESTRUTURA PREMIUM)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -363,8 +377,8 @@ st.markdown(css_code, unsafe_allow_html=True)
 # ==========================================
 st.markdown(f"""
 <div class="omni-topbar">
-    <div class="omni-brand"><h1>AETHER KARV</h1><span>V314 APEX MATRIZ</span></div>
-    <div class="omni-status">SESSÃO: <span>CRIPTOGRAFADA</span> | PDF: <span>BLINDADO C/ BREAK</span></div>
+    <div class="omni-brand"><h1>AETHER KARV</h1><span>V315 APEX BILLION-DOLLAR</span></div>
+    <div class="omni-status">SESSÃO: <span>CRIPTOGRAFADA</span> | PDF: <span>TABLE-CRASHER FIXED</span></div>
 </div>
 """, unsafe_allow_html=True)
 
