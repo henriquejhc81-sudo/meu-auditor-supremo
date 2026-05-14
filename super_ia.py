@@ -17,6 +17,11 @@ except ImportError:
     st.error("⚠️ Biblioteca 'python-docx' ou 'docx2txt' ausente. Verifique o requirements.txt.")
 
 try:
+    from fpdf import FPDF
+except ImportError:
+    pass
+
+try:
     import PyPDF2
 except ImportError:
     pass
@@ -45,7 +50,7 @@ except ImportError as e:
     MODULO_RAG = False
 
 # --- ⚙️ CONFIGURAÇÃO DE SEGURANÇA ---
-st.set_page_config(page_title="AETHER OMNI V303", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="AETHER OMNI V304", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
 
 GROQ_KEY = st.secrets.get("GROQ_API_KEY", os.environ.get("GROQ_API_KEY", ""))
 GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
@@ -59,6 +64,7 @@ def get_base64_image(file):
 if "cmd_input" not in st.session_state: st.session_state.cmd_input = ""
 if "res_aether" not in st.session_state: st.session_state.res_aether = None
 if "res_docx" not in st.session_state: st.session_state.res_docx = None
+if "res_pdf" not in st.session_state: st.session_state.res_pdf = None
 if "telemetria" not in st.session_state or st.session_state.telemetria is None: 
     st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--:--", "risco": "Aguardando", "ocr": "Inativo"}
 
@@ -106,7 +112,7 @@ def extrator_nexus_v3(arquivos_upados):
                     except Exception as e_ocr:
                         texto_extraido += f"\n[AETHER: Falha na extração de texto da imagem: {arquivo.name}]"
                 else:
-                    texto_extraido += f"\n[AETHER ALERTA: Arquivo visual ignorado. Módulo OCR offline no servidor.]"
+                    texto_extraido += f"\n[AETHER ALERTA: Arquivo visual ignorado. Módulo OCR offline.]"
             sucesso += 1
         except Exception as e:
             texto_extraido += f"\n[ERRO CRÍTICO EM {arquivo.name}: {str(e)}]"
@@ -115,11 +121,8 @@ def extrator_nexus_v3(arquivos_upados):
 
 # --- 🧠 MEMÓRIA VETORIAL (RAG COM FAISS & LANGCHAIN) ---
 def processar_com_rag(texto, comando):
-    if not MODULO_RAG:
-        return texto[:90000] + "\n\n[ALERTA AETHER: Módulo de Memória Vetorial (RAG/Langchain) indisponível. Operando em modo de leitura bruta truncada.]"
-    
-    if not GEMINI_KEY:
-        return texto[:90000] + "\n\n[ALERTA AETHER: Chave Gemini ausente. RAG desativado. Texto truncado para evitar estouro de memória.]"
+    if not MODULO_RAG: return texto[:90000] + "\n\n[ALERTA: RAG indisponível. Lendo modo truncado.]"
+    if not GEMINI_KEY: return texto[:90000] + "\n\n[ALERTA: Chave Gemini ausente. RAG desativado.]"
     
     try:
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=4000, chunk_overlap=400)
@@ -129,20 +132,19 @@ def processar_com_rag(texto, comando):
         docs_relevantes = vector_store.similarity_search(comando, k=8)
         
         contexto_filtrado = "\n...\n".join([doc.page_content for doc in docs_relevantes])
-        return f"[AETHER RAG FILTER ACTIVE: Exibindo apenas fragmentos matematicamente relevantes para a investigação]\n\n{contexto_filtrado}"
+        return f"[AETHER RAG ACTIVE: Foco Matemático Ativado]\n\n{contexto_filtrado}"
     except Exception as e:
-        return texto[:90000] + f"\n\n[ALERTA AETHER RAG: Falha no processamento vetorial ({str(e)}). Operando em modo texto bruto.]"
+        return texto[:90000] + f"\n\n[ALERTA RAG: Falha vetorial ({str(e)}).]"
 
-# --- 🤖 HEALER ENGINE (AGENTE EXECUTOR COM AUTO-CURA E FALLBACK INVISÍVEL) ---
+# --- 🤖 HEALER ENGINE (AGENTE EXECUTOR COM AUTO-CURA) ---
 def chamar_agente_groq(nome_agente, system_prompt, comando, contexto):
-    if not GROQ_KEY: return f"[{nome_agente}] Erro: Chave API ausente. Configure st.secrets."
+    if not GROQ_KEY: return f"[{nome_agente}] Erro: Chave API ausente."
     
-    # ⚠️ MÁGICA DA V303: Arsenal de Modelos. Se um cair, ele tenta o próximo invisivelmente.
     arsenal_modelos = [
-        "llama-3.3-70b-versatile",    # Modelo mais novo e poderoso
-        "llama-3.2-90b-text-preview", # Backup super-inteligente
-        "llama-3.1-8b-instant",       # Rápido e confiável
-        "mixtral-8x7b-32768"          # Arquitetura diferente para garantia total
+        "llama-3.3-70b-versatile",
+        "llama-3.2-90b-text-preview",
+        "llama-3.1-8b-instant",
+        "mixtral-8x7b-32768"
     ]
     
     try:
@@ -162,29 +164,25 @@ def chamar_agente_groq(nome_agente, system_prompt, comando, contexto):
                 return completion.choices[0].message.content
             except Exception as e:
                 erro_msg = str(e).lower()
-                # Se o modelo foi desligado ou não existe, ignora e tenta o próximo do arsenal
                 if "decommissioned" in erro_msg or "not found" in erro_msg or "offline" in erro_msg:
                     continue 
                 else:
-                    # Se for outro erro (ex: falta de internet), mostra o erro
                     return f"[{nome_agente}] Falha na rede/API: {str(e)}"
         
-        return f"[{nome_agente}] Healer Engine: Todos os modelos da frota estão offline no momento."
+        return f"[{nome_agente}] Healer Engine: Todos os modelos da frota estão offline."
         
     except Exception as e:
-        return f"[{nome_agente}] Falha de comunicação principal: {str(e)}"
+        return f"[{nome_agente}] Falha de comunicação: {str(e)}"
 
 # --- 🚀 ORQUESTRADOR MULTI-AGENTE (ASYNC) ---
 def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, agente_foco):
     if not contexto_arquivos.strip(): contexto_arquivos = "Nenhum documento fornecido. Opere em modo de consulta livre."
+    if len(contexto_arquivos) > 60000: contexto_arquivos = processar_com_rag(contexto_arquivos, comando)
     
-    if len(contexto_arquivos) > 60000:
-        contexto_arquivos = processar_com_rag(contexto_arquivos, comando)
+    blindagem = "DIRETRIZ DE COMPLIANCE: Aplique o Art. 22 da LINDB, considerando obstáculos práticos." if lindb_ativada else ""
     
-    blindagem = "DIRETRIZ DE COMPLIANCE: Aplique rigorosamente a interpretação do Art. 22 da LINDB, considerando os obstáculos práticos do gestor público." if lindb_ativada else ""
-    
-    agente_1_sys = f"Você é um Auditor Sênior de Riscos Financeiros e Contratuais. Especialidade: {agente_foco}. Procure inconsistências, multas abusivas, riscos operacionais e financeiros. Seja direto, use tópicos e linguagem técnica corporativa. {blindagem}"
-    agente_2_sys = f"Você é um Advogado Sênior de Contencioso Estratégico. Especialidade: {agente_foco}. Analise as evidências buscando brechas na lei, teses de defesa, nulidades formais e aplique jurisprudência padrão dos tribunais superiores (STJ/STF). {blindagem}"
+    agente_1_sys = f"Você é um Auditor Sênior de Riscos. Especialidade: {agente_foco}. Procure inconsistências, multas, riscos. Use linguagem técnica. {blindagem}"
+    agente_2_sys = f"Você é um Advogado Sênior. Especialidade: {agente_foco}. Busque brechas na lei, teses de defesa e nulidades formais. {blindagem}"
     
     resultados = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
@@ -194,18 +192,17 @@ def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, agente_foco):
         resultados["risco"] = future_risco.result()
         resultados["legal"] = future_legal.result()
         
-    agente_3_sys = "Você é o AETHER OMNI, o cérebro coordenador. Você recebeu dois relatórios (um de risco e um jurídico). Sua missão é fundir os dois em um DOSSIÊ EXECUTIVO DE ALTO NÍVEL, estruturado em Markdown profissional. Não mencione 'o agente 1 disse' ou 'o agente 2 disse'. Aja como o autor unificado do documento final."
-    contexto_sintese = f"--- RELATÓRIO DO DEPARTAMENTO DE RISCO ---\n{resultados['risco']}\n\n--- RELATÓRIO DO DEPARTAMENTO JURÍDICO ---\n{resultados['legal']}"
+    agente_3_sys = "Você é o AETHER OMNI. Você recebeu dois relatórios (risco e jurídico). Funda os dois em um DOSSIÊ EXECUTIVO DE ALTO NÍVEL em Markdown. Aja como o autor unificado."
+    contexto_sintese = f"--- RELATÓRIO RISCO ---\n{resultados['risco']}\n\n--- RELATÓRIO JURÍDICO ---\n{resultados['legal']}"
     
     dossie_final = chamar_agente_groq("AETHER OMNI", agente_3_sys, "Crie o Dossiê Final Consolidado.", contexto_sintese)
     return dossie_final
 
-# --- 📄 EXPORTAÇÃO DOCX (ALTA FIDELIDADE) ---
+# --- 📄 EXPORTAÇÃO DOCX (WORD) ---
 def gerar_docx_aether(texto_markdown):
     doc = Document()
     styles = doc.styles
-    style = styles['Normal']
-    font = style.font
+    font = styles['Normal'].font
     font.name = 'Arial'
     font.size = Pt(11)
     
@@ -215,14 +212,12 @@ def gerar_docx_aether(texto_markdown):
     doc.add_paragraph("Classificação: CONFIDENCIAL / PRIVILÉGIO ADVOGADO-CLIENTE")
     doc.add_paragraph("_"*65)
     
-    linhas = texto_markdown.split('\n')
-    for linha in linhas:
+    for linha in texto_markdown.split('\n'):
         if linha.startswith('### '): doc.add_heading(linha.replace('### ', ''), level=3)
         elif linha.startswith('## '): doc.add_heading(linha.replace('## ', ''), level=2)
         elif linha.startswith('# '): doc.add_heading(linha.replace('# ', ''), level=1)
         elif linha.startswith('**') and linha.endswith('**'):
-             p = doc.add_paragraph()
-             p.add_run(linha.replace('**', '')).bold = True
+             doc.add_paragraph().add_run(linha.replace('**', '')).bold = True
         elif linha.strip() == '': continue
         else: doc.add_paragraph(linha.replace('**', ''))
 
@@ -231,8 +226,37 @@ def gerar_docx_aether(texto_markdown):
     buffer.seek(0)
     return buffer
 
+# --- 📕 EXPORTAÇÃO PDF ---
+def gerar_pdf_aether(texto_markdown):
+    try:
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_auto_page_break(auto=True, margin=15)
+        pdf.set_font("helvetica", size=10)
+        
+        pdf.set_text_color(212, 175, 55)
+        pdf.cell(0, 10, "AETHER OMNI - PARECER EXECUTIVO", new_x="LMARGIN", new_y="NEXT", align='C')
+        pdf.set_text_color(150, 150, 150)
+        pdf.cell(0, 8, f"Auditoria: {time.strftime('%Y-%m-%d %H:%M:%S')} UTC", new_x="LMARGIN", new_y="NEXT", align='C')
+        pdf.set_text_color(0, 0, 0)
+        pdf.ln(5)
+        
+        texto_limpo = texto_markdown.replace('**', '').replace('### ', '').replace('## ', '').replace('# ', '')
+        
+        for linha in texto_limpo.split('\n'):
+            try:
+                pdf.multi_cell(0, 6, text=linha)
+            except:
+                # Tratamento de fallback para caracteres estranhos no PDF
+                safe_txt = linha.encode('latin-1', 'ignore').decode('latin-1')
+                pdf.multi_cell(0, 6, text=safe_txt)
+        
+        return bytes(pdf.output())
+    except Exception as e:
+        return f"Erro ao gerar PDF: {str(e)}".encode('utf-8')
+
 # ==========================================
-# 🎨 CSS APEX V132 (PRESERVADO - ZERO SCROLL)
+# 🎨 CSS APEX V304 (ZERO SCROLL)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -247,7 +271,6 @@ html, body {{ overflow: hidden !important; height: 100vh !important; width: 100v
 .omni-topbar {{ display: flex; justify-content: space-between; align-items: center; background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(212, 175, 55, 0.15); padding: 6px 20px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); flex-shrink: 0; }}
 .omni-brand {{ display: flex; align-items: center; gap: 12px; }}
 .omni-brand h1 {{ margin: 0; font-family: 'Inter', sans-serif; font-size: 1.1rem; color: #f8fafc; font-weight: 700; letter-spacing: 0.5px; }}
-.omni-brand span {{ color: #D4AF37; font-size: 0.65rem; font-weight: 700; letter-spacing: 1px; border: 1px solid rgba(212, 175, 55, 0.4); padding: 2px 6px; border-radius: 6px; background: rgba(212, 175, 55, 0.05); text-transform: uppercase; }}
 .omni-status {{ font-size: 0.7rem; color: #94a3b8; font-weight: 500; }}
 .omni-status span {{ color: #D4AF37; font-weight: 600; }}
 [data-testid="column"] {{ background: rgba(30, 41, 59, 0.3) !important; backdrop-filter: blur(16px) !important; border: 1px solid rgba(255,255,255,0.05) !important; border-radius: 12px !important; padding: 12px 18px !important; height: calc(100vh - 75px) !important; display: flex; flex-direction: column; box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2); overflow-y: auto !important; overflow-x: hidden !important; }}
@@ -274,12 +297,12 @@ div[data-baseweb="select"] > div {{ background-color: rgba(15, 23, 42, 0.6) !imp
 .agent-standby {{ background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); color: #94a3b8; font-size: 0.6rem; padding: 2px 8px; border-radius: 4px; display: flex; align-items: center; gap: 4px; }}
 .console-output {{ background: rgba(15, 23, 42, 0.5) !important; border: 1px solid rgba(255,255,255,0.05) !important; border-radius: 6px !important; padding: 12px !important; flex-grow: 1; overflow-y: auto; font-size: 0.8rem; color: #f1f5f9; margin-bottom: 10px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.3); line-height: 1.5; }}
 [data-testid="stCodeBlock"] {{ background: transparent !important; border: none !important; padding: 0 !important; }}
-.stButton > button[kind="secondary"], .stDownloadButton > button {{ background: rgba(255,255,255,0.05) !important; color: #cbd5e1 !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 6px !important; font-size: 0.7rem !important; font-weight: 500 !important; padding: 4px !important; width: 100% !important; transition: 0.3s; margin: 0 !important; }}
+.stButton > button[kind="secondary"], .stDownloadButton > button {{ background: rgba(255,255,255,0.05) !important; color: #cbd5e1 !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 6px !important; font-size: 0.65rem !important; font-weight: 500 !important; padding: 6px !important; width: 100% !important; transition: 0.3s; margin: 0 !important; }}
 .stButton > button[kind="secondary"]:hover, .stDownloadButton > button:hover {{ background: rgba(255,255,255,0.1) !important; color: #fff !important; border-color: #D4AF37 !important; }}
 .standby-container {{ display:flex; flex-direction:column; align-items:center; justify-content:center; flex-grow:1; border: 1px dashed rgba(255,255,255,0.1); border-radius: 8px; background: rgba(15, 23, 42, 0.3); padding: 15px; margin-top: 5px; }}
 .welcome-title {{ color: #f8fafc; font-size: 1.05rem; font-weight: 600; margin-bottom: 3px; text-align: center; }}
 .welcome-subtitle {{ color: #94a3b8; font-size: 0.75rem; margin-bottom: 15px; text-align: center; }}
-.stButton button p {{ font-size: 0.75rem !important; margin: 0 !important; line-height: 1.2 !important; white-space: normal !important; }}
+.stButton button p {{ font-size: 0.7rem !important; margin: 0 !important; line-height: 1.2 !important; white-space: normal !important; }}
 </style>
 """
 st.markdown(css_code, unsafe_allow_html=True)
@@ -315,15 +338,17 @@ with col_setup:
                 texto_arquivos, num_arquivos, usou_ocr = extrator_nexus_v3(up) if up else ("", 0, False)
                 resposta = orquestrador_omni(cmd, texto_arquivos, ativar_lindb, agente_foco)
                 docx_buffer = gerar_docx_aether(resposta)
+                pdf_buffer = gerar_pdf_aether(resposta)
                 
                 st.session_state.res_aether = resposta
                 st.session_state.res_docx = docx_buffer
+                st.session_state.res_pdf = pdf_buffer
                 st.session_state.telemetria = {
                     "arquivos": str(num_arquivos),
                     "volume": f"{len(texto_arquivos)/1024:.1f} KB",
                     "tempo": time.strftime("%H:%M:%S"),
                     "risco": "Varredura Completa",
-                    "ocr": "ATIVADO" if usou_ocr else ("Standby" if MODULO_VISAO else "OFFLINE (S/ Lib)")
+                    "ocr": "ATIVADO" if usou_ocr else ("Standby" if MODULO_VISAO else "OFFLINE")
                 }
             st.rerun() 
         else:
@@ -352,22 +377,31 @@ with col_main:
         </div>
         """, unsafe_allow_html=True)
         
-        st.markdown('<div class="section-title">Parecer Jurídico (Resultado)</div>', unsafe_allow_html=True)
+        # ⚠️ A MÁGICA DOS BOTÕES VISÍVEIS ACONTECE AQUI!
+        st.markdown('<div class="section-title">Ações e Exportação</div>', unsafe_allow_html=True)
+        b1, b2, b3, b4, b5 = st.columns(5)
+        with b1: st.download_button("📄 Word (DOCX)", data=st.session_state.res_docx, file_name="AETHER_Parecer.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", use_container_width=True)
+        with b2: st.download_button("📕 PDF", data=st.session_state.res_pdf, file_name="AETHER_Parecer.pdf", mime="application/pdf", use_container_width=True)
+        with b3: st.download_button("📝 Texto (TXT)", data=st.session_state.res_aether, file_name="AETHER_Parecer.txt", mime="text/plain", use_container_width=True)
+        with b4: st.download_button("📊 Matriz (MD)", data=st.session_state.res_aether, file_name="AETHER_Parecer.md", mime="text/markdown", use_container_width=True)
+        with b5: 
+            if st.button("⟳ Nova Análise", type="secondary", use_container_width=True):
+                st.session_state.res_aether = None
+                st.session_state.res_docx = None
+                st.session_state.res_pdf = None
+                st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--:--", "risco": "Aguardando", "ocr": "Inativo"}
+                st.rerun()
+
+        # O Console agora fica EMBAIXO dos botões.
+        st.markdown('<div class="section-title" style="margin-top:10px;">Parecer Jurídico (Resultado)</div>', unsafe_allow_html=True)
         st.markdown('<div class="console-output">', unsafe_allow_html=True)
         st.markdown(st.session_state.res_aether) 
         st.markdown('</div>', unsafe_allow_html=True)
         
-        b1, b2, b3 = st.columns([1,1,2])
-        with b1: 
-            st.download_button("⬇ Exportar Relatório (Word DOCX)", data=st.session_state.res_docx, file_name="AETHER_Parecer_Executivo.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", use_container_width=True)
-        with b2: 
-            st.download_button("⬇ Exportar Matriz (TXT/MD)", data=st.session_state.res_aether, file_name="AETHER_Matriz.txt", use_container_width=True)
-        with b3: 
-            if st.button("⟳ Nova Análise (Limpar Memória)", type="secondary", use_container_width=True):
-                st.session_state.res_aether = None
-                st.session_state.res_docx = None
-                st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--:--", "risco": "Aguardando", "ocr": "Inativo"}
-                st.rerun()
+        # Expander para copiar o código com o botão nativo do Streamlit!
+        with st.expander("📋 Copiar Parecer (Código Fonte)"):
+            st.code(st.session_state.res_aether, language="markdown")
+            
     else:
         st.markdown('<div class="standby-container">', unsafe_allow_html=True)
         st.markdown('<div class="welcome-title">Como posso ajudar na sua análise hoje?</div>', unsafe_allow_html=True)
