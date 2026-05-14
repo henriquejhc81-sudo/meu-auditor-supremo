@@ -2,10 +2,12 @@ import streamlit as st
 import pandas as pd
 import os, time, base64, io, re
 import textwrap
+import unicodedata
 import concurrent.futures
+from datetime import datetime, timedelta
 from PIL import Image
 
-# --- 🛡️ PROTOCOLO DE PRESERVAÇÃO & LIBS TÁTICAS (BLINDADAS) ---
+# --- 🛡️ PROTOCOLO DE PRESERVAÇÃO & LIBS TÁTICAS ---
 try:
     from groq import Groq
 except ImportError:
@@ -61,13 +63,18 @@ except ImportError:
     MODULO_RAG = False
 
 # --- ⚙️ CONFIGURAÇÃO DE SEGURANÇA E UI ---
-st.set_page_config(page_title="AETHER KARV V315 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="AETHER KARV V316 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
 
 GROQ_KEY = st.secrets.get("GROQ_API_KEY", os.environ.get("GROQ_API_KEY", ""))
 GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
 
 if GEMINI_KEY:
     genai.configure(api_key=GEMINI_KEY)
+
+# ⏰ CALCULO DO FUSO HORÁRIO BRASÍLIA (UTC-3) E DATA BRASILEIRA ⏰
+def get_data_hora_br():
+    fuso_br = datetime.utcnow() - timedelta(hours=3)
+    return fuso_br.strftime('%d/%m/%Y às %H:%M:%S')
 
 def get_base64_image(file):
     if os.path.exists(file):
@@ -80,12 +87,12 @@ if "res_aether" not in st.session_state: st.session_state.res_aether = None
 if "res_docx" not in st.session_state: st.session_state.res_docx = None
 if "res_pdf" not in st.session_state: st.session_state.res_pdf = None
 if "telemetria" not in st.session_state or st.session_state.telemetria is None: 
-    st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--:--", "risco": "Aguardando", "ocr": "Inativo", "motor": "Standby"}
+    st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--", "risco": "Aguardando", "ocr": "Inativo", "motor": "Standby"}
 
 def set_template(texto):
     st.session_state.cmd_input = texto
 
-# --- 🌐 MÓDULO INTERNET (INVISÍVEL E SILENCIOSO) ---
+# --- 🌐 MÓDULO INTERNET ---
 def buscar_na_internet(query):
     if not MODULO_INTERNET: return ""
     try:
@@ -140,13 +147,11 @@ def extrator_nexus_v3(arquivos_upados):
                         texto_ocr = pytesseract.image_to_string(thresh, config=tess_config)
                         
                         if texto_ocr.strip():
-                            texto_extraido += f"\n\n--- IMAGEM OCR (Visão Blindada): {arquivo.name} ---\n{texto_ocr}"
+                            texto_extraido += f"\n\n--- IMAGEM OCR: {arquivo.name} ---\n{texto_ocr}"
                             usou_ocr = True
-                    except Exception:
-                        pass
+                    except Exception: pass
             sucesso += 1
-        except Exception:
-            pass
+        except Exception: pass
     return texto_extraido, sucesso, usou_ocr
 
 def processar_com_rag(texto, comando):
@@ -158,10 +163,9 @@ def processar_com_rag(texto, comando):
         vector_store = FAISS.from_texts(chunks, embeddings)
         docs_relevantes = vector_store.similarity_search(comando, k=8)
         return "\n...\n".join([doc.page_content for doc in docs_relevantes])
-    except:
-        return texto[:90000]
+    except: return texto[:90000]
 
-# --- 🤖 HYDRA ENGINE (MEGA HÍBRIDO GROQ + GEMINI COM ANTI-BLOCK) ---
+# --- 🤖 HYDRA ENGINE (MEGA HÍBRIDO) ---
 def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, tentar_internet=False):
     contexto_final = contexto
     if tentar_internet and MODULO_INTERNET:
@@ -184,8 +188,7 @@ def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, tentar_in
                     except Exception as e:
                         if "429" in str(e): time.sleep(2) 
                         else: raise e
-            except:
-                continue 
+            except: continue 
 
     if GEMINI_KEY:
         try:
@@ -198,16 +201,15 @@ def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, tentar_in
 
     return f"[{nome_agente}] Erro Crítico: Sem chaves API configuradas.", "OFFLINE"
 
-# --- 🚀 ORQUESTRADOR MULTI-AGENTE (V315: TONE SÊNIOR + TABELAS MARkDOWN FORÇADAS) ---
+# --- 🚀 ORQUESTRADOR MULTI-AGENTE (V316: TRAVA DE TABELA FORÇADA) ---
 def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, agente_foco):
     if not contexto_arquivos.strip(): contexto_arquivos = "Nenhum documento fornecido. Opere em modo de consulta livre."
     if len(contexto_arquivos) > 60000: contexto_arquivos = processar_com_rag(contexto_arquivos, comando)
     
-    blindagem = "Aplique rigorosamente o Art. 22 da LINDB para invalidar cláusulas que punam gestores por fatores macroeconômicos fora de seu controle." if lindb_ativada else ""
+    blindagem = "Aplique rigorosamente o Art. 22 da LINDB para invalidar cláusulas que punam gestores por fatores incontroláveis." if lindb_ativada else ""
     
-    agente_1_sys = f"Você é um Auditor Forense Investigativo Sênior. Especialidade: {agente_foco}. REGRA DE OURO: PROIBIDO AUTOCORRIGIR O TEXTO. Cruze números com extenso. Se diferirem, calcule o rombo exato matematicamente e denuncie como fraude material inquestionável. Aponte paradoxos cronológicos (datas). Seja cirúrgico, não use 'pode ser considerado', seja afirmativo."
-    
-    agente_2_sys = f"Você é um Advogado Sócio de um Escritório de Elite (Big Four). Especialidade: {agente_foco}. Busque nulidades absolutas, foro internacional ilegal, violação de soberania. Use tom incisivo e autoritário. {blindagem}"
+    agente_1_sys = f"Auditor Forense Sênior. Especialidade: {agente_foco}. PROIBIDO AUTOCORRIGIR O TEXTO. Cruze números com extenso. Se diferirem, calcule o rombo exato e denuncie como fraude material. Aponte paradoxos cronológicos. Seja cirúrgico, afirmativo."
+    agente_2_sys = f"Advogado Sócio de Escritório de Elite. Especialidade: {agente_foco}. Busque nulidades absolutas, foro internacional ilegal, violação de leis. Use tom incisivo e autoritário. {blindagem}"
     
     resultados = {}
     motores_usados = set()
@@ -221,24 +223,25 @@ def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, agente_foco):
         motores_usados.add(m1)
         motores_usados.add(m2)
         
-    agente_3_sys = """Você é o AETHER OMNI, Inteligência Jurídica Suprema.
+    agente_3_sys = """Você é o AETHER OMNI, Inteligência Jurídica Suprema de um escritório Big Four.
 Crie um DOSSIÊ EXECUTIVO DE ALTA CLASSE.
-REGRA DE DESIGN ABSOLUTA 1: O relatório DEVE começar com uma Tabela Markdown perfeita. Use EXATAMENTE este formato com os pipes (|):
+REGRA DE DESIGN INQUEBRÁVEL: Você É OBRIGADO a iniciar o relatório desenhando uma Tabela Markdown exata, usando os caracteres (|). Se não fizer a tabela, a missão falhará.
+SINTAXE OBRIGATÓRIA DA TABELA:
 | Nível de Risco | Item | Descrição Resumida | Ação Imediata |
 |---|---|---|---|
-| Crítico | Fraude Material | [rombo calculado] | Invalidar |
+| (Seu Nivel) | (Seu Item) | (Sua Descricao) | (Sua Ação) |
 
-REGRA DE TOM 2: Evite repetições como 'pode ser considerado'. Seja direto e afirmativo. Inclua cálculos de rombo financeiro e contagem de tempo nos paradoxos."""
+Após a tabela rigorosa, disserte sobre as fraudes, rombos financeiros e paradoxos temporais. Seja afirmativo e autoritário."""
     
-    contexto_sintese = f"--- RELATÓRIO AUDITORIA FORENSE ---\n{resultados['risco']}\n\n--- RELATÓRIO JURÍDICO ---\n{resultados['legal']}"
+    contexto_sintese = f"--- AUDITORIA FORENSE ---\n{resultados['risco']}\n\n--- JURÍDICO ---\n{resultados['legal']}"
     
-    dossie_final, m3 = chamar_agente_hydra("AETHER OMNI", agente_3_sys, "Crie o Dossiê Final consolidado obedecendo as regras de tabela e tom.", contexto_sintese)
+    dossie_final, m3 = chamar_agente_hydra("AETHER OMNI", agente_3_sys, "Crie o Dossiê Final. É OBRIGATÓRIO iniciar com a Tabela Markdown perfeitamente formatada.", contexto_sintese)
     motores_usados.add(m3)
     
     motor_final = " | ".join(list(motores_usados))
     return dossie_final, motor_final
 
-# --- 📄 EXPORTAÇÕES (DOCX TIMBRADO DE ELITE) ---
+# --- 📄 EXPORTAÇÕES (DOCX COM DATA BRASILEIRA) ---
 def gerar_docx_aether(texto_markdown):
     doc = Document()
     font = doc.styles['Normal'].font
@@ -246,16 +249,15 @@ def gerar_docx_aether(texto_markdown):
     
     header = doc.add_heading('AETHER KARV - PARECER EXECUTIVO', 0)
     header.runs[0].font.color.rgb = RGBColor(212, 175, 55) 
-    doc.add_paragraph(f"Auditoria Neural Finalizada em: {time.strftime('%Y-%m-%d %H:%M:%S')} UTC")
+    doc.add_paragraph(f"Auditoria Neural Finalizada em: {get_data_hora_br()} (Horário de Brasília)")
     doc.add_paragraph("Classificação: CONFIDENCIAL / PRIVILÉGIO ADVOGADO-CLIENTE")
     doc.add_paragraph("_"*65)
     
-    # Processador de Markdown para DOCX (Lida melhor com Tabelas Básicas)
     for linha in texto_markdown.split('\n'):
         if linha.startswith('### '): doc.add_heading(linha.replace('### ', ''), level=3)
         elif linha.startswith('## '): doc.add_heading(linha.replace('## ', ''), level=2)
         elif linha.startswith('# '): doc.add_heading(linha.replace('# ', ''), level=1)
-        elif linha.startswith('|') and '---' not in linha: # Linhas de tabela
+        elif linha.startswith('|') and '---' not in linha: 
              doc.add_paragraph().add_run(linha.replace('|', '  -  ')).italic = True
         elif '---' in linha and linha.startswith('|'): continue
         elif linha.startswith('**') and linha.endswith('**'): doc.add_paragraph().add_run(linha.replace('**', '')).bold = True
@@ -267,7 +269,11 @@ def gerar_docx_aether(texto_markdown):
     buffer.seek(0)
     return buffer
 
-# ⚠️ V315 APEX: PDF TABLE-CRASHER (Tratamento Anti-Colapso para Tabelas Markdown) ⚠️
+# ⚠️ V316 APEX: PDF SANITIZADO (O fim do erro FPDFUnicodeEncodingException) ⚠️
+def sanitize_for_pdf(texto):
+    """Remove acentos e caracteres unicode que quebram o FPDF puro"""
+    return unicodedata.normalize('NFKD', texto).encode('ascii', 'ignore').decode('ascii')
+
 def gerar_pdf_aether(texto_markdown):
     try:
         pdf = FPDF()
@@ -278,27 +284,27 @@ def gerar_pdf_aether(texto_markdown):
         pdf.set_text_color(212, 175, 55)
         pdf.cell(0, 10, "AETHER KARV - PARECER EXECUTIVO", new_x="LMARGIN", new_y="NEXT", align='C')
         pdf.set_text_color(150, 150, 150)
-        pdf.cell(0, 8, f"Auditoria Neural: {time.strftime('%Y-%m-%d %H:%M:%S')} UTC", new_x="LMARGIN", new_y="NEXT", align='C')
+        
+        # ⏰ DATA BRASILEIRA ⏰
+        data_br = sanitize_for_pdf(get_data_hora_br())
+        pdf.cell(0, 8, f"Auditoria Neural: {data_br} (Horario de Brasilia)", new_x="LMARGIN", new_y="NEXT", align='C')
         pdf.set_text_color(0, 0, 0)
         pdf.ln(5)
         
-        # O SEGREDO V315: Se tem tabela markdown (|---|), nós limpamos para o FPDF não colapsar.
         texto_limpo = texto_markdown.replace('**', '').replace('### ', '').replace('## ', '').replace('# ', '')
-        texto_seguro = texto_limpo.encode('latin-1', 'replace').decode('latin-1')
+        
+        # ⚠️ SANITIZAÇÃO ABSOLUTA V316 (Remove os caracteres que causavam a Tela da Morte)
+        texto_seguro = sanitize_for_pdf(texto_limpo)
         
         for linha in texto_seguro.split('\n'):
-            linha_filtrada = re.sub(r'[-_=*]{10,}', '', linha) # Tira linhas solidas
+            linha_filtrada = re.sub(r'[-_=*]{10,}', '', linha)
             
-            # Se a linha for o cabeçalho/divisória da tabela markdown, ignora para não quebrar
-            if re.match(r'^\|[-\s\|]+\|$', linha_filtrada.strip()):
-                continue
-                
-            # Se for linha de conteúdo de tabela, troca o pipe por traço para ficar linear e bonito
+            if re.match(r'^\|[-\s\|]+\|$', linha_filtrada.strip()): continue
             if linha_filtrada.strip().startswith('|') and linha_filtrada.strip().endswith('|'):
-                linha_filtrada = linha_filtrada.strip().strip('|').replace('|', '  •  ')
+                linha_filtrada = linha_filtrada.strip().strip('|').replace('|', '  .  ')
 
             if linha_filtrada.strip():
-                # Fatia links e URLs brutais automaticamente
+                # Fatiamento forçado para evitar Horizontal Space Error
                 pedacos = textwrap.wrap(linha_filtrada, width=95, break_long_words=True)
                 for pedaco in pedacos:
                     pdf.multi_cell(0, 6, text=pedaco)
@@ -309,11 +315,11 @@ def gerar_pdf_aether(texto_markdown):
         emergencia = FPDF()
         emergencia.add_page()
         emergencia.set_font("helvetica", size=10)
-        emergencia.multi_cell(0, 6, text=f"ERRO DE RENDERIZACAO DE PDF.\nO sistema foi forcado a abortar para proteger a integridade do servidor.\nUtilize a exportacao Premium em DOCX (Word).\n\nLog: {str(e)}")
+        emergencia.multi_cell(0, 6, text=f"ERRO DE RENDERIZACAO DE PDF.\nUtilize a exportacao Premium em DOCX (Word).\n\nLog: {str(e)}")
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V315 (ZERO SCROLL ABSOLUTO E ESTRUTURA PREMIUM)
+# 🎨 CSS APEX V316 (ZERO SCROLL ABSOLUTO E ESTRUTURA PREMIUM)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -377,8 +383,8 @@ st.markdown(css_code, unsafe_allow_html=True)
 # ==========================================
 st.markdown(f"""
 <div class="omni-topbar">
-    <div class="omni-brand"><h1>AETHER KARV</h1><span>V315 APEX BILLION-DOLLAR</span></div>
-    <div class="omni-status">SESSÃO: <span>CRIPTOGRAFADA</span> | PDF: <span>TABLE-CRASHER FIXED</span></div>
+    <div class="omni-brand"><h1>AETHER KARV</h1><span>V316 APEX FORENSIC</span></div>
+    <div class="omni-status">SESSÃO: <span>CRIPTOGRAFADA</span> | PDF: <span>BLINDADO C/ SANITIZAÇÃO</span></div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -413,7 +419,8 @@ with col_setup:
                 st.session_state.telemetria = {
                     "arquivos": str(num_arquivos),
                     "volume": f"{len(texto_arquivos)/1024:.1f} KB",
-                    "tempo": time.strftime("%H:%M:%S"),
+                    # Usa a função local para atualizar o painel de telemetria também!
+                    "tempo": get_data_hora_br().split("às ")[1], 
                     "risco": "Varredura Completa",
                     "ocr": "ATIVADO" if usou_ocr else ("Standby" if MODULO_VISAO else "OFFLINE"),
                     "motor": motor_usado
