@@ -30,8 +30,7 @@ except ImportError:
     st.error("⚠️ Biblioteca DOCX ausente.")
 
 try:
-    import markdown
-    from xhtml2pdf import pisa 
+    from fpdf import FPDF
 except ImportError:
     pass
 
@@ -62,7 +61,7 @@ except ImportError:
     MODULO_RAG = False
 
 # --- ⚙️ SETUP E SEGURANÇA ---
-st.set_page_config(page_title="AETHER KARV V312 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="AETHER KARV V313 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
 
 GROQ_KEY = st.secrets.get("GROQ_API_KEY", os.environ.get("GROQ_API_KEY", ""))
 GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
@@ -128,7 +127,6 @@ def extrator_nexus_v3(arquivos_upados):
                 except: pass
                 if texto_pdf_nativo.strip(): texto_extraido += f"\n\n--- PDF: {arquivo.name} ---\n{texto_pdf_nativo}"
             
-            # RESGATE DA VISÃO AMPLIADA DA V310
             elif filename.endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp')):
                 if MODULO_VISAO:
                     try:
@@ -165,7 +163,7 @@ def processar_com_rag(texto, comando):
     except:
         return texto[:90000]
 
-# --- 🤖 HYDRA ENGINE (MEGA HÍBRIDO GROQ + GEMINI COM ANTI-BLOCK V311) ---
+# --- 🤖 HYDRA ENGINE (MEGA HÍBRIDO GROQ + GEMINI COM ANTI-BLOCK) ---
 def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, tentar_internet=False):
     contexto_final = contexto
     if tentar_internet and MODULO_INTERNET:
@@ -173,7 +171,6 @@ def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, tentar_in
         
     full_prompt = f"DIRETRIZ DE INVESTIGAÇÃO: {comando}\n\nEVIDÊNCIAS COLETADAS:\n{contexto_final}"
     
-    # 1º ATAQUE: GROQ (Velocidade Extrema)
     if GROQ_KEY:
         arsenal_groq = ["llama-3.3-70b-versatile", "llama-3.2-90b-text-preview", "llama-3.1-8b-instant", "mixtral-8x7b-32768"]
         client = Groq(api_key=GROQ_KEY)
@@ -192,7 +189,6 @@ def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, tentar_in
             except:
                 continue 
 
-    # 2º ATAQUE (FALLBACK INVISÍVEL): GOOGLE GEMINI (Resiliência Absoluta)
     if GEMINI_KEY:
         try:
             model = genai.GenerativeModel('gemini-1.5-pro-latest')
@@ -204,14 +200,13 @@ def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, tentar_in
 
     return f"[{nome_agente}] Erro Crítico: Sem chaves API configuradas.", "OFFLINE"
 
-# --- 🚀 ORQUESTRADOR MULTI-AGENTE (RESGATE DO SNIPER FORENSE DA V310) ---
+# --- 🚀 ORQUESTRADOR MULTI-AGENTE ---
 def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, agente_foco):
     if not contexto_arquivos.strip(): contexto_arquivos = "Nenhum documento fornecido. Opere em modo de consulta livre."
     if len(contexto_arquivos) > 60000: contexto_arquivos = processar_com_rag(contexto_arquivos, comando)
     
     blindagem = "DIRETRIZ DE COMPLIANCE: Aplique rigorosamente a interpretação do Art. 22 da LINDB, considerando obstáculos práticos e alertando sobre responsabilização exagerada." if lindb_ativada else ""
     
-    # ⚠️ RESGATE V310: PROMPT FORENSE ANTI-AUTOCORREÇÃO DE LETALIDADE MÁXIMA ⚠️
     agente_1_sys = f"Você é um Auditor Forense Investigativo Sênior. Especialidade: {agente_foco}. REGRA DE OURO: PROIBIDO AUTOCORRIGIR O TEXTO. Se o contrato diz 'R$ 150.000.000,00' e o texto diz '(cento e oitenta milhões)', denuncie como fraude material. Identifique paradoxos temporais (datas de leis futuras) e multas absurdas. Apenas analise os dados fornecidos, não crie fraudes genéricas. {blindagem}"
     
     agente_2_sys = f"Você é um Advogado Sênior Sócio de Escritório de Elite. Especialidade: {agente_foco}. Analise buscando nulidades contratuais, furos de competência (como foros internacionais ou taxas de câmbio para contratos locais), violações a leis de licitação e pegadinhas legais. Aponte explicitamente os erros na estrutura jurídica. {blindagem}"
@@ -220,7 +215,7 @@ def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, agente_foco):
     motores_usados = set()
     
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-        f_risco = executor.submit(chamar_agente_hydra, "AGENTE RISK", agente_1_sys, comando, contexto_arquivos, True) # Internet ativa para Risco
+        f_risco = executor.submit(chamar_agente_hydra, "AGENTE RISK", agente_1_sys, comando, contexto_arquivos, True)
         f_legal = executor.submit(chamar_agente_hydra, "AGENTE LEGAL", agente_2_sys, comando, contexto_arquivos, False)
         
         resultados["risco"], m1 = f_risco.result()
@@ -237,13 +232,11 @@ def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, agente_foco):
     motor_final = " | ".join(list(motores_usados))
     return dossie_final, motor_final
 
-# --- 📄 EXPORTAÇÕES (RESGATE DA QUALIDADE V310) ---
+# --- 📄 EXPORTAÇÕES ---
 def gerar_docx_aether(texto_markdown):
     doc = Document()
-    styles = doc.styles
-    font = styles['Normal'].font
-    font.name = 'Arial'
-    font.size = Pt(11)
+    font = doc.styles['Normal'].font
+    font.name = 'Arial'; font.size = Pt(11)
     
     header = doc.add_heading('AETHER KARV - PARECER EXECUTIVO', 0)
     header.runs[0].font.color.rgb = RGBColor(212, 175, 55) 
@@ -264,53 +257,59 @@ def gerar_docx_aether(texto_markdown):
     buffer.seek(0)
     return buffer
 
+# ⚠️ V313 APEX: AUTO-HEALING PDF ENGINE ⚠️
 def gerar_pdf_aether(texto_markdown):
+    """
+    O Motor de PDF Inteligente. Se a primeira tentativa de formatação falhar (espaço horizontal),
+    ele intercepta o erro automaticamente e usa a "Formatação Blindada" de fallback.
+    """
+    def tentar_gerar(texto, blindagem_ativada=False):
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_auto_page_break(auto=True, margin=15)
+        pdf.set_font("helvetica", size=10)
+        
+        pdf.set_text_color(212, 175, 55)
+        pdf.cell(0, 10, "AETHER KARV - PARECER EXECUTIVO", new_x="LMARGIN", new_y="NEXT", align='C')
+        pdf.set_text_color(150, 150, 150)
+        pdf.cell(0, 8, f"Auditoria Neural: {time.strftime('%Y-%m-%d %H:%M:%S')} UTC", new_x="LMARGIN", new_y="NEXT", align='C')
+        pdf.set_text_color(0, 0, 0)
+        pdf.ln(5)
+        
+        texto_limpo = texto_markdown.replace('**', '').replace('### ', '').replace('## ', '').replace('# ', '')
+        texto_seguro = texto_limpo.encode('latin-1', 'replace').decode('latin-1')
+        
+        for linha in texto_seguro.split('\n'):
+            linha_filtrada = re.sub(r'[-_=*]{10,}', '', linha) # Remove linhas continuas q travam o PDF
+            
+            if blindagem_ativada:
+                # O AUTO-CORRETOR: Fatia o texto na marra para NUNCA travar por falta de espaço
+                pedacos = textwrap.wrap(linha_filtrada, width=95)
+                for pedaco in pedacos:
+                    pdf.multi_cell(0, 6, text=pedaco)
+            else:
+                if linha_filtrada.strip():
+                    pdf.multi_cell(0, 6, text=linha_filtrada)
+                    
+        return bytes(pdf.output())
+
+    # TENTATIVA 1: Modo Normal
     try:
-        texto_sanitizado = texto_markdown.replace('______________________________________', '<hr>')
-        html_content = markdown.markdown(texto_sanitizado, extras=['tables', 'fenced-code-blocks'])
-        
-        # RESGATE DO TIMBRE CONFIDENCIAL DA V310
-        html_template = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <style>
-                @page {{ size: a4; margin: 2cm; }}
-                body {{ font-family: Arial, sans-serif; font-size: 10pt; color: #000; line-height: 1.4; }}
-                .cabecalho {{ text-align: center; margin-bottom: 15px; border-bottom: 2px solid #D4AF37; padding-bottom: 10px; }}
-                .cabecalho h1 {{ color: #D4AF37; font-size: 14pt; margin: 0; }}
-                .cabecalho p {{ color: #7f8c8d; font-size: 8pt; margin: 2px 0; }}
-                h1, h2, h3 {{ color: #D4AF37; margin-top: 15px; margin-bottom: 5px; }}
-                h1 {{ font-size: 12pt; text-transform: uppercase; }}
-                h2 {{ font-size: 11pt; }}
-                h3 {{ font-size: 10pt; }}
-                p, li {{ margin-bottom: 5px; text-align: justify; }}
-                strong {{ font-weight: bold; color: #000; }}
-            </style>
-        </head>
-        <body>
-            <div class="cabecalho">
-                <h1>AETHER KARV - PARECER EXECUTIVO</h1>
-                <p>Auditoria Neural: {time.strftime('%Y-%m-%d %H:%M:%S')} UTC</p>
-                <p>CONFIDENCIAL / PRIVILÉGIO ADVOGADO-CLIENTE</p>
-            </div>
-            {html_content}
-        </body>
-        </html>
-        """
-        
-        buffer = io.BytesIO()
-        pisa_status = pisa.CreatePDF(io.BytesIO(html_template.encode("UTF-8")), dest=buffer, encoding='UTF-8')
-        
-        if pisa_status.err: raise Exception("Falha na renderização do HTML")
-        buffer.seek(0)
-        return buffer.getvalue()
-    except Exception as e:
-        return f"ERRO CRÍTICO NO MOTOR DE PDF.\n\nUtilize exportação DOCX (Word).\n\nErro: {str(e)}".encode('utf-8')
+        return tentar_gerar(texto_markdown, blindagem_ativada=False)
+    except Exception as e1:
+        # TENTATIVA 2: AUTO-CURA ATIVADA (Fatiamento Forçado)
+        try:
+            return tentar_gerar(texto_markdown, blindagem_ativada=True)
+        except Exception as e2:
+            # TENTATIVA 3: MODO SOBREVIVÊNCIA ABSOLUTA
+            emergencia = FPDF()
+            emergencia.add_page()
+            emergencia.set_font("helvetica", size=10)
+            emergencia.multi_cell(0, 6, text=f"ERRO DE RENDERIZACAO DE PDF.\nO texto excedeu os limites graficos do servidor.\nUtilize a exportacao em DOCX (Word).")
+            return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V312 (RESGATE DO DESIGN V310 ZERO SCROLL COMPLETO)
+# 🎨 CSS APEX V313 (ZERO SCROLL)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -374,8 +373,8 @@ st.markdown(css_code, unsafe_allow_html=True)
 # ==========================================
 st.markdown(f"""
 <div class="omni-topbar">
-    <div class="omni-brand"><h1>AETHER KARV</h1><span>V312 APEX HYDRA</span></div>
-    <div class="omni-status">SESSÃO: <span>CRIPTOGRAFADA</span> | NÚCLEO: <span>MULTI-LLM</span></div>
+    <div class="omni-brand"><h1>AETHER KARV</h1><span>V313 APEX HEALER</span></div>
+    <div class="omni-status">SESSÃO: <span>CRIPTOGRAFADA</span> | PDF: <span>AUTO-HEALING</span></div>
 </div>
 """, unsafe_allow_html=True)
 
