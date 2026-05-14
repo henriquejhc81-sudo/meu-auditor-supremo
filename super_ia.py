@@ -5,31 +5,42 @@ import textwrap
 import concurrent.futures
 from PIL import Image
 
-# --- 🛡️ PROTOCOLO DE PRESERVAÇÃO & LIBS TÁTICAS (BLINDADAS) ---
+# --- 🛡️ LIBS TÁTICAS & BLINDAGEM ---
 try:
     from groq import Groq
 except ImportError:
     pass
 
 try:
+    import google.generativeai as genai
+except ImportError:
+    pass
+
+try:
+    from duckduckgo_search import DDGS
+    MODULO_INTERNET = True
+except ImportError:
+    MODULO_INTERNET = False
+
+try:
     import docx2txt
     from docx import Document
     from docx.shared import Pt, RGBColor
 except ImportError:
-    st.error("⚠️ Biblioteca 'python-docx' ou 'docx2txt' ausente. Verifique o requirements.txt.")
+    st.error("⚠️ Biblioteca DOCX ausente.")
 
 try:
     import markdown
     from xhtml2pdf import pisa 
 except ImportError:
-    pass # Tratamento visual será feito no momento da exportação se falhar
+    pass
 
 try:
     import PyPDF2
 except ImportError:
     pass
 
-# --- 👁️ VISÃO COMPUTACIONAL (BLINDADA E EVOLUÍDA) ---
+# --- 👁️ VISÃO COMPUTACIONAL ---
 try:
     import cv2
     import numpy as np
@@ -38,24 +49,26 @@ try:
 except ImportError:
     MODULO_VISAO = False
 
-# --- 🧠 MEMÓRIA VETORIAL / RAG (BLINDADA) ---
+# --- 🧠 MEMÓRIA VETORIAL / RAG ---
 try:
     try:
         from langchain_text_splitters import RecursiveCharacterTextSplitter
     except ImportError:
         from langchain.text_splitter import RecursiveCharacterTextSplitter
-        
     from langchain_community.vectorstores import FAISS
     from langchain_google_genai import GoogleGenerativeAIEmbeddings
     MODULO_RAG = True
-except ImportError as e:
+except ImportError:
     MODULO_RAG = False
 
-# --- ⚙️ CONFIGURAÇÃO DE SEGURANÇA E UI ---
-st.set_page_config(page_title="AETHER KARV V310 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
+# --- ⚙️ SETUP E SEGURANÇA ---
+st.set_page_config(page_title="AETHER KARV V312 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
 
 GROQ_KEY = st.secrets.get("GROQ_API_KEY", os.environ.get("GROQ_API_KEY", ""))
 GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
+
+if GEMINI_KEY:
+    genai.configure(api_key=GEMINI_KEY)
 
 def get_base64_image(file):
     if os.path.exists(file):
@@ -68,12 +81,25 @@ if "res_aether" not in st.session_state: st.session_state.res_aether = None
 if "res_docx" not in st.session_state: st.session_state.res_docx = None
 if "res_pdf" not in st.session_state: st.session_state.res_pdf = None
 if "telemetria" not in st.session_state or st.session_state.telemetria is None: 
-    st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--:--", "risco": "Aguardando", "ocr": "Inativo"}
+    st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--:--", "risco": "Aguardando", "ocr": "Inativo", "motor": "Standby"}
 
 def set_template(texto):
     st.session_state.cmd_input = texto
 
-# --- 👁️ MOTOR DE INGESTÃO MULTIMODAL & OCR FORENSE (NEXUS) ---
+# --- 🌐 MÓDULO INTERNET (INVISÍVEL E SILENCIOSO) ---
+def buscar_na_internet(query):
+    if not MODULO_INTERNET: return ""
+    try:
+        ddgs = DDGS()
+        resultados = list(ddgs.text(query, max_results=3))
+        res_str = "\n[AETHER WEB SEARCH INJETADO]:\n"
+        for r in resultados:
+            res_str += f"- {r['body']}\n"
+        return res_str
+    except:
+        return ""
+
+# --- 👁️ MOTOR DE INGESTÃO (RESGATADO V310 COM .TIFF e .BMP) ---
 def extrator_nexus_v3(arquivos_upados):
     texto_extraido = ""
     sucesso = 0
@@ -82,16 +108,14 @@ def extrator_nexus_v3(arquivos_upados):
     for arquivo in arquivos_upados:
         try:
             filename = arquivo.name.lower()
-            
             if filename.endswith('.csv'):
                 df = pd.read_csv(arquivo)
-                texto_extraido += f"\n\n--- DADOS CSV: {arquivo.name} ---\n{df.to_string(index=False)}"
+                texto_extraido += f"\n\n--- CSV: {arquivo.name} ---\n{df.to_string(index=False)}"
             elif filename.endswith('.xlsx'):
                 df = pd.read_excel(arquivo)
-                texto_extraido += f"\n\n--- DADOS XLSX: {arquivo.name} ---\n{df.to_string(index=False)}"
+                texto_extraido += f"\n\n--- XLSX: {arquivo.name} ---\n{df.to_string(index=False)}"
             elif filename.endswith('.docx'):
-                texto = docx2txt.process(arquivo)
-                texto_extraido += f"\n\n--- DOCX: {arquivo.name} ---\n{texto}"
+                texto_extraido += f"\n\n--- DOCX: {arquivo.name} ---\n{docx2txt.process(arquivo)}"
             elif filename.endswith('.txt'):
                 texto_extraido += f"\n\n--- TXT: {arquivo.name} ---\n{arquivo.getvalue().decode('utf-8')}"
             elif filename.endswith('.pdf'):
@@ -102,21 +126,14 @@ def extrator_nexus_v3(arquivos_upados):
                         extraido = page.extract_text()
                         if extraido: texto_pdf_nativo += extraido + "\n"
                 except: pass
-                
-                if texto_pdf_nativo.strip():
-                    texto_extraido += f"\n\n--- PDF (Leitura Nativa): {arquivo.name} ---\n{texto_pdf_nativo}"
-                else:
-                    if MODULO_VISAO:
-                        texto_extraido += f"\n\n--- PDF (Digitalizado, requer Visão): {arquivo.name} --- [AETHER ALERTA: Extração visual recomendada por imagem direta.]"
-                    else:
-                        texto_extraido += f"\n[AETHER: Falha na leitura nativa do PDF (vazio/protegido): {arquivo.name}]"
+                if texto_pdf_nativo.strip(): texto_extraido += f"\n\n--- PDF: {arquivo.name} ---\n{texto_pdf_nativo}"
             
+            # RESGATE DA VISÃO AMPLIADA DA V310
             elif filename.endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp')):
                 if MODULO_VISAO:
                     try:
                         imagem_pil = Image.open(arquivo)
                         img = cv2.cvtColor(np.array(imagem_pil), cv2.COLOR_RGB2BGR)
-                        
                         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
                         denoised = cv2.fastNlMeansDenoising(gray, h=10)
                         thresh = cv2.adaptiveThreshold(denoised, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
@@ -125,102 +142,102 @@ def extrator_nexus_v3(arquivos_upados):
                         texto_ocr = pytesseract.image_to_string(thresh, config=tess_config)
                         
                         if texto_ocr.strip():
-                            texto_extraido += f"\n\n--- IMAGEM/FOTO OCR (Visão Blindada): {arquivo.name} ---\n{texto_ocr}"
+                            texto_extraido += f"\n\n--- IMAGEM OCR (Visão Blindada): {arquivo.name} ---\n{texto_ocr}"
                             usou_ocr = True
                         else:
                             texto_extraido += f"\n[AETHER: Nenhum texto detetável na foto: {arquivo.name}]"
-                            
                     except Exception as e_ocr:
-                        texto_extraido += f"\n[AETHER: Falha crítica na Visão Computacional: {arquivo.name}. Erro: {str(e_ocr)}]"
-                else:
-                    texto_extraido += f"\n[AETHER ALERTA: Arquivo visual ignorado. Módulo OCR offline no servidor.]"
+                        texto_extraido += f"\n[AETHER: Falha na extração OCR: {str(e_ocr)}]"
             sucesso += 1
-        except Exception as e:
-            texto_extraido += f"\n[ERRO CRÍTICO EM {arquivo.name}: {str(e)}]"
-            
+        except Exception:
+            pass
     return texto_extraido, sucesso, usou_ocr
 
-# --- 🧠 MEMÓRIA VETORIAL (RAG COM FAISS & LANGCHAIN) ---
 def processar_com_rag(texto, comando):
-    if not MODULO_RAG: return texto[:90000] + "\n\n[ALERTA: RAG indisponível. Lendo modo truncado.]"
-    if not GEMINI_KEY: return texto[:90000] + "\n\n[ALERTA: Chave Gemini ausente. RAG desativado.]"
-    
+    if not MODULO_RAG or not GEMINI_KEY: return texto[:90000]
     try:
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=4000, chunk_overlap=400)
         chunks = text_splitter.split_text(texto)
         embeddings = GoogleGenerativeAIEmbeddings(google_api_key=GEMINI_KEY, model="models/embedding-001")
         vector_store = FAISS.from_texts(chunks, embeddings)
         docs_relevantes = vector_store.similarity_search(comando, k=8)
-        
-        contexto_filtrado = "\n...\n".join([doc.page_content for doc in docs_relevantes])
-        return f"[AETHER RAG ACTIVE: Foco Matemático Ativado]\n\n{contexto_filtrado}"
-    except Exception as e:
-        return texto[:90000] + f"\n\n[ALERTA RAG: Falha vetorial ({str(e)}).]"
+        return "\n...\n".join([doc.page_content for doc in docs_relevantes])
+    except:
+        return texto[:90000]
 
-# --- 🤖 HEALER ENGINE (AGENTE EXECUTOR COM AUTO-CURA INVISÍVEL) ---
-def chamar_agente_groq(nome_agente, system_prompt, comando, contexto):
-    if not GROQ_KEY: return f"[{nome_agente}] Erro: Chave API ausente."
+# --- 🤖 HYDRA ENGINE (MEGA HÍBRIDO GROQ + GEMINI COM ANTI-BLOCK V311) ---
+def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, tentar_internet=False):
+    contexto_final = contexto
+    if tentar_internet and MODULO_INTERNET:
+        contexto_final += buscar_na_internet(comando)
+        
+    full_prompt = f"DIRETRIZ DE INVESTIGAÇÃO: {comando}\n\nEVIDÊNCIAS COLETADAS:\n{contexto_final}"
     
-    arsenal_modelos = [
-        "llama-3.3-70b-versatile",
-        "llama-3.2-90b-text-preview",
-        "llama-3.1-8b-instant",
-        "mixtral-8x7b-32768"
-    ]
-    
-    try:
+    # 1º ATAQUE: GROQ (Velocidade Extrema)
+    if GROQ_KEY:
+        arsenal_groq = ["llama-3.3-70b-versatile", "llama-3.2-90b-text-preview", "llama-3.1-8b-instant", "mixtral-8x7b-32768"]
         client = Groq(api_key=GROQ_KEY)
-        full_prompt = f"DIRETRIZ DE INVESTIGAÇÃO: {comando}\n\nEVIDÊNCIAS COLETADAS:\n{contexto}"
-        
-        for modelo_ativo in arsenal_modelos:
+        for modelo in arsenal_groq:
             try:
-                completion = client.chat.completions.create(
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": full_prompt}
-                    ],
-                    model=modelo_ativo,
-                    temperature=0.1, 
-                )
-                return completion.choices[0].message.content
-            except Exception as e:
-                erro_msg = str(e).lower()
-                if "decommissioned" in erro_msg or "not found" in erro_msg or "offline" in erro_msg:
-                    continue 
-                else:
-                    return f"[{nome_agente}] Falha na rede/API: {str(e)}"
-        
-        return f"[{nome_agente}] Healer Engine: Todos os modelos da frota estão offline."
-        
-    except Exception as e:
-        return f"[{nome_agente}] Falha de comunicação: {str(e)}"
+                for tentativa in range(2): 
+                    try:
+                        completion = client.chat.completions.create(
+                            messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": full_prompt}],
+                            model=modelo, temperature=0.1
+                        )
+                        return completion.choices[0].message.content, f"GROQ ({modelo.split('-')[1]})"
+                    except Exception as e:
+                        if "429" in str(e): time.sleep(2) 
+                        else: raise e
+            except:
+                continue 
 
-# --- 🚀 ORQUESTRADOR MULTI-AGENTE (FORENSIC SNIPER) ---
+    # 2º ATAQUE (FALLBACK INVISÍVEL): GOOGLE GEMINI (Resiliência Absoluta)
+    if GEMINI_KEY:
+        try:
+            model = genai.GenerativeModel('gemini-1.5-pro-latest')
+            prompt_gemini = f"{system_prompt}\n\n{full_prompt}"
+            response = model.generate_content(prompt_gemini)
+            return response.text, "GEMINI (1.5 Pro)"
+        except Exception as e:
+            return f"[{nome_agente}] Hydra Engine Falhou: {str(e)}", "OFFLINE"
+
+    return f"[{nome_agente}] Erro Crítico: Sem chaves API configuradas.", "OFFLINE"
+
+# --- 🚀 ORQUESTRADOR MULTI-AGENTE (RESGATE DO SNIPER FORENSE DA V310) ---
 def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, agente_foco):
     if not contexto_arquivos.strip(): contexto_arquivos = "Nenhum documento fornecido. Opere em modo de consulta livre."
     if len(contexto_arquivos) > 60000: contexto_arquivos = processar_com_rag(contexto_arquivos, comando)
     
     blindagem = "DIRETRIZ DE COMPLIANCE: Aplique rigorosamente a interpretação do Art. 22 da LINDB, considerando obstáculos práticos e alertando sobre responsabilização exagerada." if lindb_ativada else ""
     
+    # ⚠️ RESGATE V310: PROMPT FORENSE ANTI-AUTOCORREÇÃO DE LETALIDADE MÁXIMA ⚠️
     agente_1_sys = f"Você é um Auditor Forense Investigativo Sênior. Especialidade: {agente_foco}. REGRA DE OURO: PROIBIDO AUTOCORRIGIR O TEXTO. Se o contrato diz 'R$ 150.000.000,00' e o texto diz '(cento e oitenta milhões)', denuncie como fraude material. Identifique paradoxos temporais (datas de leis futuras) e multas absurdas. Apenas analise os dados fornecidos, não crie fraudes genéricas. {blindagem}"
     
-    agente_2_sys = f"Você é um Advogado Sênior Sócio de Escritório de Elite. Especialidade: {agente_foco}. Analise buscando nulidades contratuais, furos de competência, violações a leis de licitação e cláusulas abusivas. {blindagem}"
+    agente_2_sys = f"Você é um Advogado Sênior Sócio de Escritório de Elite. Especialidade: {agente_foco}. Analise buscando nulidades contratuais, furos de competência (como foros internacionais ou taxas de câmbio para contratos locais), violações a leis de licitação e pegadinhas legais. Aponte explicitamente os erros na estrutura jurídica. {blindagem}"
     
     resultados = {}
+    motores_usados = set()
+    
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-        future_risco = executor.submit(chamar_agente_groq, "AGENTE RISK", agente_1_sys, comando, contexto_arquivos)
-        future_legal = executor.submit(chamar_agente_groq, "AGENTE LEGAL", agente_2_sys, comando, contexto_arquivos)
+        f_risco = executor.submit(chamar_agente_hydra, "AGENTE RISK", agente_1_sys, comando, contexto_arquivos, True) # Internet ativa para Risco
+        f_legal = executor.submit(chamar_agente_hydra, "AGENTE LEGAL", agente_2_sys, comando, contexto_arquivos, False)
         
-        resultados["risco"] = future_risco.result()
-        resultados["legal"] = future_legal.result()
+        resultados["risco"], m1 = f_risco.result()
+        resultados["legal"], m2 = f_legal.result()
+        motores_usados.add(m1)
+        motores_usados.add(m2)
         
     agente_3_sys = "Você é o AETHER OMNI, o cérebro consolidador. Recebeu um relatório forense e um jurídico. Funda os dois em um DOSSIÊ EXECUTIVO em Markdown de luxo. É OBRIGATÓRIO incluir as inconsistências numéricas exatas e paradoxos temporais encontrados pelo auditor forense."
     contexto_sintese = f"--- RELATÓRIO AUDITORIA FORENSE ---\n{resultados['risco']}\n\n--- RELATÓRIO JURÍDICO ---\n{resultados['legal']}"
     
-    dossie_final = chamar_agente_groq("AETHER OMNI", agente_3_sys, "Crie o Dossiê Final Consolidado, evidenciando as falhas materiais exatas.", contexto_sintese)
-    return dossie_final
+    dossie_final, m3 = chamar_agente_hydra("AETHER OMNI", agente_3_sys, "Crie o Dossiê Final Consolidado, evidenciando as falhas materiais exatas.", contexto_sintese)
+    motores_usados.add(m3)
+    
+    motor_final = " | ".join(list(motores_usados))
+    return dossie_final, motor_final
 
-# --- 📄 EXPORTAÇÃO DOCX (WORD) ---
+# --- 📄 EXPORTAÇÕES (RESGATE DA QUALIDADE V310) ---
 def gerar_docx_aether(texto_markdown):
     doc = Document()
     styles = doc.styles
@@ -238,8 +255,7 @@ def gerar_docx_aether(texto_markdown):
         if linha.startswith('### '): doc.add_heading(linha.replace('### ', ''), level=3)
         elif linha.startswith('## '): doc.add_heading(linha.replace('## ', ''), level=2)
         elif linha.startswith('# '): doc.add_heading(linha.replace('# ', ''), level=1)
-        elif linha.startswith('**') and linha.endswith('**'):
-             doc.add_paragraph().add_run(linha.replace('**', '')).bold = True
+        elif linha.startswith('**') and linha.endswith('**'): doc.add_paragraph().add_run(linha.replace('**', '')).bold = True
         elif linha.strip() == '': continue
         else: doc.add_paragraph(linha.replace('**', ''))
 
@@ -248,12 +264,12 @@ def gerar_docx_aether(texto_markdown):
     buffer.seek(0)
     return buffer
 
-# --- 📕 EXPORTAÇÃO PDF BLINDADA V310 (XHTML2PDF) ---
 def gerar_pdf_aether(texto_markdown):
     try:
         texto_sanitizado = texto_markdown.replace('______________________________________', '<hr>')
         html_content = markdown.markdown(texto_sanitizado, extras=['tables', 'fenced-code-blocks'])
         
+        # RESGATE DO TIMBRE CONFIDENCIAL DA V310
         html_template = f"""
         <!DOCTYPE html>
         <html>
@@ -287,17 +303,14 @@ def gerar_pdf_aether(texto_markdown):
         buffer = io.BytesIO()
         pisa_status = pisa.CreatePDF(io.BytesIO(html_template.encode("UTF-8")), dest=buffer, encoding='UTF-8')
         
-        if pisa_status.err:
-            raise Exception("Falha na renderização do HTML para PDF")
-            
+        if pisa_status.err: raise Exception("Falha na renderização do HTML")
         buffer.seek(0)
         return buffer.getvalue()
-
     except Exception as e:
-        return f"ERRO CRÍTICO NO MOTOR DE PDF.\n\nPor favor, utilize a exportação DOCX (Word).\n\nDetalhe técnico: {str(e)}".encode('utf-8')
+        return f"ERRO CRÍTICO NO MOTOR DE PDF.\n\nUtilize exportação DOCX (Word).\n\nErro: {str(e)}".encode('utf-8')
 
 # ==========================================
-# 🎨 CSS APEX (ZERO SCROLL E DESIGN PREMIUM)
+# 🎨 CSS APEX V312 (RESGATE DO DESIGN V310 ZERO SCROLL COMPLETO)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -361,8 +374,8 @@ st.markdown(css_code, unsafe_allow_html=True)
 # ==========================================
 st.markdown(f"""
 <div class="omni-topbar">
-    <div class="omni-brand"><h1>AETHER KARV</h1><span>V310 APEX</span></div>
-    <div class="omni-status">SESSÃO: <span>CRIPTOGRAFADA</span> | PDF: <span>XHTML2PDF</span></div>
+    <div class="omni-brand"><h1>AETHER KARV</h1><span>V312 APEX HYDRA</span></div>
+    <div class="omni-status">SESSÃO: <span>CRIPTOGRAFADA</span> | NÚCLEO: <span>MULTI-LLM</span></div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -380,12 +393,13 @@ with col_setup:
     cmd = st.text_area("", key="cmd_input", placeholder="Ex: Verifique as cláusulas de rescisão e aponte os riscos...", label_visibility="collapsed")
 
     if st.button("🚀 Iniciar Varredura Jurídica", type="primary"):
-        if not GROQ_KEY:
-            st.error("⚠️ CHAVE API GROQ NÃO ENCONTRADA. Configure o st.secrets.")
+        if not GROQ_KEY and not GEMINI_KEY:
+            st.error("⚠️ ERRO CRÍTICO: Nenhuma chave API configurada no st.secrets.")
         elif cmd:
-            with st.spinner("Iniciando varredura profunda (RAG, OCR & Multi-Agent)..."):
+            with st.spinner("Motor Hydra Ativado. Processando Multi-Agentes..."):
                 texto_arquivos, num_arquivos, usou_ocr = extrator_nexus_v3(up) if up else ("", 0, False)
-                resposta = orquestrador_omni(cmd, texto_arquivos, ativar_lindb, agente_foco)
+                
+                resposta, motor_usado = orquestrador_omni(cmd, texto_arquivos, ativar_lindb, agente_foco)
                 
                 docx_buffer = gerar_docx_aether(resposta)
                 pdf_data = gerar_pdf_aether(resposta)
@@ -398,7 +412,8 @@ with col_setup:
                     "volume": f"{len(texto_arquivos)/1024:.1f} KB",
                     "tempo": time.strftime("%H:%M:%S"),
                     "risco": "Varredura Completa",
-                    "ocr": "ATIVADO" if usou_ocr else ("Standby" if MODULO_VISAO else "OFFLINE")
+                    "ocr": "ATIVADO" if usou_ocr else ("Standby" if MODULO_VISAO else "OFFLINE"),
+                    "motor": motor_usado
                 }
             st.rerun() 
         else:
@@ -409,8 +424,8 @@ with col_main:
     st.markdown(f"""
     <div class="custom-kpi-grid">
         <div class="kpi-box"><span class="kpi-title">Documentos Lidos</span><span class="kpi-value">{t['arquivos']}</span></div>
-        <div class="kpi-box"><span class="kpi-title">Volume Processado</span><span class="kpi-value">{t['volume']}</span></div>
-        <div class="kpi-box"><span class="kpi-title">Motor Visão (OCR)</span><span class="kpi-value">{t['ocr']}</span></div>
+        <div class="kpi-box"><span class="kpi-title">Motor IA Ativo</span><span class="kpi-value" style="color:#D4AF37;">{t['motor']}</span></div>
+        <div class="kpi-box"><span class="kpi-title">Módulo Visão (OCR)</span><span class="kpi-value">{t['ocr']}</span></div>
         <div class="kpi-box"><span class="kpi-title">Status da Missão</span><span class="kpi-value highlight">{t['risco']}</span></div>
     </div>
     """, unsafe_allow_html=True)
@@ -420,7 +435,7 @@ with col_main:
     if st.session_state.res_aether:
         st.markdown(f"""
         <div class="agent-grid">
-            <div class="agent-badge">✓ AGENTE RISCO: CONCLUÍDO</div>
+            <div class="agent-badge">✓ AGENTE FORENSE: CONCLUÍDO</div>
             <div class="agent-badge">✓ AGENTE JURÍDICO: CONCLUÍDO</div>
             <div class="agent-badge">✓ AETHER (SÍNTESE): ATIVO</div>
             <div class="agent-badge">✓ MEMÓRIA (RAG): {'OK' if MODULO_RAG else 'OFFLINE'}</div>
@@ -438,7 +453,7 @@ with col_main:
                 st.session_state.res_aether = None
                 st.session_state.res_docx = None
                 st.session_state.res_pdf = None
-                st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--:--", "risco": "Aguardando", "ocr": "Inativo"}
+                st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--:--", "risco": "Aguardando", "ocr": "Inativo", "motor": "Standby"}
                 st.rerun()
 
         st.markdown('<div class="section-title" style="margin-top:10px;">Parecer Jurídico (Resultado)</div>', unsafe_allow_html=True)
@@ -459,5 +474,5 @@ with col_main:
             st.button("🔍 Procurar Cláusulas Abusivas em Contrato", on_click=set_template, args=("Revise o contrato anexo e destaque todas as cláusulas que possam ser consideradas abusivas ou desproporcionais.",), use_container_width=True)
         with c2:
             st.button("📅 Calcular Prazos e Ler Intimação", on_click=set_template, args=("Leia a publicação do diário oficial e identifique os prazos processuais e as providências cabíveis.",), use_container_width=True)
-            st.button("📊 Simular Probabilidade de Acordo", on_click=set_template, args=("Com base nos documentos, avalie os riscos de perda e simule uma proposta de acordo financeiramente viável.",), use_container_width=True)
+            st.button("🌐 Pesquisar Jurisprudência Atual", on_click=set_template, args=("Busque as decisões mais recentes sobre este tema na internet.",), use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
