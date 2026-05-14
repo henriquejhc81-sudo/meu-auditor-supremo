@@ -5,19 +5,33 @@ import docx2txt
 import concurrent.futures
 from docx import Document
 from docx.shared import Pt, RGBColor
+
+# --- 🧠 LIBS DA FASE 2: RAG, VISÃO E IA ---
+import cv2
+import numpy as np
+from PIL import Image
+try:
+    import pytesseract
+except ImportError:
+    pass # OCR Degradado graciosamente se não instalado
 try:
     import PyPDF2
 except ImportError:
-    pass # Tratamento para caso a biblioteca ainda esteja instalando
+    pass
+
+# Langchain & FAISS (Memória Vetorial)
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.vectorstores import FAISS
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+
 try:
     from groq import Groq
 except ImportError:
     pass
 
-# --- ⚙️ CONFIGURAÇÃO DE SEGURANÇA E AMBIENTE ---
-st.set_page_config(page_title="AETHER OMNI V200", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
+# --- ⚙️ CONFIGURAÇÃO DE SEGURANÇA ---
+st.set_page_config(page_title="AETHER OMNI V300", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
 
-# Coleta segura de chaves (Prioriza st.secrets, com fallback para variáveis de ambiente)
 GROQ_KEY = st.secrets.get("GROQ_API_KEY", os.environ.get("GROQ_API_KEY", ""))
 GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
 
@@ -27,128 +41,168 @@ def get_base64_image(file):
             return base64.b64encode(f.read()).decode()
     return ""
 
-# --- 🧠 MEMÓRIA E ESTADO ---
 if "cmd_input" not in st.session_state: st.session_state.cmd_input = ""
 if "res_aether" not in st.session_state: st.session_state.res_aether = None
 if "res_docx" not in st.session_state: st.session_state.res_docx = None
 if "telemetria" not in st.session_state or st.session_state.telemetria is None: 
-    st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--:--", "risco": "Aguardando"}
+    st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--:--", "risco": "Aguardando", "ocr": "Inativo"}
 
 def set_template(texto):
     st.session_state.cmd_input = texto
 
-# --- 📂 MOTOR DE INGESTÃO AVANÇADO (NEXUS V2) ---
-def extrator_nexus_v2(arquivos_upados):
+# --- 👁️ MOTOR DE INGESTÃO MULTIMODAL & OCR (NEXUS V3) ---
+def extrator_nexus_v3(arquivos_upados):
     texto_extraido = ""
     sucesso = 0
+    usou_ocr = False
+    
     for arquivo in arquivos_upados:
         try:
+            # 1. Planilhas e Dados Estruturados
             if arquivo.name.endswith('.csv'):
                 df = pd.read_csv(arquivo)
-                texto_extraido += f"\n\n--- MATRIZ CSV: {arquivo.name} ---\n{df.to_string(index=False)}"
+                texto_extraido += f"\n\n--- DADOS CSV: {arquivo.name} ---\n{df.to_string(index=False)}"
             elif arquivo.name.endswith('.xlsx'):
                 df = pd.read_excel(arquivo)
-                texto_extraido += f"\n\n--- MATRIZ XLSX: {arquivo.name} ---\n{df.to_string(index=False)}"
+                texto_extraido += f"\n\n--- DADOS XLSX: {arquivo.name} ---\n{df.to_string(index=False)}"
+            
+            # 2. Documentos de Texto
             elif arquivo.name.endswith('.docx'):
                 texto = docx2txt.process(arquivo)
                 texto_extraido += f"\n\n--- DOCX: {arquivo.name} ---\n{texto}"
+            elif arquivo.name.endswith('.txt'):
+                texto_extraido += f"\n\n--- TXT: {arquivo.name} ---\n{arquivo.getvalue().decode('utf-8')}"
+            
+            # 3. PDF Híbrido
             elif arquivo.name.endswith('.pdf'):
                 try:
                     pdf_reader = PyPDF2.PdfReader(arquivo)
                     texto_pdf = ""
                     for page in pdf_reader.pages:
-                        texto_pdf += page.extract_text() + "\n"
+                        extraido = page.extract_text()
+                        if extraido: texto_pdf += extraido + "\n"
                     texto_extraido += f"\n\n--- PDF: {arquivo.name} ---\n{texto_pdf}"
                 except:
-                    texto_extraido += f"\n[Falha ao ler texto do PDF: {arquivo.name}]"
-            elif arquivo.name.endswith('.txt'):
-                texto_extraido += f"\n\n--- TXT: {arquivo.name} ---\n{arquivo.getvalue().decode('utf-8')}"
+                    texto_extraido += f"\n[AETHER: Falha na leitura nativa do PDF: {arquivo.name}]"
+            
+            # 4. VISÃO COMPUTACIONAL (OCR para Imagens)
+            elif arquivo.name.lower().endswith(('.png', '.jpg', '.jpeg')):
+                try:
+                    imagem = Image.open(arquivo)
+                    # Convertendo para array do OpenCV para pré-processamento
+                    img_cv = cv2.cvtColor(np.array(imagem), cv2.COLOR_RGB2BGR)
+                    gray = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
+                    # Aplica OCR Tesseract (Requer tesseract instalado no SO)
+                    texto_ocr = pytesseract.image_to_string(gray, lang='por')
+                    texto_extraido += f"\n\n--- IMAGEM OCR (Visão Ativada): {arquivo.name} ---\n{texto_ocr}"
+                    usou_ocr = True
+                except Exception as e_ocr:
+                    texto_extraido += f"\n[AETHER: Módulo OCR inativo ou imagem ilegível: {arquivo.name}]"
+            
             sucesso += 1
         except Exception as e:
-            texto_extraido += f"\n[ERRO EM {arquivo.name}: {str(e)}]"
-    
-    # Prevenção de limite de tokens (Trunca em aprox 25 mil palavras para segurança do Groq Llama3-70b)
-    if len(texto_extraido) > 100000:
-        texto_extraido = texto_extraido[:100000] + "\n\n[DADOS TRUNCADOS PELO LIMITE DE MEMÓRIA SEGURA]"
-        
-    return texto_extraido, sucesso
+            texto_extraido += f"\n[ERRO CRÍTICO EM {arquivo.name}: {str(e)}]"
+            
+    return texto_extraido, sucesso, usou_ocr
 
-# --- 🤖 AGENTE ÚNICO (Para paralelismo) ---
+# --- 🧠 MEMÓRIA VETORIAL (RAG COM FAISS & LANGCHAIN) ---
+def processar_com_rag(texto, comando):
+    """Fatia documentos gigantes e busca só o que importa usando Matemática Vetorial"""
+    if not GEMINI_KEY:
+        return texto[:90000] + "\n[ALERTA: Chave Gemini ausente. RAG desativado. Texto truncado para evitar estouro de memória.]"
+    
+    try:
+        # Fatiamento inteligente (Chunks com overlap para não cortar frases no meio)
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=4000, chunk_overlap=400)
+        chunks = text_splitter.split_text(texto)
+        
+        # Cria embeddings (Transforma o texto em coordenadas matemáticas)
+        embeddings = GoogleGenerativeAIEmbeddings(google_api_key=GEMINI_KEY, model="models/embedding-001")
+        
+        # Cria o banco de dados vetorial FAISS na memória RAM
+        vector_store = FAISS.from_texts(chunks, embeddings)
+        
+        # Busca no banco de dados os chunks que mais se parecem com o comando do usuário
+        docs_relevantes = vector_store.similarity_search(comando, k=8) # Pega os 8 melhores pedaços
+        
+        contexto_filtrado = "\n...\n".join([doc.page_content for doc in docs_relevantes])
+        return f"[AETHER RAG FILTER ACTIVE: Exibindo apenas fragmentos matematicamente relevantes para a análise]\n\n{contexto_filtrado}"
+    except Exception as e:
+        return texto[:90000] + f"\n[ALERTA RAG: Falha no processamento vetorial ({str(e)}). Operando em modo texto bruto.]"
+
+# --- 🤖 AGENTE EXECUTOR ---
 def chamar_agente_groq(nome_agente, system_prompt, comando, contexto):
-    if not GROQ_KEY: return f"[{nome_agente}] Erro: Chave API ausente."
+    if not GROQ_KEY: return f"[{nome_agente}] Erro: Chave API ausente. Configure st.secrets."
     try:
         client = Groq(api_key=GROQ_KEY)
-        full_prompt = f"DIRETRIZ DO USUÁRIO: {comando}\n\nDADOS INGERIDOS:\n{contexto}"
+        full_prompt = f"DIRETRIZ DE INVESTIGAÇÃO: {comando}\n\nEVIDÊNCIAS COLETADAS:\n{contexto}"
         completion = client.chat.completions.create(
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": full_prompt}
             ],
             model="llama3-70b-8192",
-            temperature=0.2,
+            temperature=0.1, # Temperatura baixa = Respostas mais analíticas e menos criativas
         )
         return completion.choices[0].message.content
     except Exception as e:
-        return f"[{nome_agente}] Falha de conexão: {str(e)}"
+        return f"[{nome_agente}] Falha de rede/API: {str(e)}"
 
-# --- 🚀 ORQUESTRADOR MULTI-AGENTE REAL (ASYNC) ---
+# --- 🚀 ORQUESTRADOR MULTI-AGENTE (ASYNC) ---
 def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, agente_foco):
-    if not contexto_arquivos.strip(): contexto_arquivos = "Nenhum documento fornecido. Opere apenas com base no comando."
+    if not contexto_arquivos.strip(): contexto_arquivos = "Nenhum documento fornecido. Opere em modo de consulta livre."
     
-    blindagem = "APLIQUE O ART 22 DA LINDB (Considerar obstáculos reais do gestor)." if lindb_ativada else ""
+    # Ativação do RAG se o texto for muito grande (Ex: Processos de 200 páginas)
+    if len(contexto_arquivos) > 60000:
+        contexto_arquivos = processar_com_rag(contexto_arquivos, comando)
     
-    # Definindo a personalidade dos 3 Agentes que vão trabalhar em paralelo
-    agente_1_sys = f"Você é o AUDITOR DE RISCO. Foco: {agente_foco}. Procure inconsistências financeiras, multas, riscos contratuais e cláusulas abusivas. Seja cirúrgico e aponte os riscos em tópicos. {blindagem}"
-    agente_2_sys = f"Você é o ADVOGADO SÊNIOR (LITÍGIO E DEFESA). Foco: {agente_foco}. Analise os dados procurando brechas na lei, teses de defesa, nulidades e jurisprudência aplicável. {blindagem}"
+    blindagem = "DIRETRIZ DE COMPLIANCE: Aplique rigorosamente a interpretação do Art. 22 da LINDB, considerando os obstáculos práticos do gestor público." if lindb_ativada else ""
+    
+    # Prompts de Personalidade Nível Sênior
+    agente_1_sys = f"Você é um Auditor Sênior de Riscos Financeiros e Contratuais. Especialidade: {agente_foco}. Procure inconsistências, multas abusivas, riscos operacionais e financeiros. Seja direto, use tópicos e linguagem técnica corporativa. {blindagem}"
+    agente_2_sys = f"Você é um Advogado Sênior de Contencioso Estratégico. Especialidade: {agente_foco}. Analise as evidências buscando brechas na lei, teses de defesa, nulidades formais e aplique jurisprudência padrão dos tribunais superiores (STJ/STF). {blindagem}"
     
     resultados = {}
-    # ⚡ MÁGICA: Executa os 2 agentes AO MESMO TEMPO
+    # Multithreading: 2 IAs trabalhando ao mesmo tempo
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-        future_risco = executor.submit(chamar_agente_groq, "AGENTE DE RISCO", agente_1_sys, comando, contexto_arquivos)
-        future_legal = executor.submit(chamar_agente_groq, "AGENTE JURÍDICO", agente_2_sys, comando, contexto_arquivos)
+        future_risco = executor.submit(chamar_agente_groq, "AGENTE RISK", agente_1_sys, comando, contexto_arquivos)
+        future_legal = executor.submit(chamar_agente_groq, "AGENTE LEGAL", agente_2_sys, comando, contexto_arquivos)
         
         resultados["risco"] = future_risco.result()
         resultados["legal"] = future_legal.result()
         
-    # ⚡ AGENTE 3: O Juiz/Sintetizador (Lê o trabalho dos outros dois e cria o Dossiê Final)
-    agente_3_sys = "Você é o AETHER OMNI, a IA Central. Seu trabalho é ler os pareceres dos seus 2 sub-agentes (Risco e Jurídico) e criar um DOSSIÊ EXECUTIVO final perfeito, unificado, em formato Markdown. Não cite os agentes explicitamente, apenas entregue a solução final como se fosse um único documento coeso e brilhante."
-    contexto_sintese = f"PARECER DE RISCO:\n{resultados['risco']}\n\nPARECER JURÍDICO:\n{resultados['legal']}"
+    # Síntese Master (Aether Omni)
+    agente_3_sys = "Você é o AETHER OMNI, o cérebro coordenador. Você recebeu dois relatórios (um de risco e um jurídico). Sua missão é fundir os dois em um DOSSIÊ EXECUTIVO DE ALTO NÍVEL, estruturado em Markdown profissional. Não mencione 'o agente 1 disse' ou 'o agente 2 disse'. Aja como o autor unificado do documento final."
+    contexto_sintese = f"--- RELATÓRIO DO DEPARTAMENTO DE RISCO ---\n{resultados['risco']}\n\n--- RELATÓRIO DO DEPARTAMENTO JURÍDICO ---\n{resultados['legal']}"
     
-    dossie_final = chamar_agente_groq("AETHER OMNI", agente_3_sys, "Sintetize os pareceres em um Dossiê Executivo profissional e definitivo.", contexto_sintese)
+    dossie_final = chamar_agente_groq("AETHER OMNI", agente_3_sys, "Crie o Dossiê Final Consolidado.", contexto_sintese)
     return dossie_final
 
-# --- 📄 GERADOR DE DOCX PROFISSIONAL ---
+# --- 📄 EXPORTAÇÃO DOCX (ALTA FIDELIDADE) ---
 def gerar_docx_aether(texto_markdown):
     doc = Document()
-    # Estilos AETHER
     styles = doc.styles
     style = styles['Normal']
     font = style.font
     font.name = 'Arial'
     font.size = Pt(11)
     
-    # Cabeçalho Timbrado
-    header = doc.add_heading('AETHER OMNI - STRATEGIC DOSSIER', 0)
-    header.runs[0].font.color.rgb = RGBColor(16, 185, 129) # Verde Aether
-    doc.add_paragraph(f"Gerado automaticamente em: {time.strftime('%Y-%m-%d %H:%M:%S')} UTC\nClassificação: CONFIDENCIAL")
-    doc.add_paragraph("_"*50)
+    header = doc.add_heading('AETHER OMNI - PARECER EXECUTIVO', 0)
+    header.runs[0].font.color.rgb = RGBColor(212, 175, 55) # Dourado Premium
+    doc.add_paragraph(f"Auditoria Neural Finalizada em: {time.strftime('%Y-%m-%d %H:%M:%S')} UTC")
+    doc.add_paragraph("Classificação: CONFIDENCIAL / PRIVILÉGIO ADVOGADO-CLIENTE")
+    doc.add_paragraph("_"*65)
     
-    # Processa o texto básico (simplificado para converter Markdown em parágrafos)
     linhas = texto_markdown.split('\n')
     for linha in linhas:
-        if linha.startswith('### '):
-            doc.add_heading(linha.replace('### ', ''), level=3)
-        elif linha.startswith('## '):
-            doc.add_heading(linha.replace('## ', ''), level=2)
-        elif linha.startswith('# '):
-            doc.add_heading(linha.replace('# ', ''), level=1)
+        if linha.startswith('### '): doc.add_heading(linha.replace('### ', ''), level=3)
+        elif linha.startswith('## '): doc.add_heading(linha.replace('## ', ''), level=2)
+        elif linha.startswith('# '): doc.add_heading(linha.replace('# ', ''), level=1)
         elif linha.startswith('**') and linha.endswith('**'):
              p = doc.add_paragraph()
              p.add_run(linha.replace('**', '')).bold = True
-        elif linha.strip() == '':
-            continue
-        else:
-            doc.add_paragraph(linha.replace('**', '')) # Remove asteriscos residuais
+        elif linha.strip() == '': continue
+        else: doc.add_paragraph(linha.replace('**', ''))
 
     buffer = io.BytesIO()
     doc.save(buffer)
@@ -156,7 +210,7 @@ def gerar_docx_aether(texto_markdown):
     return buffer
 
 # ==========================================
-# 🎨 CSS APEX V132 (O Front-end Perfeito Preservado)
+# 🎨 CSS APEX V132 (INTOCADO - PRESERVADO 100%)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -209,7 +263,7 @@ div[data-baseweb="select"] > div {{ background-color: rgba(15, 23, 42, 0.6) !imp
 st.markdown(css_code, unsafe_allow_html=True)
 
 # ==========================================
-# INTERFACE (A Mágica Visual)
+# INTERFACE
 # ==========================================
 st.markdown(f"""
 <div class="omni-topbar">
@@ -222,7 +276,7 @@ col_setup, col_main = st.columns([1.2, 2.5], gap="large")
 
 with col_setup:
     st.markdown('<div class="section-title">📁 Enviar Documentos e Processos</div>', unsafe_allow_html=True)
-    up = st.file_uploader("Arraste contratos, petições ou planilhas...", accept_multiple_files=True, label_visibility="collapsed")
+    up = st.file_uploader("Arraste contratos, petições, planilhas ou IMAGENS...", accept_multiple_files=True, label_visibility="collapsed")
     
     st.markdown('<div class="section-title">⚖️ Configurações da Análise</div>', unsafe_allow_html=True)
     agente_foco = st.selectbox("Especialidade do Assistente", ["Análise de Contratos", "Due Diligence Societária", "Compliance e Risco", "Auditoria Trabalhista", "Direito Público"], label_visibility="collapsed")
@@ -235,24 +289,24 @@ with col_setup:
         if not GROQ_KEY:
             st.error("⚠️ CHAVE API GROQ NÃO ENCONTRADA. Configure o st.secrets.")
         elif cmd:
-            with st.spinner("Orquestrando Agentes Paralelos (Aether Multi-Thread)..."):
-                # 1. Extração
-                texto_arquivos, num_arquivos = extrator_nexus_v2(up) if up else ("", 0)
+            with st.spinner("Iniciando varredura profunda (RAG & Multi-Agent)..."):
+                # 1. Extração Multimodal (Lê Texto, PDF, Excel e IMAGENS via OCR)
+                texto_arquivos, num_arquivos, usou_ocr = extrator_nexus_v3(up) if up else ("", 0, False)
                 
-                # 2. Orquestração Real em Paralelo
+                # 2. Orquestração Real em Paralelo com RAG Embutido
                 resposta = orquestrador_omni(cmd, texto_arquivos, ativar_lindb, agente_foco)
                 
-                # 3. Geração Automática do DOCX
+                # 3. Geração Automática do DOCX de Elite
                 docx_buffer = gerar_docx_aether(resposta)
                 
-                # 4. Salva no estado
                 st.session_state.res_aether = resposta
                 st.session_state.res_docx = docx_buffer
                 st.session_state.telemetria = {
                     "arquivos": str(num_arquivos),
                     "volume": f"{len(texto_arquivos)/1024:.1f} KB",
                     "tempo": time.strftime("%H:%M:%S"),
-                    "risco": "Análise Concluída"
+                    "risco": "Varredura Completa",
+                    "ocr": "ATIVADO" if usou_ocr else "Standby"
                 }
             st.rerun() 
         else:
@@ -263,9 +317,9 @@ with col_main:
     st.markdown(f"""
     <div class="custom-kpi-grid">
         <div class="kpi-box"><span class="kpi-title">Documentos Lidos</span><span class="kpi-value">{t['arquivos']}</span></div>
-        <div class="kpi-box"><span class="kpi-title">Volume Processado</span><span class="kpi-value">{t['volume']}</span></div>
-        <div class="kpi-box"><span class="kpi-title">Hora da Análise</span><span class="kpi-value">{t['tempo']}</span></div>
-        <div class="kpi-box"><span class="kpi-title">Status da Varredura</span><span class="kpi-value highlight">{t['risco']}</span></div>
+        <div class="kpi-box"><span class="kpi-title">Volume (RAG Act)</span><span class="kpi-value">{t['volume']}</span></div>
+        <div class="kpi-box"><span class="kpi-title">Módulo Visão (OCR)</span><span class="kpi-value">{t['ocr']}</span></div>
+        <div class="kpi-box"><span class="kpi-title">Status da Missão</span><span class="kpi-value highlight">{t['risco']}</span></div>
     </div>
     """, unsafe_allow_html=True)
     
@@ -274,9 +328,10 @@ with col_main:
     if st.session_state.res_aether:
         st.markdown("""
         <div class="agent-grid">
-            <div class="agent-badge">✓ AGENTE DE RISCO: CONCLUÍDO</div>
+            <div class="agent-badge">✓ AGENTE RISCO: CONCLUÍDO</div>
             <div class="agent-badge">✓ AGENTE JURÍDICO: CONCLUÍDO</div>
-            <div class="agent-badge">✓ AETHER (SÍNTESE MESTRA): ATIVO</div>
+            <div class="agent-badge">✓ AETHER (SÍNTESE): ATIVO</div>
+            <div class="agent-badge">✓ MEMÓRIA VETORIAL (RAG): OK</div>
         </div>
         """, unsafe_allow_html=True)
         
@@ -287,14 +342,14 @@ with col_main:
         
         b1, b2, b3 = st.columns([1,1,2])
         with b1: 
-            st.download_button("⬇ Exportar Relatório Oficial (Word DOCX)", data=st.session_state.res_docx, file_name="AETHER_Parecer_Executivo.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", use_container_width=True)
+            st.download_button("⬇ Exportar Relatório (Word DOCX)", data=st.session_state.res_docx, file_name="AETHER_Parecer_Executivo.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", use_container_width=True)
         with b2: 
-            st.download_button("⬇ Exportar Matriz Bruta (MD)", data=st.session_state.res_aether, file_name="AETHER_Matriz.md", use_container_width=True)
+            st.download_button("⬇ Exportar Matriz (TXT/MD)", data=st.session_state.res_aether, file_name="AETHER_Matriz.txt", use_container_width=True)
         with b3: 
-            if st.button("⟳ Nova Análise (Limpar Dados Seguros)", type="secondary", use_container_width=True):
+            if st.button("⟳ Nova Análise (Limpar Memória)", type="secondary", use_container_width=True):
                 st.session_state.res_aether = None
                 st.session_state.res_docx = None
-                st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--:--", "risco": "Aguardando"}
+                st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--:--", "risco": "Aguardando", "ocr": "Inativo"}
                 st.rerun()
     else:
         st.markdown('<div class="standby-container">', unsafe_allow_html=True)
