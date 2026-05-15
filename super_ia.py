@@ -1,10 +1,11 @@
 import streamlit as st
 import pandas as pd
-import os, time, base64, io, re, json
+import os, time, base64, io, re
 import textwrap
 import unicodedata
 import concurrent.futures
 import requests
+import json
 from datetime import datetime, timedelta
 from PIL import Image
 
@@ -64,11 +65,11 @@ except ImportError:
     MODULO_RAG = False
 
 # --- ⚙️ CONFIGURAÇÃO DE SEGURANÇA E UI ---
-st.set_page_config(page_title="AETHER KARV V322 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="AETHER KARV V323 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
 
 GROQ_KEY = st.secrets.get("GROQ_API_KEY", os.environ.get("GROQ_API_KEY", ""))
 GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
-CNJ_API_KEY = st.secrets.get("CNJ_API_KEY", "DEMO_KEY") # Chave do DataJud
+CNJ_API_KEY = st.secrets.get("CNJ_API_KEY", "DEMO_KEY")
 
 if GEMINI_KEY:
     genai.configure(api_key=GEMINI_KEY)
@@ -83,7 +84,6 @@ def get_base64_image(file):
             return base64.b64encode(f.read()).decode()
     return ""
 
-# BOTÕES DE DOWNLOAD EM HTML PURO
 def gerar_botao_primario(buffer, filename, label, mime):
     b64 = base64.b64encode(buffer).decode()
     css = "background: linear-gradient(135deg, #B8860B, #D4AF37); color: #020617; border-radius: 6px; padding: 8px; text-align: center; text-decoration: none; display: block; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; margin-bottom: 5px; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2);"
@@ -104,7 +104,7 @@ if "telemetria" not in st.session_state or st.session_state.telemetria is None:
 def set_template(texto):
     st.session_state.cmd_input = texto
 
-# --- 🌐 MÓDULO INTERNET & CNJ DATAJUD (RESGATADO E EVOLUÍDO V322) ---
+# --- 🌐 MÓDULO INTERNET & CNJ DATAJUD ---
 def buscar_na_internet(query):
     if not MODULO_INTERNET: return ""
     try:
@@ -116,41 +116,33 @@ def buscar_na_internet(query):
     except: return ""
 
 def consultar_datajud(numero_processo, api_key):
-    """Integração com a API do CNJ resgatada e otimizada para o Cérebro IA"""
     if api_key == "DEMO_KEY" or not api_key:
-        time.sleep(1) # Simula latência da rede
+        time.sleep(1) 
         return f"""
         [DADOS OFICIAIS DO DATAJUD (SIMULAÇÃO)]
-        Tribunal: TJSP
-        Processo: {numero_processo}
-        Classe: Procedimento Comum Cível
-        Assunto: Indenização por Dano Moral / Rescisão Contratual
-        Data Ajuizamento: 10/01/2025
+        Tribunal: Justiça Federal / Estadual
+        Processo/Documento: {numero_processo}
+        Classe: Procedimento Comum / Execução
+        Assunto: Análise de Contencioso
+        Data Ajuizamento: {datetime.now().strftime('%d/%m/%Y')}
         Movimentações Recentes:
-        - 05/02/2026: Concluso para Despacho
-        - 20/01/2026: Juntada de Petição de Contestação
+        - Última semana: Concluso para Despacho
+        - Mês anterior: Juntada de Petição / Contestação
         """
-    
-    url = "https://api-publica.datajud.cnj.jus.br/api_publica_tjsp/_search" # Exemplo TJSP
+    url = "https://api-publica.datajud.cnj.jus.br/api_publica_tjsp/_search"
     headers = {"Authorization": f"ApiKey {api_key}", "Content-Type": "application/json"}
     payload = {"query": {"match": {"numeroProcesso": numero_processo}}}
-    
     try:
         response = requests.post(url, json=payload, headers=headers, timeout=10)
-        if response.status_code == 200:
-            dados = response.json()
-            return f"\n[DADOS OFICIAIS DO DATAJUD RETORNADOS]:\n{json.dumps(dados)[:2000]}" # Limita tamanho para a IA
-        else:
-            return f"\n[ALERTA DATAJUD]: Falha na consulta oficial. Status: {response.status_code}"
-    except Exception as e:
-        return f"\n[ALERTA DATAJUD]: Falha de conexão ({str(e)})"
+        if response.status_code == 200: return f"\n[DATAJUD OFICIAL]:\n{json.dumps(response.json())[:2000]}"
+        else: return f"\n[ALERTA DATAJUD]: Status {response.status_code}"
+    except Exception as e: return f"\n[ALERTA DATAJUD]: Falha ({str(e)})"
 
 # --- 👁️ MOTOR DE INGESTÃO (NEXUS) ---
 def extrator_nexus_v3(arquivos_upados):
     texto_extraido = ""
     sucesso = 0
     usou_ocr = False
-    
     for arquivo in arquivos_upados:
         try:
             filename = arquivo.name.lower()
@@ -173,7 +165,6 @@ def extrator_nexus_v3(arquivos_upados):
                         if extraido: texto_pdf_nativo += extraido + "\n"
                 except: pass
                 if texto_pdf_nativo.strip(): texto_extraido += f"\n\n--- PDF: {arquivo.name} ---\n{texto_pdf_nativo}"
-            
             elif filename.endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp')):
                 if MODULO_VISAO:
                     try:
@@ -238,52 +229,56 @@ def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, tentar_in
 
     return f"[{nome_agente}] Erro Crítico: Sem chaves API configuradas.", "OFFLINE"
 
-# --- 🚀 ORQUESTRADOR MULTI-AGENTE ---
+# --- 🚀 ORQUESTRADOR MULTI-AGENTE (V323: CÓRTEX DINÂMICO CONTEXTUAL) ---
 def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cnj, agente_foco):
-    
-    # Injeção DataJud no Córtex do Aether
-    dados_tribunal = ""
-    if num_processo_cnj:
-        dados_tribunal = consultar_datajud(num_processo_cnj, CNJ_API_KEY)
-
+    tem_arquivos = len(contexto_arquivos.strip()) > 0
+    dados_tribunal = consultar_datajud(num_processo_cnj, CNJ_API_KEY) if num_processo_cnj else ""
     contexto_final = contexto_arquivos + "\n" + dados_tribunal
     
-    if not contexto_final.strip(): contexto_final = "Nenhum documento ou processo fornecido. Opere em modo de consulta livre."
     if len(contexto_final) > 60000: contexto_final = processar_com_rag(contexto_final, comando)
+    blindagem = "Aplique a LINDB para invalidar responsabilizações injustas." if lindb_ativada else ""
     
-    blindagem = "Aplique o Art. 22 da LINDB para invalidar responsabilizações injustas." if lindb_ativada else ""
-    
-    agente_1_sys = f"Auditor Forense Sênior. Foco: {agente_foco}. Cruze números com extenso e denuncie fraudes. Se houver dados do DataJud, cruze as datas processuais com os contratos anexos."
-    agente_2_sys = f"Advogado Sócio. Foco: {agente_foco}. Busque nulidades absolutas e foro ilegal. Avalie a jurisdição do processo (se fornecido via DataJud). {blindagem}"
-    
+    # ⚠️ V323: EVOLUÇÃO - INTELIGÊNCIA SENSÍVEL AO CONTEXTO ⚠️
+    if tem_arquivos:
+        # MODO 1: SNIPER FORENSE DE CONTRATOS (Com documentos anexos)
+        agente_1_sys = f"Auditor Sênior. Foco: {agente_foco}. Cruze números com extenso e denuncie fraudes. Analise dados do DataJud se houver."
+        agente_2_sys = f"Advogado Sócio. Foco: {agente_foco}. Busque nulidades absolutas e foro ilegal. {blindagem}"
+        agente_3_sys = """Você é o AETHER OMNI, IA Jurídica. Crie o DOSSIÊ EXECUTIVO DE AUDITORIA.
+        REGRA ABSOLUTA 1: Inicie com uma Matriz de Risco em Tabela Markdown (barras verticais |).
+        | Nível de Risco | Item | Descrição | Ação Imediata |
+        |---|---|---|---|
+        | Alto | (Item) | (Descrição) | (Ação) |
+        Após a tabela, disserte sobre as fraudes contratuais e processos vinculados."""
+    else:
+        # MODO 2: ANALISTA PROCESSUAL (Apenas Número/CPF digitado, sem documentos)
+        agente_1_sys = f"Analista de Dados Judiciais. Foco: {agente_foco}. Extraia os eventos principais das movimentações do tribunal (DataJud) fornecidas. NÃO invente contratos que não existem."
+        agente_2_sys = f"Estrategista Jurídico. Foco: {agente_foco}. Avalie a situação processual com base no andamento do tribunal e sugira próximos passos legais reais."
+        agente_3_sys = """Você é o AETHER OMNI, IA de Inteligência Processual.
+        O usuário forneceu apenas dados de consulta pública (DataJud), sem contratos anexos.
+        Crie um RELATÓRIO DE INTELIGÊNCIA PROCESSUAL.
+        REGRA ABSOLUTA 1: Inicie com uma Tabela Markdown de Resumo do Processo:
+        | Tribunal | Processo/Documento | Classe | Assunto | Data de Ajuizamento |
+        |---|---|---|---|---|
+        | (Dado) | (Dado) | (Dados) | (Dado) | (Dado) |
+        Após a tabela, faça um diagnóstico estratégico das movimentações processuais e do que o advogado deve fazer. NÃO alucine fraudes, foque no processo."""
+
     resultados = {}
     motores_usados = set()
-    
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
         f_risco = executor.submit(chamar_agente_hydra, "AGENTE RISK", agente_1_sys, comando, contexto_final, True)
         f_legal = executor.submit(chamar_agente_hydra, "AGENTE LEGAL", agente_2_sys, comando, contexto_final, False)
-        
         resultados["risco"], m1 = f_risco.result()
         resultados["legal"], m2 = f_legal.result()
         motores_usados.add(m1)
         motores_usados.add(m2)
         
-    agente_3_sys = """Você é o AETHER OMNI, IA Jurídica Suprema.
-Crie o DOSSIÊ EXECUTIVO.
-REGRA ABSOLUTA 1: Inicie OBRIGATORIAMENTE com uma Matriz de Risco em Tabela Markdown usando BARRAS VERTICAIS (|).
-| Nível de Risco | Item | Descrição | Ação Imediata |
-|---|---|---|---|
-| Alto | Fraude | Rombo identificado | Invalidar |
-
-Após a tabela, disserte sobre as fraudes financeiras e dados processuais (caso haja) de forma corporativa e cirúrgica."""
-    
-    contexto_sintese = f"--- AUDITORIA FORENSE ---\n{resultados['risco']}\n\n--- JURÍDICO ---\n{resultados['legal']}"
-    dossie_final, m3 = chamar_agente_hydra("AETHER OMNI", agente_3_sys, "Crie o Dossiê Final. PROIBIDO CSV. Use Tabela Markdown (|).", contexto_sintese)
+    contexto_sintese = f"--- PARTE 1 ---\n{resultados['risco']}\n\n--- PARTE 2 ---\n{resultados['legal']}"
+    dossie_final, m3 = chamar_agente_hydra("AETHER OMNI", agente_3_sys, "Crie o Dossiê Final. Use Tabela Markdown com barras verticais (|).", contexto_sintese)
     motores_usados.add(m3)
     
     return dossie_final, " | ".join(list(motores_usados))
 
-# --- 📄 EXPORTAÇÕES (WORD) ---
+# --- 📄 EXPORTAÇÕES (O CONVERSOR UNIVERSAL OMNI V323) ---
 def gerar_docx_aether(texto_markdown):
     doc = Document()
     font = doc.styles['Normal'].font
@@ -291,7 +286,7 @@ def gerar_docx_aether(texto_markdown):
     
     header = doc.add_heading('AETHER KARV - PARECER EXECUTIVO', 0)
     header.runs[0].font.color.rgb = RGBColor(212, 175, 55) 
-    doc.add_paragraph(f"Auditoria Neural Finalizada em: {get_data_hora_br()} (Horário de Brasília)")
+    doc.add_paragraph(f"Auditoria/Consulta Finalizada em: {get_data_hora_br()}")
     doc.add_paragraph("Classificação: CONFIDENCIAL / PRIVILÉGIO ADVOGADO-CLIENTE")
     doc.add_paragraph("_"*65)
     
@@ -302,15 +297,18 @@ def gerar_docx_aether(texto_markdown):
         linha_limpa = linha.strip()
         if not linha_limpa: continue
 
+        is_table_line = False
+        cols = []
+        
+        # O Omni-Parser: Entende Markdown (|), CSV (,) e TAB (\t)
         if linha_limpa.startswith('|') and linha_limpa.endswith('|'):
             if re.match(r'^\|[-\s\|]+\|$', linha_limpa): continue 
             cols = [c.strip() for c in linha_limpa.split('|')[1:-1]]
             is_table_line = True
-        elif '\t' in linha_limpa and len(linha_limpa.split('\t')) >= 3:
-            cols = [c.strip() for c in linha_limpa.split('\t')]
-            is_table_line = True
-        else:
-            is_table_line = False
+        elif ('Nível de Risco' in linha_limpa or 'Alto' in linha_limpa or 'Tribunal' in linha_limpa) and (',' in linha_limpa or '\t' in linha_limpa):
+            separador = '\t' if '\t' in linha_limpa else ','
+            cols = [c.strip() for c in linha_limpa.split(separador)]
+            if len(cols) >= 3: is_table_line = True
 
         if is_table_line:
             if not in_table:
@@ -353,7 +351,7 @@ def gerar_pdf_aether(texto_markdown):
         pdf.set_text_color(212, 175, 55)
         pdf.cell(0, 10, txt="AETHER KARV - PARECER EXECUTIVO", ln=1, align='C')
         pdf.set_text_color(150, 150, 150)
-        pdf.cell(0, 8, txt=f"Auditoria: {sanitize_for_pdf(get_data_hora_br())}", ln=1, align='C')
+        pdf.cell(0, 8, txt=f"Gerado em: {sanitize_for_pdf(get_data_hora_br())}", ln=1, align='C')
         pdf.set_text_color(0, 0, 0)
         pdf.ln(5)
         
@@ -365,13 +363,17 @@ def gerar_pdf_aether(texto_markdown):
             if not linha_filtrada: 
                 pdf.ln(3); continue
 
+            # Previne falhas de formato no PDF
             if re.match(r'^\|[-\s\|]+\|$', linha_filtrada): continue
             
+            # Omni-Parser Visual para PDF (Mapeia as Tabelas rebeldes)
             if linha_filtrada.startswith('|') and linha_filtrada.endswith('|'):
                 cols = [c.strip() for c in linha_filtrada.split('|')[1:-1]]
                 linha_filtrada = "  |  ".join(cols)
-            elif '\t' in linha_filtrada:
-                linha_filtrada = linha_filtrada.replace('\t', '  |  ')
+            elif ('Nivel de Risco' in linha_filtrada or 'Alto' in linha_filtrada or 'Tribunal' in linha_filtrada) and (',' in linha_filtrada or '\t' in linha_filtrada):
+                sep = '\t' if '\t' in linha_filtrada else ','
+                cols = [c.strip() for c in linha_filtrada.split(sep)]
+                linha_filtrada = "  |  ".join(cols)
 
             pedacos = textwrap.wrap(linha_filtrada, width=85, break_long_words=True)
             for pedaco in pedacos:
@@ -388,7 +390,7 @@ def gerar_pdf_aether(texto_markdown):
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V322
+# 🎨 CSS APEX V323
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -418,11 +420,10 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{ background: rgba(15, 23, 42, 
 [data-testid="stFileUploadDropzone"] {{ background-color: rgba(15, 23, 42, 0.4) !important; border: 1px dashed rgba(255,255,255,0.1) !important; border-radius: 6px !important; padding: 5px !important; min-height: 40px !important; transition: 0.3s; flex-shrink: 0; }}
 [data-testid="stFileUploadDropzone"] small {{ display: none !important; }}
 div[data-baseweb="select"] > div {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.75rem !important; border-radius: 6px !important; min-height: 32px !important; }}
-.stTextArea label, .stCheckbox label span, .stSelectbox label {{ font-size: 0.65rem !important; color: #cbd5e1 !important; font-weight: 600 !important; margin-bottom: 2px !important; }}
+.stTextArea label, .stCheckbox label span, .stSelectbox label, .stTextInput label {{ font-size: 0.65rem !important; color: #cbd5e1 !important; font-weight: 600 !important; margin-bottom: 2px !important; }}
 .stTextArea textarea, .stTextInput input {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.8rem !important; border-radius: 6px !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); }}
 .stTextArea textarea:focus, .stTextInput input:focus {{ border-color: #D4AF37 !important; box-shadow: 0 0 8px rgba(212, 175, 55, 0.1) !important; }}
 .stTextArea textarea {{ height: 85px !important; min-height: 85px !important; padding: 8px !important; flex-shrink: 0; }}
-
 [data-testid="stCheckbox"] {{ background: rgba(0,0,0,0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.03); margin-bottom: 5px; flex-shrink: 0; }}
 
 .stButton > button[kind="primary"] {{ background: linear-gradient(135deg, #B8860B, #D4AF37) !important; border-radius: 6px !important; font-weight: 700 !important; color: #020617 !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; padding: 8px !important; border: none !important; width: 100% !important; margin-top: auto !important; transition: 0.3s; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2); font-size: 0.85rem !important; flex-shrink: 0; }}
@@ -453,8 +454,8 @@ st.markdown(css_code, unsafe_allow_html=True)
 # ==========================================
 st.markdown(f"""
 <div class="omni-topbar">
-    <div class="omni-brand"><h1>AETHER KARV</h1><span>V322 APEX DATAJUD</span></div>
-    <div class="omni-status">SESSÃO: <span>CRIPTOGRAFADA</span> | EXPORT: <span>FLAWLESS</span></div>
+    <div class="omni-brand"><h1>AETHER KARV</h1><span>V323 APEX CONTEXTUAL</span></div>
+    <div class="omni-status">SESSÃO: <span>CRIPTOGRAFADA</span> | MOTOR: <span>OMNI-PARSER</span></div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -468,9 +469,8 @@ with col_setup:
     agente_foco = st.selectbox("Especialidade do Assistente", ["Análise de Contratos", "Due Diligence Societária", "Compliance e Risco", "Auditoria Trabalhista", "Direito Público"], label_visibility="collapsed")
     ativar_lindb = st.checkbox("Aplicar Filtro de Proteção (Art. 22 LINDB)", value=True)
     
-    # ⚠️ V322 APEX: INJEÇÃO DO MÓDULO DATAJUD NA UI ⚠️
     st.markdown('<div class="section-title">🏛️ Integração DataJud (CNJ)</div>', unsafe_allow_html=True)
-    num_processo_input = st.text_input("", placeholder="Número Único do Processo (Opcional)", label_visibility="collapsed")
+    num_processo_input = st.text_input("Número do Processo ou CPF/CNPJ (Consulta)", placeholder="Digite aqui o número...", label_visibility="collapsed")
 
     st.markdown('<div class="section-title">💬 Instruções ou Pedidos Especiais</div>', unsafe_allow_html=True)
     cmd = st.text_area("", key="cmd_input", placeholder="Ex: Verifique as cláusulas de rescisão e aponte os riscos...", label_visibility="collapsed")
@@ -482,7 +482,6 @@ with col_setup:
             with st.spinner("Motor Hydra Ativado. Processando Inteligência Multi-Agente..."):
                 texto_arquivos, num_arquivos, usou_ocr = extrator_nexus_v3(up) if up else ("", 0, False)
                 
-                # O Orquestrador agora recebe o número do processo para extrair via API!
                 resposta, motor_usado = orquestrador_omni(cmd, texto_arquivos, ativar_lindb, num_processo_input, agente_foco)
                 
                 docx_buffer = gerar_docx_aether(resposta)
@@ -495,7 +494,7 @@ with col_setup:
                     "arquivos": str(num_arquivos),
                     "volume": f"{len(texto_arquivos)/1024:.1f} KB",
                     "tempo": get_data_hora_br().split("às ")[1], 
-                    "risco": "Varredura Completa",
+                    "risco": "Análise Completa",
                     "ocr": "ATIVADO" if usou_ocr else ("Standby" if MODULO_VISAO else "OFFLINE"),
                     "motor": motor_usado
                 }
@@ -521,12 +520,12 @@ with col_main:
         <div class="agent-grid">
             <div class="agent-badge">✓ AGENTE FORENSE: CONCLUÍDO</div>
             <div class="agent-badge">✓ AGENTE JURÍDICO: CONCLUÍDO</div>
-            <div class="agent-badge">✓ AETHER (SÍNTESE MATRIZ): ATIVO</div>
+            <div class="agent-badge">✓ AETHER (SÍNTESE OMNI): ATIVO</div>
             <div class="agent-badge">✓ MEMÓRIA (RAG): {'OK' if MODULO_RAG else 'OFFLINE'}</div>
         </div>
         """, unsafe_allow_html=True)
         
-        st.markdown('<div class="section-title">Ações e Exportação (Download Automático em HTML)</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-title">Ações e Exportação (1-Click Download)</div>', unsafe_allow_html=True)
         
         b1, b2, b3, b4 = st.columns(4)
         with b1: st.markdown(gerar_botao_primario(st.session_state.res_docx, "AETHER_Parecer.docx", "📄 Word (DOCX)", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"), unsafe_allow_html=True)
