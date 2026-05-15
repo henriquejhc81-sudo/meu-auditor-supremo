@@ -44,8 +44,8 @@ try:
     MODULO_RAG = True
 except ImportError: MODULO_RAG = False
 
-# --- ⚙️ CONFIGURAÇÃO DE SEGURANÇA E UI (LAYOUT AMPLO E SIDEBAR EXPANDIDA) ---
-st.set_page_config(page_title="AETHER KARV V327 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
+# --- ⚙️ CONFIGURAÇÃO DE SEGURANÇA E UI ---
+st.set_page_config(page_title="AETHER KARV V328 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
 
 GROQ_KEY = st.secrets.get("GROQ_API_KEY", os.environ.get("GROQ_API_KEY", ""))
 GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
@@ -229,22 +229,22 @@ def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cn
     blindagem = "Aplique a LINDB para invalidar responsabilizações injustas." if lindb_ativada else ""
     
     if tem_arquivos:
-        agente_1_sys = f"Auditor Sênior. Foco: {agente_foco}. Cruze números com extenso e denuncie fraudes. Analise dados do DataJud se houver."
-        agente_2_sys = f"Advogado Sócio. Foco: {agente_foco}. Busque nulidades absolutas e avalie jurisdição. {blindagem}"
+        agente_1_sys = f"Auditor Sênior. Foco: {agente_foco}. Cruze números com extenso e denuncie fraudes. Analise os dados processuais anexos."
+        agente_2_sys = f"Advogado Sócio. Foco: {agente_foco}. Busque nulidades absolutas e avalie a jurisdição. {blindagem}"
         agente_3_sys = """Você é o AETHER OMNI, IA Jurídica. Crie o DOSSIÊ EXECUTIVO DE AUDITORIA.
         REGRA 1: Inicie com uma Matriz de Risco em Tabela Markdown (barras verticais |).
         | Nível de Risco | Item | Descrição | Ação Imediata |
         |---|---|---|---|
-        Após a tabela, disserte profundamente sobre as fraudes, contratos e detalhes do processo."""
+        Após a tabela, disserte profundamente sobre as fraudes."""
     else:
-        agente_1_sys = f"Analista Investigativo. Extraia os dados do extrato DataJud. Deixe claro se for uma simulação."
+        agente_1_sys = f"Analista Investigativo. Extraia e relacione os dados do extrato."
         agente_2_sys = f"Estrategista Jurídico de Elite. Avalie a gravidade processual."
-        agente_3_sys = """Você é o AETHER OMNI, IA de Inteligência Processual.
-        Crie o RELATÓRIO DE INTELIGÊNCIA PROCESSUAL com base apenas no extrato judicial fornecido.
+        agente_3_sys = """Você é o AETHER OMNI, IA Processual.
+        Crie o RELATÓRIO DE INTELIGÊNCIA PROCESSUAL.
         REGRA 1: Inicie com uma Tabela Markdown perfeita com Barras Verticais (|):
         | Tribunal | Polo Ativo (Autor) | Polo Passivo (Réu) | Valor da Causa | Assunto Principal |
         |---|---|---|---|---|
-        REGRA 2: Se os dados contiverem [MODO SIMULAÇÃO], deixe claro no texto que é uma demonstração do Aether."""
+        REGRA 2: Após a Tabela, crie 'Diagnóstico e Estratégia'."""
 
     resultados = {}
     motores_usados = set()
@@ -262,7 +262,7 @@ def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cn
     
     return dossie_final, " | ".join(list(motores_usados))
 
-# --- 📄 EXPORTAÇÕES DE ALTO PADRÃO ---
+# --- 📄 EXPORTAÇÕES ---
 def gerar_docx_aether(texto_markdown):
     doc = Document()
     font = doc.styles['Normal'].font
@@ -371,7 +371,7 @@ def gerar_pdf_aether(texto_markdown):
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V327 (WORKSPACE DESIGN)
+# 🎨 CSS APEX V328 (WORKSPACE DESIGN)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -420,6 +420,9 @@ div[data-baseweb="select"] > div {{ background-color: rgba(15, 23, 42, 0.6) !imp
 
 .stButton > button[kind="secondary"] {{ background: rgba(255,255,255,0.05) !important; color: #cbd5e1 !important; border: 1px solid rgba(255,255,255,0.15) !important; border-radius: 6px !important; font-weight: 600 !important; transition: 0.3s; }}
 .stButton > button[kind="secondary"]:hover {{ background: rgba(212,175,55,0.1) !important; color: #fff !important; border-color: #D4AF37 !important; }}
+
+/* PROGRESS BAR STYLING */
+.stProgress > div > div > div > div {{ background-color: #D4AF37 !important; }}
 </style>
 """
 st.markdown(css_code, unsafe_allow_html=True)
@@ -429,45 +432,60 @@ st.markdown(css_code, unsafe_allow_html=True)
 # ==========================================
 
 with st.sidebar:
-    st.markdown('<div class="omni-brand" style="margin-bottom: 20px;"><h1>AETHER KARV</h1><span>V327 SUPREME</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="omni-brand" style="margin-bottom: 20px;"><h1>AETHER KARV</h1><span>V328 ASTREA-UX</span></div>', unsafe_allow_html=True)
     
+    # Tooltips incorporados usando help=""
     st.markdown('<div class="section-title">📁 Base de Conhecimento</div>', unsafe_allow_html=True)
-    up = st.file_uploader("Contratos, petições ou imagens...", accept_multiple_files=True, label_visibility="collapsed")
+    up = st.file_uploader("Contratos, petições ou imagens...", accept_multiple_files=True, label_visibility="collapsed", help="Faça upload dos documentos base. A IA fará a ingestão e leitura completa (incluindo imagens via OCR).")
     
     st.markdown('<div class="section-title">⚖️ Motor Jurídico</div>', unsafe_allow_html=True)
-    agente_foco = st.selectbox("Especialidade", ["Análise de Contratos", "Due Diligence Societária", "Compliance e Risco", "Auditoria Trabalhista", "Direito Público"], label_visibility="collapsed")
-    ativar_lindb = st.checkbox("Filtro de Proteção (Art. 22 LINDB)", value=True)
+    agente_foco = st.selectbox("Especialidade", ["Análise de Contratos", "Due Diligence Societária", "Compliance e Risco", "Auditoria Trabalhista", "Direito Público"], label_visibility="collapsed", help="Define o perfil cognitivo dos Agentes. A IA moldará seu vocabulário e rigor baseado nesta escolha.")
+    ativar_lindb = st.checkbox("Filtro de Proteção (Art. 22 LINDB)", value=True, help="Ativa a proteção legal contra responsabilização injusta de gestores públicos.")
     
     st.markdown('<div class="section-title">🏛️ DataJud (CNJ)</div>', unsafe_allow_html=True)
     if CNJ_API_KEY == "DEMO_KEY":
         st.warning("⚠️ Modo Simulação: Dados gerados serão fictícios (Mockup).")
-    num_processo_input = st.text_input("Nº do Processo / CNPJ", placeholder="Insira para extração...", label_visibility="collapsed")
+    num_processo_input = st.text_input("Nº do Processo / CNPJ", placeholder="Insira para extração...", label_visibility="collapsed", help="Insira um CPF ou Número de Processo para consultar as bases do Tribunal via integração de API.")
 
     st.markdown('<div class="section-title">💬 Comando Direto</div>', unsafe_allow_html=True)
-    cmd = st.text_area("", key="cmd_input", placeholder="Instruções para a IA...", label_visibility="collapsed")
+    cmd = st.text_area("", key="cmd_input", placeholder="Instruções para a IA...", label_visibility="collapsed", help="Exemplo: 'Busque brechas na cláusula 4' ou 'Qual o risco deste processo?'")
 
     if st.button("🚀 INICIAR AUDITORIA OMNI", type="primary"):
         if not GROQ_KEY and not GEMINI_KEY:
             st.error("⚠️ ERRO: Chaves API não configuradas.")
+            st.toast("Falha: Chaves API ausentes.", icon="❌")
         elif cmd or up or num_processo_input:
-            with st.spinner("Processando pipeline de dados..."):
-                texto_arquivos, num_arquivos, usou_ocr = extrator_nexus_v3(up) if up else ("", 0, False)
-                resposta, motor_usado = orquestrador_omni(cmd, texto_arquivos, ativar_lindb, num_processo_input, agente_foco)
-                
-                docx_buffer = gerar_docx_aether(resposta)
-                pdf_data = gerar_pdf_aether(resposta)
-                
-                st.session_state.res_aether = resposta
-                st.session_state.res_docx = docx_buffer.getvalue()
-                st.session_state.res_pdf = pdf_data
-                st.session_state.telemetria = {
-                    "arquivos": str(num_arquivos),
-                    "volume": f"{len(texto_arquivos)/1024:.1f} KB",
-                    "tempo": get_data_hora_br().split("às ")[1], 
-                    "risco": "Missão Cumprida",
-                    "ocr": "Online" if usou_ocr else ("Standby" if MODULO_VISAO else "Offline"),
-                    "motor": motor_usado
-                }
+            # ⚠️ V328: SISTEMA DE TOASTS E BARRA DE PROGRESSO DINÂMICA (Estilo Astrea) ⚠️
+            st.toast("Iniciando Motor Hydra...", icon="🔥")
+            progress_bar = st.progress(5, text="Iniciando Córtex de Ingestão...")
+            time.sleep(0.5)
+            
+            progress_bar.progress(20, text="Extraindo dados dos arquivos e OCR...")
+            texto_arquivos, num_arquivos, usou_ocr = extrator_nexus_v3(up) if up else ("", 0, False)
+            
+            progress_bar.progress(40, text="Consultando DataJud e estruturando RAG...")
+            resposta, motor_usado = orquestrador_omni(cmd, texto_arquivos, ativar_lindb, num_processo_input, agente_foco)
+            
+            progress_bar.progress(75, text="Renderizando Tabelas Nativas e PDF Blindado...")
+            docx_buffer = gerar_docx_aether(resposta)
+            pdf_data = gerar_pdf_aether(resposta)
+            
+            progress_bar.progress(100, text="Auditoria Concluída com Sucesso!")
+            st.toast("Dossiê Executivo Gerado!", icon="✅")
+            time.sleep(0.5)
+            progress_bar.empty()
+            
+            st.session_state.res_aether = resposta
+            st.session_state.res_docx = docx_buffer.getvalue()
+            st.session_state.res_pdf = pdf_data
+            st.session_state.telemetria = {
+                "arquivos": str(num_arquivos),
+                "volume": f"{len(texto_arquivos)/1024:.1f} KB",
+                "tempo": get_data_hora_br().split("às ")[1], 
+                "risco": "Missão Cumprida",
+                "ocr": "Online" if usou_ocr else ("Standby" if MODULO_VISAO else "Offline"),
+                "motor": motor_usado
+            }
             st.rerun() 
         else:
             st.warning("Forneça um documento, processo ou comando.")
@@ -483,15 +501,14 @@ st.markdown(f"""
 t = st.session_state.telemetria
 st.markdown(f"""
 <div class="custom-kpi-grid">
-    <div class="kpi-box"><span class="kpi-title">Documentos Digeridos</span><span class="kpi-value">{t['arquivos']}</span></div>
-    <div class="kpi-box"><span class="kpi-title">Nó de Processamento</span><span class="kpi-value highlight">{t['motor']}</span></div>
-    <div class="kpi-box"><span class="kpi-title">Módulo de Visão</span><span class="kpi-value">{t['ocr']}</span></div>
-    <div class="kpi-box"><span class="kpi-title">Status da Operação</span><span class="kpi-value highlight">{t['risco']}</span></div>
+    <div class="kpi-box" title="Volume de contratos e peças inseridos no sistema."><span class="kpi-title">Documentos Digeridos</span><span class="kpi-value">{t['arquivos']}</span></div>
+    <div class="kpi-box" title="Modelo de IA de Elite que processou os dados (Groq/Gemini)."><span class="kpi-title">Nó de Processamento</span><span class="kpi-value highlight">{t['motor']}</span></div>
+    <div class="kpi-box" title="Status do sistema de leitura visual para PDFs escaneados ou imagens."><span class="kpi-title">Módulo de Visão</span><span class="kpi-value">{t['ocr']}</span></div>
+    <div class="kpi-box" title="Andamento atual do orquestrador Omni."><span class="kpi-title">Status da Operação</span><span class="kpi-value highlight">{t['risco']}</span></div>
 </div>
 """, unsafe_allow_html=True)
 
 if st.session_state.res_aether:
-    # SISTEMA DE ABAS (TABS) PARA ORGANIZAÇÃO SUPREMA
     tab1, tab2, tab3 = st.tabs(["📊 Dossiê Executivo", "📥 Central de Exportação", "🕵️‍♂️ Código Raw"])
     
     with tab1:
@@ -522,7 +539,7 @@ if st.session_state.res_aether:
 else:
     st.markdown('<div class="standby-container">', unsafe_allow_html=True)
     st.markdown('<div class="welcome-title">O Workspace do Aether Karv está Online.</div>', unsafe_allow_html=True)
-    st.markdown('<div class="welcome-subtitle">Utilize a barra de ferramentas à esquerda para injetar documentos, conectar-se ao DataJud ou inserir instruções paramétricas para a Inteligência Artificial.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="welcome-subtitle">Utilize a barra de ferramentas à esquerda para injetar documentos, conectar-se ao DataJud ou inserir instruções paramétricas para a Inteligência Artificial. Dica: Passe o mouse sobre as opções para dicas visuais.</div>', unsafe_allow_html=True)
     
     col_a, col_b = st.columns(2)
     with col_a:
