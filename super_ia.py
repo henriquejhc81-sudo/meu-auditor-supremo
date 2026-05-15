@@ -12,36 +12,30 @@ from PIL import Image
 # --- 🛡️ PROTOCOLO DE PRESERVAÇÃO TOTAL & LIBS TÁTICAS ---
 try:
     from groq import Groq
-except ImportError:
-    pass
+except ImportError: pass
 
 try:
     import google.generativeai as genai
-except ImportError:
-    pass
+except ImportError: pass
 
 try:
     from duckduckgo_search import DDGS
     MODULO_INTERNET = True
-except ImportError:
-    MODULO_INTERNET = False
+except ImportError: MODULO_INTERNET = False
 
 try:
     import docx2txt
     from docx import Document
     from docx.shared import Pt, RGBColor
-except ImportError:
-    st.error("⚠️ Biblioteca 'python-docx' ausente.")
+except ImportError: st.error("⚠️ Biblioteca 'python-docx' ausente.")
 
 try:
     from fpdf import FPDF
-except ImportError:
-    pass
+except ImportError: pass
 
 try:
     import PyPDF2
-except ImportError:
-    pass
+except ImportError: pass
 
 # --- 👁️ VISÃO COMPUTACIONAL (OCR + OPENCV) ---
 try:
@@ -49,30 +43,24 @@ try:
     import numpy as np
     import pytesseract
     MODULO_VISAO = True
-except ImportError:
-    MODULO_VISAO = False
+except ImportError: MODULO_VISAO = False
 
 # --- 🧠 MEMÓRIA VETORIAL / RAG ---
 try:
-    try:
-        from langchain_text_splitters import RecursiveCharacterTextSplitter
-    except ImportError:
-        from langchain.text_splitter import RecursiveCharacterTextSplitter
+    from langchain.text_splitter import RecursiveCharacterTextSplitter
     from langchain_community.vectorstores import FAISS
     from langchain_google_genai import GoogleGenerativeAIEmbeddings
     MODULO_RAG = True
-except ImportError:
-    MODULO_RAG = False
+except ImportError: MODULO_RAG = False
 
 # --- ⚙️ CONFIGURAÇÃO DE SEGURANÇA E UI ---
-st.set_page_config(page_title="AETHER KARV V323 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="AETHER KARV V324 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
 
 GROQ_KEY = st.secrets.get("GROQ_API_KEY", os.environ.get("GROQ_API_KEY", ""))
 GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
 CNJ_API_KEY = st.secrets.get("CNJ_API_KEY", "DEMO_KEY")
 
-if GEMINI_KEY:
-    genai.configure(api_key=GEMINI_KEY)
+if GEMINI_KEY: genai.configure(api_key=GEMINI_KEY)
 
 def get_data_hora_br():
     fuso_br = datetime.utcnow() - timedelta(hours=3)
@@ -80,19 +68,18 @@ def get_data_hora_br():
 
 def get_base64_image(file):
     if os.path.exists(file):
-        with open(file, "rb") as f:
-            return base64.b64encode(f.read()).decode()
+        with open(file, "rb") as f: return base64.b64encode(f.read()).decode()
     return ""
 
-def gerar_botao_primario(buffer, filename, label, mime):
+# ⚠️ V324 APEX: DOWNLOAD FORÇADO (OCTET-STREAM) FIM DA NOVA ABA ⚠️
+def gerar_botao_download_unificado(buffer, filename, label):
     b64 = base64.b64encode(buffer).decode()
-    css = "background: linear-gradient(135deg, #B8860B, #D4AF37); color: #020617; border-radius: 6px; padding: 8px; text-align: center; text-decoration: none; display: block; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; margin-bottom: 5px; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2);"
-    return f'<a href="data:{mime};base64,{b64}" download="{filename}" style="{css}">{label}</a>'
-
-def gerar_botao_secundario(buffer, filename, label, mime):
-    b64 = base64.b64encode(buffer).decode()
-    css = "background: rgba(255,255,255,0.05); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 8px; text-align: center; text-decoration: none; display: block; font-size: 0.8rem; font-weight: 500; margin-bottom: 5px;"
-    return f'<a href="data:{mime};base64,{b64}" download="{filename}" style="{css}">{label}</a>'
+    # O truque application/octet-stream força o download ignorando o leitor de PDF do navegador.
+    mime = "application/octet-stream"
+    css = "background: rgba(255,255,255,0.05); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 6px; text-align: center; text-decoration: none; display: block; font-size: 0.75rem; font-weight: 600; transition: all 0.3s ease;"
+    hover_css = "this.style.background='rgba(212,175,55,0.1)'; this.style.borderColor='#D4AF37'; this.style.color='#fff';"
+    out_css = "this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='rgba(255,255,255,0.15)'; this.style.color='#cbd5e1';"
+    return f'<a href="data:{mime};base64,{b64}" download="{filename}" style="{css}" onmouseover="{hover_css}" onmouseout="{out_css}">{label}</a>'
 
 if "cmd_input" not in st.session_state: st.session_state.cmd_input = ""
 if "res_aether" not in st.session_state: st.session_state.res_aether = None
@@ -101,8 +88,7 @@ if "res_pdf" not in st.session_state: st.session_state.res_pdf = None
 if "telemetria" not in st.session_state or st.session_state.telemetria is None: 
     st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--", "risco": "Aguardando", "ocr": "Inativo", "motor": "Standby"}
 
-def set_template(texto):
-    st.session_state.cmd_input = texto
+def set_template(texto): st.session_state.cmd_input = texto
 
 # --- 🌐 MÓDULO INTERNET & CNJ DATAJUD ---
 def buscar_na_internet(query):
@@ -138,7 +124,7 @@ def consultar_datajud(numero_processo, api_key):
         else: return f"\n[ALERTA DATAJUD]: Status {response.status_code}"
     except Exception as e: return f"\n[ALERTA DATAJUD]: Falha ({str(e)})"
 
-# --- 👁️ MOTOR DE INGESTÃO (NEXUS) ---
+# --- 👁️ MOTOR DE INGESTÃO (NEXUS MULTIMODAL) ---
 def extrator_nexus_v3(arquivos_upados):
     texto_extraido = ""
     sucesso = 0
@@ -193,7 +179,7 @@ def processar_com_rag(texto, comando):
         return "\n...\n".join([doc.page_content for doc in docs_relevantes])
     except: return texto[:90000]
 
-# --- 🤖 HYDRA ENGINE ---
+# --- 🤖 HYDRA ENGINE (MEGA HÍBRIDO) ---
 def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, tentar_internet=False):
     contexto_final = contexto
     if tentar_internet and MODULO_INTERNET:
@@ -229,7 +215,7 @@ def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, tentar_in
 
     return f"[{nome_agente}] Erro Crítico: Sem chaves API configuradas.", "OFFLINE"
 
-# --- 🚀 ORQUESTRADOR MULTI-AGENTE (V323: CÓRTEX DINÂMICO CONTEXTUAL) ---
+# --- 🚀 ORQUESTRADOR MULTI-AGENTE ---
 def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cnj, agente_foco):
     tem_arquivos = len(contexto_arquivos.strip()) > 0
     dados_tribunal = consultar_datajud(num_processo_cnj, CNJ_API_KEY) if num_processo_cnj else ""
@@ -238,29 +224,23 @@ def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cn
     if len(contexto_final) > 60000: contexto_final = processar_com_rag(contexto_final, comando)
     blindagem = "Aplique a LINDB para invalidar responsabilizações injustas." if lindb_ativada else ""
     
-    # ⚠️ V323: EVOLUÇÃO - INTELIGÊNCIA SENSÍVEL AO CONTEXTO ⚠️
     if tem_arquivos:
-        # MODO 1: SNIPER FORENSE DE CONTRATOS (Com documentos anexos)
         agente_1_sys = f"Auditor Sênior. Foco: {agente_foco}. Cruze números com extenso e denuncie fraudes. Analise dados do DataJud se houver."
         agente_2_sys = f"Advogado Sócio. Foco: {agente_foco}. Busque nulidades absolutas e foro ilegal. {blindagem}"
-        agente_3_sys = """Você é o AETHER OMNI, IA Jurídica. Crie o DOSSIÊ EXECUTIVO DE AUDITORIA.
-        REGRA ABSOLUTA 1: Inicie com uma Matriz de Risco em Tabela Markdown (barras verticais |).
+        agente_3_sys = """Você é o AETHER OMNI. Crie o DOSSIÊ DE AUDITORIA.
+        REGRA 1: Inicie com uma Matriz de Risco em Tabela Markdown (barras verticais |).
         | Nível de Risco | Item | Descrição | Ação Imediata |
         |---|---|---|---|
-        | Alto | (Item) | (Descrição) | (Ação) |
-        Após a tabela, disserte sobre as fraudes contratuais e processos vinculados."""
+        Após a tabela, disserte sobre fraudes contratuais e processos vinculados."""
     else:
-        # MODO 2: ANALISTA PROCESSUAL (Apenas Número/CPF digitado, sem documentos)
-        agente_1_sys = f"Analista de Dados Judiciais. Foco: {agente_foco}. Extraia os eventos principais das movimentações do tribunal (DataJud) fornecidas. NÃO invente contratos que não existem."
-        agente_2_sys = f"Estrategista Jurídico. Foco: {agente_foco}. Avalie a situação processual com base no andamento do tribunal e sugira próximos passos legais reais."
-        agente_3_sys = """Você é o AETHER OMNI, IA de Inteligência Processual.
-        O usuário forneceu apenas dados de consulta pública (DataJud), sem contratos anexos.
+        agente_1_sys = f"Analista de Dados Judiciais. Foco: {agente_foco}. Extraia os eventos principais do tribunal (DataJud). NÃO invente contratos."
+        agente_2_sys = f"Estrategista Jurídico. Foco: {agente_foco}. Avalie a situação processual do tribunal e sugira passos legais reais."
+        agente_3_sys = """Você é o AETHER OMNI, IA Processual. Sem contratos anexos.
         Crie um RELATÓRIO DE INTELIGÊNCIA PROCESSUAL.
-        REGRA ABSOLUTA 1: Inicie com uma Tabela Markdown de Resumo do Processo:
+        REGRA 1: Inicie com uma Tabela Markdown de Resumo:
         | Tribunal | Processo/Documento | Classe | Assunto | Data de Ajuizamento |
         |---|---|---|---|---|
-        | (Dado) | (Dado) | (Dados) | (Dado) | (Dado) |
-        Após a tabela, faça um diagnóstico estratégico das movimentações processuais e do que o advogado deve fazer. NÃO alucine fraudes, foque no processo."""
+        Após a tabela, faça diagnóstico estratégico das movimentações. NÃO alucine fraudes."""
 
     resultados = {}
     motores_usados = set()
@@ -273,20 +253,20 @@ def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cn
         motores_usados.add(m2)
         
     contexto_sintese = f"--- PARTE 1 ---\n{resultados['risco']}\n\n--- PARTE 2 ---\n{resultados['legal']}"
-    dossie_final, m3 = chamar_agente_hydra("AETHER OMNI", agente_3_sys, "Crie o Dossiê Final. Use Tabela Markdown com barras verticais (|).", contexto_sintese)
+    dossie_final, m3 = chamar_agente_hydra("AETHER OMNI", agente_3_sys, "Crie o Dossiê Final. Use Tabela Markdown (|).", contexto_sintese)
     motores_usados.add(m3)
     
     return dossie_final, " | ".join(list(motores_usados))
 
-# --- 📄 EXPORTAÇÕES (O CONVERSOR UNIVERSAL OMNI V323) ---
+# --- 📄 EXPORTAÇÕES (CONVERSOR DE TABELAS OMNI V324) ---
 def gerar_docx_aether(texto_markdown):
     doc = Document()
     font = doc.styles['Normal'].font
-    font.name = 'Arial'; font.size = Pt(11)
+    font.name = 'Arial'; font.size = Pt(10) # Reduzido para caber melhor na tela
     
     header = doc.add_heading('AETHER KARV - PARECER EXECUTIVO', 0)
     header.runs[0].font.color.rgb = RGBColor(212, 175, 55) 
-    doc.add_paragraph(f"Auditoria/Consulta Finalizada em: {get_data_hora_br()}")
+    doc.add_paragraph(f"Auditoria Finalizada em: {get_data_hora_br()}")
     doc.add_paragraph("Classificação: CONFIDENCIAL / PRIVILÉGIO ADVOGADO-CLIENTE")
     doc.add_paragraph("_"*65)
     
@@ -300,7 +280,6 @@ def gerar_docx_aether(texto_markdown):
         is_table_line = False
         cols = []
         
-        # O Omni-Parser: Entende Markdown (|), CSV (,) e TAB (\t)
         if linha_limpa.startswith('|') and linha_limpa.endswith('|'):
             if re.match(r'^\|[-\s\|]+\|$', linha_limpa): continue 
             cols = [c.strip() for c in linha_limpa.split('|')[1:-1]]
@@ -363,10 +342,8 @@ def gerar_pdf_aether(texto_markdown):
             if not linha_filtrada: 
                 pdf.ln(3); continue
 
-            # Previne falhas de formato no PDF
             if re.match(r'^\|[-\s\|]+\|$', linha_filtrada): continue
             
-            # Omni-Parser Visual para PDF (Mapeia as Tabelas rebeldes)
             if linha_filtrada.startswith('|') and linha_filtrada.endswith('|'):
                 cols = [c.strip() for c in linha_filtrada.split('|')[1:-1]]
                 linha_filtrada = "  |  ".join(cols)
@@ -390,7 +367,7 @@ def gerar_pdf_aether(texto_markdown):
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V323
+# 🎨 CSS APEX V324 (1-SCREEN COMPACTION)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -403,48 +380,47 @@ html, body {{ overflow: hidden !important; height: 100vh !important; width: 100v
 .block-container {{ padding: 0.8rem 1rem 0 1rem !important; max-width: 98% !important; height: 100vh !important; display: flex; flex-direction: column; overflow: hidden !important; }}
 [data-testid="stHeader"], footer {{ display: none !important; }}
 
-.omni-topbar {{ display: flex; justify-content: space-between; align-items: center; background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(212, 175, 55, 0.15); padding: 6px 20px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); flex-shrink: 0; }}
+.omni-topbar {{ display: flex; justify-content: space-between; align-items: center; background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(212, 175, 55, 0.15); padding: 4px 20px; margin-bottom: 8px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); flex-shrink: 0; }}
 .omni-brand {{ display: flex; align-items: center; gap: 12px; }}
-.omni-brand h1 {{ margin: 0; font-family: 'Inter', sans-serif; font-size: 1.1rem; color: #f8fafc; font-weight: 700; letter-spacing: 0.5px; }}
-.omni-brand span {{ color: #D4AF37; font-size: 0.65rem; font-weight: 700; letter-spacing: 1px; border: 1px solid rgba(212, 175, 55, 0.4); padding: 2px 6px; border-radius: 6px; background: rgba(212, 175, 55, 0.05); text-transform: uppercase; }}
-.omni-status {{ font-size: 0.7rem; color: #94a3b8; font-weight: 500; }}
+.omni-brand h1 {{ margin: 0; font-family: 'Inter', sans-serif; font-size: 1.0rem; color: #f8fafc; font-weight: 700; letter-spacing: 0.5px; }}
+.omni-brand span {{ color: #D4AF37; font-size: 0.60rem; font-weight: 700; letter-spacing: 1px; border: 1px solid rgba(212, 175, 55, 0.4); padding: 2px 6px; border-radius: 6px; background: rgba(212, 175, 55, 0.05); text-transform: uppercase; }}
+.omni-status {{ font-size: 0.65rem; color: #94a3b8; font-weight: 500; }}
 .omni-status span {{ color: #D4AF37; font-weight: 600; }}
 
-[data-testid="column"] {{ background: rgba(30, 41, 59, 0.3) !important; backdrop-filter: blur(16px) !important; border: 1px solid rgba(255,255,255,0.05) !important; border-radius: 12px !important; padding: 12px 18px !important; height: calc(100vh - 75px) !important; display: flex; flex-direction: column; box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2); overflow: hidden !important; }}
+[data-testid="column"] {{ background: rgba(30, 41, 59, 0.3) !important; backdrop-filter: blur(16px) !important; border: 1px solid rgba(255,255,255,0.05) !important; border-radius: 12px !important; padding: 10px 15px !important; height: calc(100vh - 65px) !important; display: flex; flex-direction: column; box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2); overflow: hidden !important; }}
 
-div[data-testid="stVerticalBlockBorderWrapper"] {{ background: rgba(15, 23, 42, 0.3) !important; border-radius: 6px !important; border: 1px solid rgba(255,255,255,0.05) !important; box-shadow: inset 0 2px 10px rgba(0,0,0,0.3) !important; padding: 10px !important; margin-bottom: 10px; }}
+div[data-testid="stVerticalBlockBorderWrapper"] {{ background: rgba(15, 23, 42, 0.3) !important; border-radius: 6px !important; border: 1px solid rgba(255,255,255,0.05) !important; box-shadow: inset 0 2px 10px rgba(0,0,0,0.3) !important; padding: 8px !important; margin-bottom: 8px; }}
 
-.section-title {{ color: #f8fafc; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 8px; margin-top: 5px; display: flex; align-items: center; gap: 6px; flex-shrink: 0; }}
+.section-title {{ color: #f8fafc; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 5px; margin-top: 2px; display: flex; align-items: center; gap: 6px; flex-shrink: 0; }}
 .section-title::before {{ content: ''; display: block; width: 3px; height: 10px; background: #D4AF37; border-radius: 4px; }}
 
-[data-testid="stFileUploadDropzone"] {{ background-color: rgba(15, 23, 42, 0.4) !important; border: 1px dashed rgba(255,255,255,0.1) !important; border-radius: 6px !important; padding: 5px !important; min-height: 40px !important; transition: 0.3s; flex-shrink: 0; }}
+[data-testid="stFileUploadDropzone"] {{ background-color: rgba(15, 23, 42, 0.4) !important; border: 1px dashed rgba(255,255,255,0.1) !important; border-radius: 6px !important; padding: 2px !important; min-height: 35px !important; transition: 0.3s; flex-shrink: 0; }}
 [data-testid="stFileUploadDropzone"] small {{ display: none !important; }}
-div[data-baseweb="select"] > div {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.75rem !important; border-radius: 6px !important; min-height: 32px !important; }}
-.stTextArea label, .stCheckbox label span, .stSelectbox label, .stTextInput label {{ font-size: 0.65rem !important; color: #cbd5e1 !important; font-weight: 600 !important; margin-bottom: 2px !important; }}
-.stTextArea textarea, .stTextInput input {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.8rem !important; border-radius: 6px !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); }}
+div[data-baseweb="select"] > div {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.70rem !important; border-radius: 6px !important; min-height: 28px !important; }}
+.stTextArea label, .stCheckbox label span, .stSelectbox label, .stTextInput label {{ font-size: 0.60rem !important; color: #cbd5e1 !important; font-weight: 600 !important; margin-bottom: 2px !important; }}
+.stTextArea textarea, .stTextInput input {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.75rem !important; border-radius: 6px !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); }}
 .stTextArea textarea:focus, .stTextInput input:focus {{ border-color: #D4AF37 !important; box-shadow: 0 0 8px rgba(212, 175, 55, 0.1) !important; }}
-.stTextArea textarea {{ height: 85px !important; min-height: 85px !important; padding: 8px !important; flex-shrink: 0; }}
-[data-testid="stCheckbox"] {{ background: rgba(0,0,0,0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.03); margin-bottom: 5px; flex-shrink: 0; }}
+.stTextArea textarea {{ height: 70px !important; min-height: 70px !important; padding: 6px !important; flex-shrink: 0; }}
+[data-testid="stCheckbox"] {{ background: rgba(0,0,0,0.1); padding: 2px 6px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.03); margin-bottom: 5px; flex-shrink: 0; }}
 
-.stButton > button[kind="primary"] {{ background: linear-gradient(135deg, #B8860B, #D4AF37) !important; border-radius: 6px !important; font-weight: 700 !important; color: #020617 !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; padding: 8px !important; border: none !important; width: 100% !important; margin-top: auto !important; transition: 0.3s; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2); font-size: 0.85rem !important; flex-shrink: 0; }}
+.stButton > button[kind="primary"] {{ background: linear-gradient(135deg, #B8860B, #D4AF37) !important; border-radius: 6px !important; font-weight: 700 !important; color: #020617 !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; padding: 6px !important; border: none !important; width: 100% !important; margin-top: auto !important; transition: 0.3s; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2); font-size: 0.8rem !important; flex-shrink: 0; }}
 .stButton > button[kind="primary"]:hover {{ transform: translateY(-1px); box-shadow: 0 6px 15px rgba(212, 175, 55, 0.4); filter: brightness(1.1); }}
 
-.custom-kpi-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; flex-shrink: 0; }}
-.kpi-box {{ background: rgba(15, 23, 42, 0.4); border-radius: 6px; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.03); border-left: 2px solid #D4AF37; padding: 6px 10px; }}
-.kpi-title {{ color: #94a3b8; font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; font-weight: 600; }}
-.kpi-value {{ color: #f8fafc; font-size: 1rem; font-weight: 500; line-height: 1.1; }}
+.stButton > button[kind="secondary"] {{ background: rgba(255,255,255,0.05) !important; color: #cbd5e1 !important; border: 1px solid rgba(255,255,255,0.15) !important; border-radius: 6px !important; font-size: 0.75rem !important; font-weight: 600 !important; padding: 6px !important; width: 100% !important; transition: 0.3s; margin: 0 !important; }}
+.stButton > button[kind="secondary"]:hover {{ background: rgba(212,175,55,0.1) !important; color: #fff !important; border-color: #D4AF37 !important; }}
+
+.custom-kpi-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 5px; flex-shrink: 0; }}
+.kpi-box {{ background: rgba(15, 23, 42, 0.4); border-radius: 6px; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.03); border-left: 2px solid #D4AF37; padding: 4px 8px; }}
+.kpi-title {{ color: #94a3b8; font-size: 0.50rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; font-weight: 600; }}
+.kpi-value {{ color: #f8fafc; font-size: 0.9rem; font-weight: 500; line-height: 1.1; }}
 .kpi-value.highlight {{ color: #D4AF37; font-weight: 700; }}
 
-.agent-grid {{ display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; flex-shrink: 0; }}
-.agent-badge {{ background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.3); color: #D4AF37; font-size: 0.6rem; font-weight: 600; padding: 2px 8px; border-radius: 4px; display: flex; align-items: center; gap: 4px; }}
-.agent-standby {{ background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); color: #94a3b8; font-size: 0.6rem; padding: 2px 8px; border-radius: 4px; display: flex; align-items: center; gap: 4px; }}
-
-.stButton > button[kind="secondary"] {{ background: rgba(255,255,255,0.05) !important; color: #cbd5e1 !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 6px !important; font-size: 0.7rem !important; font-weight: 500 !important; padding: 4px !important; width: 100% !important; transition: 0.3s; margin: 0 !important; }}
-.stButton > button[kind="secondary"]:hover {{ background: rgba(255,255,255,0.1) !important; color: #fff !important; border-color: #D4AF37 !important; }}
+.agent-grid {{ display: flex; gap: 4px; margin-bottom: 5px; flex-wrap: wrap; flex-shrink: 0; align-items: center; }}
+.agent-badge {{ background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.3); color: #D4AF37; font-size: 0.55rem; font-weight: 600; padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; }}
 
 .standby-container {{ display:flex; flex-direction:column; align-items:center; justify-content:center; flex-grow:1; border: 1px dashed rgba(255,255,255,0.1); border-radius: 8px; background: rgba(15, 23, 42, 0.3); padding: 15px; margin-top: 5px; }}
-.welcome-title {{ color: #f8fafc; font-size: 1.05rem; font-weight: 600; margin-bottom: 3px; text-align: center; }}
-.welcome-subtitle {{ color: #94a3b8; font-size: 0.75rem; margin-bottom: 15px; text-align: center; }}
+.welcome-title {{ color: #f8fafc; font-size: 1.0rem; font-weight: 600; margin-bottom: 3px; text-align: center; }}
+.welcome-subtitle {{ color: #94a3b8; font-size: 0.70rem; margin-bottom: 10px; text-align: center; }}
 </style>
 """
 st.markdown(css_code, unsafe_allow_html=True)
@@ -454,12 +430,12 @@ st.markdown(css_code, unsafe_allow_html=True)
 # ==========================================
 st.markdown(f"""
 <div class="omni-topbar">
-    <div class="omni-brand"><h1>AETHER KARV</h1><span>V323 APEX CONTEXTUAL</span></div>
-    <div class="omni-status">SESSÃO: <span>CRIPTOGRAFADA</span> | MOTOR: <span>OMNI-PARSER</span></div>
+    <div class="omni-brand"><h1>AETHER KARV</h1><span>V324 APEX ONE-SCREEN</span></div>
+    <div class="omni-status">SESSÃO: <span>CRIPTOGRAFADA</span> | UI: <span>COMPACTADA</span></div>
 </div>
 """, unsafe_allow_html=True)
 
-col_setup, col_main = st.columns([1.2, 2.5], gap="large")
+col_setup, col_main = st.columns([1.1, 2.6], gap="medium")
 
 with col_setup:
     st.markdown('<div class="section-title">📁 Enviar Documentos e Processos</div>', unsafe_allow_html=True)
@@ -470,16 +446,16 @@ with col_setup:
     ativar_lindb = st.checkbox("Aplicar Filtro de Proteção (Art. 22 LINDB)", value=True)
     
     st.markdown('<div class="section-title">🏛️ Integração DataJud (CNJ)</div>', unsafe_allow_html=True)
-    num_processo_input = st.text_input("Número do Processo ou CPF/CNPJ (Consulta)", placeholder="Digite aqui o número...", label_visibility="collapsed")
+    num_processo_input = st.text_input("Número do Processo (Opcional)", placeholder="Digite aqui o número...", label_visibility="collapsed")
 
     st.markdown('<div class="section-title">💬 Instruções ou Pedidos Especiais</div>', unsafe_allow_html=True)
-    cmd = st.text_area("", key="cmd_input", placeholder="Ex: Verifique as cláusulas de rescisão e aponte os riscos...", label_visibility="collapsed")
+    cmd = st.text_area("", key="cmd_input", placeholder="Ex: Verifique as cláusulas e aponte os riscos...", label_visibility="collapsed")
 
     if st.button("🚀 Iniciar Varredura Jurídica", type="primary"):
         if not GROQ_KEY and not GEMINI_KEY:
             st.error("⚠️ ERRO CRÍTICO: Nenhuma chave API configurada no st.secrets.")
         elif cmd or up or num_processo_input:
-            with st.spinner("Motor Hydra Ativado. Processando Inteligência Multi-Agente..."):
+            with st.spinner("Motor Hydra Ativado. Processando Inteligência..."):
                 texto_arquivos, num_arquivos, usou_ocr = extrator_nexus_v3(up) if up else ("", 0, False)
                 
                 resposta, motor_usado = orquestrador_omni(cmd, texto_arquivos, ativar_lindb, num_processo_input, agente_foco)
@@ -500,7 +476,7 @@ with col_setup:
                 }
             st.rerun() 
         else:
-            st.warning("Por favor, forneça documentos, um número de processo ou uma instrução.")
+            st.warning("Por favor, forneça documentos, um número de processo ou instrução.")
 
 with col_main:
     t = st.session_state.telemetria
@@ -513,51 +489,48 @@ with col_main:
     </div>
     """, unsafe_allow_html=True)
     
-    st.markdown('<div class="section-title">Status dos Módulos Especialistas</div>', unsafe_allow_html=True)
-    
     if st.session_state.res_aether:
         st.markdown(f"""
-        <div class="agent-grid">
-            <div class="agent-badge">✓ AGENTE FORENSE: CONCLUÍDO</div>
-            <div class="agent-badge">✓ AGENTE JURÍDICO: CONCLUÍDO</div>
-            <div class="agent-badge">✓ AETHER (SÍNTESE OMNI): ATIVO</div>
-            <div class="agent-badge">✓ MEMÓRIA (RAG): {'OK' if MODULO_RAG else 'OFFLINE'}</div>
+        <div style="display:flex; align-items:center; margin-bottom:5px;">
+            <div class="section-title" style="margin:0; margin-right:10px;">Módulos:</div>
+            <div class="agent-badge">✓ FORENSE</div>
+            <div class="agent-badge">✓ JURÍDICO</div>
+            <div class="agent-badge">✓ OMNI MATRIZ</div>
         </div>
         """, unsafe_allow_html=True)
         
-        st.markdown('<div class="section-title">Ações e Exportação (1-Click Download)</div>', unsafe_allow_html=True)
-        
-        b1, b2, b3, b4 = st.columns(4)
-        with b1: st.markdown(gerar_botao_primario(st.session_state.res_docx, "AETHER_Parecer.docx", "📄 Word (DOCX)", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"), unsafe_allow_html=True)
-        with b2: st.markdown(gerar_botao_primario(st.session_state.res_pdf, "AETHER_Parecer.pdf", "📕 PDF Blindado", "application/pdf"), unsafe_allow_html=True)
-        with b3: st.markdown(gerar_botao_secundario(st.session_state.res_aether.encode('utf-8'), "AETHER_Parecer.txt", "📝 Texto (TXT)", "text/plain"), unsafe_allow_html=True)
-        with b4: st.markdown(gerar_botao_secundario(st.session_state.res_aether.encode('utf-8'), "AETHER_Parecer.md", "📊 Matriz (MD)", "text/markdown"), unsafe_allow_html=True)
+        # ⚠️ V324 APEX: TODOS OS BOTÕES DE EXPORTAÇÃO COMPACTADOS EM UMA ÚNICA LINHA UNIFORME ⚠️
+        b1, b2, b3, b4, b5 = st.columns(5)
+        with b1: st.markdown(gerar_botao_download_unificado(st.session_state.res_docx, "AETHER_Parecer.docx", "📄 Word"), unsafe_allow_html=True)
+        with b2: st.markdown(gerar_botao_download_unificado(st.session_state.res_pdf, "AETHER_Parecer.pdf", "📕 PDF"), unsafe_allow_html=True)
+        with b3: st.markdown(gerar_botao_download_unificado(st.session_state.res_aether.encode('utf-8'), "AETHER_Parecer.txt", "📝 Texto"), unsafe_allow_html=True)
+        with b4: st.markdown(gerar_botao_download_unificado(st.session_state.res_aether.encode('utf-8'), "AETHER_Parecer.md", "📊 Markdown"), unsafe_allow_html=True)
+        with b5: 
+            if st.button("⟳ Limpar Tudo", type="secondary", use_container_width=True):
+                st.session_state.res_aether = None
+                st.session_state.res_docx = None
+                st.session_state.res_pdf = None
+                st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--:--", "risco": "Aguardando", "ocr": "Inativo", "motor": "Standby"}
+                st.rerun()
 
-        st.markdown('<div style="margin-top: 5px;"></div>', unsafe_allow_html=True)
-        if st.button("⟳ Nova Análise (Limpar Memória)", type="secondary", use_container_width=True):
-            st.session_state.res_aether = None
-            st.session_state.res_docx = None
-            st.session_state.res_pdf = None
-            st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--:--", "risco": "Aguardando", "ocr": "Inativo", "motor": "Standby"}
-            st.rerun()
-
-        st.markdown('<div class="section-title" style="margin-top:10px;">Parecer Jurídico (Resultado)</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-title" style="margin-top:5px;">Parecer Jurídico (Resultado)</div>', unsafe_allow_html=True)
         
-        with st.container(height=350):
+        # Reduzida a altura do container para caber na tela
+        with st.container(height=260):
             st.markdown(st.session_state.res_aether)
             
-        with st.expander("📋 Copiar Parecer (Código Fonte)"):
+        with st.expander("📋 Ver Código Fonte (Markdown)"):
             st.code(st.session_state.res_aether, language="markdown")
             
     else:
         st.markdown('<div class="standby-container">', unsafe_allow_html=True)
         st.markdown('<div class="welcome-title">Como posso ajudar na sua análise hoje?</div>', unsafe_allow_html=True)
-        st.markdown('<div class="welcome-subtitle">Escolha um atalho rápido ou digite sua instrução no painel à esquerda. Você também pode preencher o número do processo para integrar dados do DataJud (CNJ).</div>', unsafe_allow_html=True)
+        st.markdown('<div class="welcome-subtitle">Escolha um atalho rápido ou digite sua instrução no painel à esquerda.</div>', unsafe_allow_html=True)
         c1, c2 = st.columns(2)
         with c1:
-            st.button("📄 Analisar Petição Inicial", on_click=set_template, args=("Faça uma análise crítica da petição em anexo, identificando fragilidades jurídicas e sugerindo teses de defesa.",), use_container_width=True)
-            st.button("🔍 Caçar Cláusulas Abusivas", on_click=set_template, args=("Revise o contrato anexo e destaque todas as cláusulas que possam ser consideradas abusivas ou desproporcionais.",), use_container_width=True)
+            if st.button("📄 Analisar Petição", use_container_width=True): set_template("Faça uma análise crítica da petição em anexo, identificando fragilidades jurídicas.")
+            if st.button("🔍 Caçar Cláusulas", use_container_width=True): set_template("Revise o contrato anexo e destaque cláusulas abusivas ou desproporcionais.")
         with c2:
-            st.button("📅 Calcular Prazos", on_click=set_template, args=("Leia a publicação do diário oficial e identifique os prazos processuais e as providências cabíveis.",), use_container_width=True)
-            st.button("🌐 Pesquisar Jurisprudência", on_click=set_template, args=("Busque as decisões mais recentes sobre este tema na internet.",), use_container_width=True)
+            if st.button("📅 Calcular Prazos", use_container_width=True): set_template("Leia a publicação do diário oficial e identifique prazos processuais cabíveis.")
+            if st.button("🌐 Pesquisar Jurisp.", use_container_width=True): set_template("Busque as decisões mais recentes sobre este tema na internet.")
         st.markdown('</div>', unsafe_allow_html=True)
