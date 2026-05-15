@@ -1,12 +1,13 @@
 import streamlit as st
 import pandas as pd
 import os, time, base64, io, re
+import textwrap
 import unicodedata
 import concurrent.futures
 from datetime import datetime, timedelta
 from PIL import Image
 
-# --- 🛡️ PROTOCOLO DE PRESERVAÇÃO & LIBS TÁTICAS ---
+# --- 🛡️ PROTOCOLO DE PRESERVAÇÃO TOTAL & LIBS TÁTICAS ---
 try:
     from groq import Groq
 except ImportError:
@@ -26,8 +27,7 @@ except ImportError:
 try:
     import docx2txt
     from docx import Document
-    from docx.shared import Pt, RGBColor, Inches
-    from docx.enum.text import WD_ALIGN_PARAGRAPH
+    from docx.shared import Pt, RGBColor
 except ImportError:
     st.error("⚠️ Biblioteca 'python-docx' ausente.")
 
@@ -41,7 +41,7 @@ try:
 except ImportError:
     pass
 
-# --- 👁️ VISÃO COMPUTACIONAL ---
+# --- 👁️ VISÃO COMPUTACIONAL AVANÇADA (OCR + OPENCV) ---
 try:
     import cv2
     import numpy as np
@@ -50,7 +50,7 @@ try:
 except ImportError:
     MODULO_VISAO = False
 
-# --- 🧠 MEMÓRIA VETORIAL / RAG ---
+# --- 🧠 MEMÓRIA VETORIAL / RAG (O Cérebro de Processos Gigantes) ---
 try:
     try:
         from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -63,7 +63,7 @@ except ImportError:
     MODULO_RAG = False
 
 # --- ⚙️ CONFIGURAÇÃO DE SEGURANÇA E UI ---
-st.set_page_config(page_title="AETHER KARV V318 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="AETHER KARV V319 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
 
 GROQ_KEY = st.secrets.get("GROQ_API_KEY", os.environ.get("GROQ_API_KEY", ""))
 GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
@@ -80,6 +80,12 @@ def get_base64_image(file):
         with open(file, "rb") as f:
             return base64.b64encode(f.read()).decode()
     return ""
+
+# SISTEMA DE DOWNLOAD HTML PURO (Prevenção de Bug do Streamlit)
+def gerar_link_download(buffer, filename, label, mime):
+    b64 = base64.b64encode(buffer).decode()
+    css = "background: rgba(255,255,255,0.05); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 6px; text-align: center; text-decoration: none; display: block; font-size: 0.7rem; font-weight: 500; transition: 0.3s;"
+    return f'<a href="data:{mime};base64,{b64}" download="{filename}" style="{css}" target="_blank">{label}</a>'
 
 if "cmd_input" not in st.session_state: st.session_state.cmd_input = ""
 if "res_aether" not in st.session_state: st.session_state.res_aether = None
@@ -104,7 +110,7 @@ def buscar_na_internet(query):
     except:
         return ""
 
-# --- 👁️ MOTOR DE INGESTÃO (NEXUS) ---
+# --- 👁️ MOTOR DE INGESTÃO (NEXUS MULTIMODAL) ---
 def extrator_nexus_v3(arquivos_upados):
     texto_extraido = ""
     sucesso = 0
@@ -161,7 +167,7 @@ def processar_com_rag(texto, comando):
         return "\n...\n".join([doc.page_content for doc in docs_relevantes])
     except: return texto[:90000]
 
-# --- 🤖 HYDRA ENGINE ---
+# --- 🤖 HYDRA ENGINE (Resiliência Máxima) ---
 def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, tentar_internet=False):
     contexto_final = contexto
     if tentar_internet and MODULO_INTERNET:
@@ -197,14 +203,14 @@ def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, tentar_in
 
     return f"[{nome_agente}] Erro Crítico: Sem chaves API configuradas.", "OFFLINE"
 
-# --- 🚀 ORQUESTRADOR MULTI-AGENTE ---
+# --- 🚀 ORQUESTRADOR MULTI-AGENTE (O Sniper Forense) ---
 def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, agente_foco):
     if not contexto_arquivos.strip(): contexto_arquivos = "Nenhum documento fornecido. Opere em modo de consulta livre."
     if len(contexto_arquivos) > 60000: contexto_arquivos = processar_com_rag(contexto_arquivos, comando)
     
-    blindagem = "Aplique o Art. 22 da LINDB para invalidar responsabilizações injustas." if lindb_ativada else ""
+    blindagem = "Aplique o Art. 22 da LINDB para invalidar responsabilizações injustas de fiscais e gestores." if lindb_ativada else ""
     
-    agente_1_sys = f"Auditor Forense Sênior. Especialidade: {agente_foco}. Cruze números com extenso. Denuncie fraudes materiais calculando o rombo."
+    agente_1_sys = f"Auditor Forense Sênior. Especialidade: {agente_foco}. PROIBIDO AUTOCORRIGIR. Cruze números numéricos com os valores por extenso. Se diferirem, denuncie o rombo exato. Aponte paradoxos cronológicos."
     agente_2_sys = f"Advogado Sócio. Especialidade: {agente_foco}. Busque nulidades absolutas e foro ilegal. {blindagem}"
     
     resultados = {}
@@ -219,25 +225,24 @@ def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, agente_foco):
         motores_usados.add(m1)
         motores_usados.add(m2)
         
-    # ⚠️ V318: TRAVA DE SANGUE CONTRA CSV E GARANTIA DE TABELA MARKDOWN ⚠️
     agente_3_sys = """Você é o AETHER OMNI, IA Jurídica Suprema de Wall Street.
 Crie um DOSSIÊ EXECUTIVO DE ALTA CLASSE.
-REGRA ABSOLUTA 1: Inicie OBRIGATORIAMENTE com uma Matriz de Risco em Tabela.
+REGRA ABSOLUTA 1: Inicie OBRIGATORIAMENTE com uma Matriz de Risco em Tabela Markdown.
 REGRA ABSOLUTA 2: É EXPRESSAMENTE PROIBIDO gerar texto separado por vírgulas (CSV). Você DEVE usar a sintaxe Markdown com barras verticais (|).
-EXEMPLO EXATO:
+EXEMPLO EXATO DE FORMATAÇÃO:
 | Nível de Risco | Item | Descrição Resumida | Ação Imediata |
 |---|---|---|---|
-| Alto | Fraude | Rombo de 3 Milhões | Invalidar |
+| Alto | Fraude | Rombo identificado | Invalidar |
 
-Após a tabela, disserte sobre as fraudes financeiras e paradoxos de forma cirúrgica e corporativa."""
+Após a tabela, disserte sobre as fraudes financeiras e paradoxos de forma cirúrgica, implacável e corporativa."""
     
     contexto_sintese = f"--- AUDITORIA FORENSE ---\n{resultados['risco']}\n\n--- JURÍDICO ---\n{resultados['legal']}"
-    dossie_final, m3 = chamar_agente_hydra("AETHER OMNI", agente_3_sys, "Crie o Dossiê Final. PROIBIDO CSV. Use Tabela Markdown com pipes (|).", contexto_sintese)
+    dossie_final, m3 = chamar_agente_hydra("AETHER OMNI", agente_3_sys, "Crie o Dossiê Final. PROIBIDO CSV. Use Tabela Markdown com barras verticais (|).", contexto_sintese)
     motores_usados.add(m3)
     
     return dossie_final, " | ".join(list(motores_usados))
 
-# --- 📄 EXPORTAÇÕES (WORD COM TABELAS DE ELITE) ---
+# --- 📄 EXPORTAÇÕES (WORD COM TABELAS NATIVAS E PDF BLINDADO) ---
 def gerar_docx_aether(texto_markdown):
     doc = Document()
     font = doc.styles['Normal'].font
@@ -256,9 +261,9 @@ def gerar_docx_aether(texto_markdown):
         linha_limpa = linha.strip()
         if not linha_limpa: continue
 
-        # Identifica Tabela Markdown verdadeira (Pipes)
+        # Identifica Tabela Markdown verdadeira
         if linha_limpa.startswith('|') and linha_limpa.endswith('|'):
-            if '---' in linha_limpa: continue
+            if re.match(r'^\|[-\s\|]+\|$', linha_limpa): continue # Pula separador
             
             cols = [c.strip() for c in linha_limpa.split('|')[1:-1]]
             if not in_table:
@@ -290,7 +295,6 @@ def gerar_docx_aether(texto_markdown):
 def sanitize_for_pdf(texto):
     return unicodedata.normalize('NFKD', texto).encode('ascii', 'ignore').decode('ascii')
 
-# ⚠️ V318 APEX: PDF INTELIGENTE (FIM DA QUEBRA DE TEXTO) ⚠️
 def gerar_pdf_aether(texto_markdown):
     try:
         pdf = FPDF()
@@ -313,13 +317,12 @@ def gerar_pdf_aether(texto_markdown):
             if not linha_filtrada: 
                 pdf.ln(3); continue
 
-            # Formata tabelas para ficarem bonitas e alinhadas no PDF sem travar
+            # Previne falhas de formatação de tabela no FPDF
             if re.match(r'^\|[-\s\|]+\|$', linha_filtrada): continue
             if linha_filtrada.startswith('|') and linha_filtrada.endswith('|'):
                 cols = [c.strip() for c in linha_filtrada.split('|')[1:-1]]
                 linha_filtrada = "  |  ".join(cols)
 
-            # Usando fpdf2 nativo para quebra de linha inteligente
             pdf.multi_cell(0, 6, text=linha_filtrada)
                     
         return bytes(pdf.output())
@@ -332,7 +335,7 @@ def gerar_pdf_aether(texto_markdown):
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V318
+# 🎨 CSS APEX V319 (ZERO SCROLL)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -380,8 +383,8 @@ div[data-baseweb="select"] > div {{ background-color: rgba(15, 23, 42, 0.6) !imp
 .agent-badge {{ background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.3); color: #D4AF37; font-size: 0.6rem; font-weight: 600; padding: 2px 8px; border-radius: 4px; display: flex; align-items: center; gap: 4px; }}
 .agent-standby {{ background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); color: #94a3b8; font-size: 0.6rem; padding: 2px 8px; border-radius: 4px; display: flex; align-items: center; gap: 4px; }}
 
-.stButton > button[kind="secondary"], .stDownloadButton > button {{ background: rgba(255,255,255,0.05) !important; color: #cbd5e1 !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 6px !important; font-size: 0.7rem !important; font-weight: 500 !important; padding: 4px !important; width: 100% !important; transition: 0.3s; margin: 0 !important; }}
-.stButton > button[kind="secondary"]:hover, .stDownloadButton > button:hover {{ background: rgba(255,255,255,0.1) !important; color: #fff !important; border-color: #D4AF37 !important; }}
+.stButton > button[kind="secondary"] {{ background: rgba(255,255,255,0.05) !important; color: #cbd5e1 !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 6px !important; font-size: 0.7rem !important; font-weight: 500 !important; padding: 4px !important; width: 100% !important; transition: 0.3s; margin: 0 !important; }}
+.stButton > button[kind="secondary"]:hover {{ background: rgba(255,255,255,0.1) !important; color: #fff !important; border-color: #D4AF37 !important; }}
 
 .standby-container {{ display:flex; flex-direction:column; align-items:center; justify-content:center; flex-grow:1; border: 1px dashed rgba(255,255,255,0.1); border-radius: 8px; background: rgba(15, 23, 42, 0.3); padding: 15px; margin-top: 5px; }}
 .welcome-title {{ color: #f8fafc; font-size: 1.05rem; font-weight: 600; margin-bottom: 3px; text-align: center; }}
@@ -396,8 +399,8 @@ st.markdown(css_code, unsafe_allow_html=True)
 # ==========================================
 st.markdown(f"""
 <div class="omni-topbar">
-    <div class="omni-brand"><h1>AETHER KARV</h1><span>V318 APEX WALL STREET</span></div>
-    <div class="omni-status">SESSÃO: <span>CRIPTOGRAFADA</span> | EXPORT: <span>FLAWLESS</span></div>
+    <div class="omni-brand"><h1>AETHER KARV</h1><span>V319 APEX NEXUS</span></div>
+    <div class="omni-status">SESSÃO: <span>CRIPTOGRAFADA</span> | EXPORT: <span>1-CLICK HTML</span></div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -467,11 +470,10 @@ with col_main:
         st.markdown('<div class="section-title">Ações e Exportação</div>', unsafe_allow_html=True)
         b1, b2, b3, b4, b5 = st.columns(5)
         
-        # ⚠️ V318: RETORNO PARA OS BOTÕES NATIVOS SEGUROS DO STREAMLIT COM CHAVES ÚNICAS (Fim do Download Duplo)
-        with b1: st.download_button("📄 Word (DOCX)", data=st.session_state.res_docx, file_name="AETHER_Parecer.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", use_container_width=True, key="btn_docx")
-        with b2: st.download_button("📕 PDF Blindado", data=st.session_state.res_pdf, file_name="AETHER_Parecer.pdf", mime="application/pdf", use_container_width=True, key="btn_pdf")
-        with b3: st.download_button("📝 Texto (TXT)", data=st.session_state.res_aether, file_name="AETHER_Parecer.txt", mime="text/plain", use_container_width=True, key="btn_txt")
-        with b4: st.download_button("📊 Matriz (MD)", data=st.session_state.res_aether, file_name="AETHER_Parecer.md", mime="text/markdown", use_container_width=True, key="btn_md")
+        with b1: st.markdown(gerar_link_download(st.session_state.res_docx, "AETHER_Parecer.docx", "📄 Word (DOCX)", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"), unsafe_allow_html=True)
+        with b2: st.markdown(gerar_link_download(st.session_state.res_pdf, "AETHER_Parecer.pdf", "📕 PDF Blindado", "application/pdf"), unsafe_allow_html=True)
+        with b3: st.markdown(gerar_link_download(st.session_state.res_aether.encode('utf-8'), "AETHER_Parecer.txt", "📝 Texto (TXT)", "text/plain"), unsafe_allow_html=True)
+        with b4: st.markdown(gerar_link_download(st.session_state.res_aether.encode('utf-8'), "AETHER_Parecer.md", "📊 Matriz (MD)", "text/markdown"), unsafe_allow_html=True)
         with b5: 
             if st.button("⟳ Nova Análise", type="secondary", use_container_width=True):
                 st.session_state.res_aether = None
@@ -494,9 +496,9 @@ with col_main:
         st.markdown('<div class="welcome-subtitle">Escolha um atalho rápido ou digite sua instrução no painel à esquerda.</div>', unsafe_allow_html=True)
         c1, c2 = st.columns(2)
         with c1:
-            st.button("📄 Analisar Petição Inicial da Parte Contrária", on_click=set_template, args=("Faça uma análise crítica da petição inicial em anexo, identificando fragilidades jurídicas e sugerindo teses de defesa.",), use_container_width=True)
-            st.button("🔍 Procurar Cláusulas Abusivas em Contrato", on_click=set_template, args=("Revise o contrato anexo e destaque todas as cláusulas que possam ser consideradas abusivas ou desproporcionais.",), use_container_width=True)
+            st.button("📄 Analisar Petição Inicial", on_click=set_template, args=("Faça uma análise crítica da petição em anexo, identificando fragilidades jurídicas e sugerindo teses de defesa.",), use_container_width=True)
+            st.button("🔍 Caçar Cláusulas Abusivas", on_click=set_template, args=("Revise o contrato anexo e destaque todas as cláusulas que possam ser consideradas abusivas ou desproporcionais.",), use_container_width=True)
         with c2:
-            st.button("📅 Calcular Prazos e Ler Intimação", on_click=set_template, args=("Leia a publicação do diário oficial e identifique os prazos processuais e as providências cabíveis.",), use_container_width=True)
-            st.button("🌐 Pesquisar Jurisprudência Atual", on_click=set_template, args=("Busque as decisões mais recentes sobre este tema na internet.",), use_container_width=True)
+            st.button("📅 Calcular Prazos", on_click=set_template, args=("Leia a publicação do diário oficial e identifique os prazos processuais e as providências cabíveis.",), use_container_width=True)
+            st.button("🌐 Pesquisar Jurisprudência", on_click=set_template, args=("Busque as decisões mais recentes sobre este tema na internet.",), use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
