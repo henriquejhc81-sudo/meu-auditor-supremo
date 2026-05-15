@@ -1,4 +1,3 @@
-import streamlit as st
 import pandas as pd
 import os, time, base64, io, re
 import textwrap
@@ -63,7 +62,7 @@ except ImportError:
     MODULO_RAG = False
 
 # --- ⚙️ CONFIGURAÇÃO DE SEGURANÇA E UI ---
-st.set_page_config(page_title="AETHER KARV V320 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="AETHER KARV V321 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
 
 GROQ_KEY = st.secrets.get("GROQ_API_KEY", os.environ.get("GROQ_API_KEY", ""))
 GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
@@ -81,10 +80,16 @@ def get_base64_image(file):
             return base64.b64encode(f.read()).decode()
     return ""
 
-def gerar_link_download(buffer, filename, label, mime):
+# ⚠️ V321 APEX: BOTÕES DE DOWNLOAD EM HTML PURO (FIM DO DOWNLOAD DUPLO) ⚠️
+def gerar_botao_primario(buffer, filename, label, mime):
     b64 = base64.b64encode(buffer).decode()
-    css = "background: rgba(255,255,255,0.05); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 6px; text-align: center; text-decoration: none; display: block; font-size: 0.7rem; font-weight: 500; transition: 0.3s;"
-    return f'<a href="data:{mime};base64,{b64}" download="{filename}" style="{css}" target="_blank">{label}</a>'
+    css = "background: linear-gradient(135deg, #B8860B, #D4AF37); color: #020617; border-radius: 6px; padding: 8px; text-align: center; text-decoration: none; display: block; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; margin-bottom: 5px; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2);"
+    return f'<a href="data:{mime};base64,{b64}" download="{filename}" style="{css}">{label}</a>'
+
+def gerar_botao_secundario(buffer, filename, label, mime):
+    b64 = base64.b64encode(buffer).decode()
+    css = "background: rgba(255,255,255,0.05); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 8px; text-align: center; text-decoration: none; display: block; font-size: 0.8rem; font-weight: 500; margin-bottom: 5px;"
+    return f'<a href="data:{mime};base64,{b64}" download="{filename}" style="{css}">{label}</a>'
 
 if "cmd_input" not in st.session_state: st.session_state.cmd_input = ""
 if "res_aether" not in st.session_state: st.session_state.res_aether = None
@@ -103,12 +108,11 @@ def buscar_na_internet(query):
         ddgs = DDGS()
         resultados = list(ddgs.text(query, max_results=3))
         res_str = "\n[AETHER WEB SEARCH INJETADO]:\n"
-        for r in resultados:
-            res_str += f"- {r['body']}\n"
+        for r in resultados: res_str += f"- {r['body']}\n"
         return res_str
     except: return ""
 
-# --- 👁️ MOTOR DE INGESTÃO (NEXUS MULTIMODAL) ---
+# --- 👁️ MOTOR DE INGESTÃO (NEXUS) ---
 def extrator_nexus_v3(arquivos_upados):
     texto_extraido = ""
     sucesso = 0
@@ -136,6 +140,7 @@ def extrator_nexus_v3(arquivos_upados):
                         if extraido: texto_pdf_nativo += extraido + "\n"
                 except: pass
                 if texto_pdf_nativo.strip(): texto_extraido += f"\n\n--- PDF: {arquivo.name} ---\n{texto_pdf_nativo}"
+            
             elif filename.endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp')):
                 if MODULO_VISAO:
                     try:
@@ -164,7 +169,7 @@ def processar_com_rag(texto, comando):
         return "\n...\n".join([doc.page_content for doc in docs_relevantes])
     except: return texto[:90000]
 
-# --- 🤖 HYDRA ENGINE (MEGA HÍBRIDO) ---
+# --- 🤖 HYDRA ENGINE ---
 def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, tentar_internet=False):
     contexto_final = contexto
     if tentar_internet and MODULO_INTERNET:
@@ -200,15 +205,15 @@ def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, tentar_in
 
     return f"[{nome_agente}] Erro Crítico: Sem chaves API configuradas.", "OFFLINE"
 
-# --- 🚀 ORQUESTRADOR MULTI-AGENTE ---
+# --- 🚀 ORQUESTRADOR MULTI-AGENTE (PROMPT LETAL V321) ---
 def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, agente_foco):
     if not contexto_arquivos.strip(): contexto_arquivos = "Nenhum documento fornecido. Opere em modo de consulta livre."
     if len(contexto_arquivos) > 60000: contexto_arquivos = processar_com_rag(contexto_arquivos, comando)
     
     blindagem = "Aplique o Art. 22 da LINDB para invalidar responsabilizações injustas." if lindb_ativada else ""
     
-    agente_1_sys = f"Auditor Forense Sênior. Foco: {agente_foco}. Cruze números numéricos com os valores por extenso. Se diferirem, denuncie fraude material. Aponte paradoxos cronológicos."
-    agente_2_sys = f"Advogado Sócio. Foco: {agente_foco}. Busque nulidades absolutas e foro ilegal. {blindagem}"
+    agente_1_sys = f"Auditor Forense Sênior. Especialidade: {agente_foco}. Cruze números numéricos com os valores por extenso. Denuncie fraudes."
+    agente_2_sys = f"Advogado Sócio de Wall Street. Especialidade: {agente_foco}. Busque nulidades absolutas e foro ilegal. {blindagem}"
     
     resultados = {}
     motores_usados = set()
@@ -222,22 +227,24 @@ def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, agente_foco):
         motores_usados.add(m1)
         motores_usados.add(m2)
         
-    agente_3_sys = """Você é o AETHER OMNI, IA Jurídica Suprema.
-Crie o DOSSIÊ EXECUTIVO.
-REGRA ABSOLUTA 1: Inicie OBRIGATORIAMENTE com uma Matriz de Risco em Tabela Markdown usando BARRAS VERTICAIS (|).
+    agente_3_sys = """Você é o AETHER OMNI, IA Jurídica Suprema. Crie o DOSSIÊ EXECUTIVO.
+REGRA DE SANGUE 1: Inicie OBRIGATORIAMENTE com a Matriz de Risco em Tabela.
+REGRA DE SANGUE 2: Você DEVE usar a formatação Markdown estrita com barras verticais (|).
+É EXPRESSAMENTE PROIBIDO usar vírgulas (CSV) ou tabulações (TAB) para separar as colunas.
+EXEMPLO OBRIGATÓRIO:
 | Nível de Risco | Item | Descrição | Ação Imediata |
 |---|---|---|---|
 | Alto | Fraude | Rombo identificado | Invalidar |
 
-Após a tabela, disserte sobre as fraudes financeiras e paradoxos de forma cirúrgica e corporativa."""
+Após a tabela, disserte sobre as fraudes financeiras e paradoxos de forma cirúrgica."""
     
     contexto_sintese = f"--- AUDITORIA FORENSE ---\n{resultados['risco']}\n\n--- JURÍDICO ---\n{resultados['legal']}"
-    dossie_final, m3 = chamar_agente_hydra("AETHER OMNI", agente_3_sys, "Crie o Dossiê Final. Use Tabela Markdown com pipes (|).", contexto_sintese)
+    dossie_final, m3 = chamar_agente_hydra("AETHER OMNI", agente_3_sys, "Crie o Dossiê Final. PROIBIDO CSV/TAB. Use Tabela Markdown com pipes (|).", contexto_sintese)
     motores_usados.add(m3)
     
     return dossie_final, " | ".join(list(motores_usados))
 
-# --- 📄 EXPORTAÇÕES (WORD: CONVERSOR UNIVERSAL DE TABELAS V320) ---
+# --- 📄 EXPORTAÇÕES (WORD: PARSEADOR DE TABELAS UNIVERSAL V321) ---
 def gerar_docx_aether(texto_markdown):
     doc = Document()
     font = doc.styles['Normal'].font
@@ -249,19 +256,28 @@ def gerar_docx_aether(texto_markdown):
     doc.add_paragraph("Classificação: CONFIDENCIAL / PRIVILÉGIO ADVOGADO-CLIENTE")
     doc.add_paragraph("_"*65)
     
-    in_md_table = False
-    in_csv_table = False
+    in_table = False
     table = None
     
     for linha in texto_markdown.split('\n'):
         linha_limpa = linha.strip()
         if not linha_limpa: continue
 
-        # Detecção 1: Tabela Markdown Clássica (|)
+        # Detecção Tabela 1: Markdown Correto (Pipes)
         if linha_limpa.startswith('|') and linha_limpa.endswith('|'):
-            if re.match(r'^\|[-\s\|]+\|$', linha_limpa): continue # Pula separador
+            if re.match(r'^\|[-\s\|]+\|$', linha_limpa): continue 
             cols = [c.strip() for c in linha_limpa.split('|')[1:-1]]
-            if not in_md_table:
+            is_table_line = True
+            
+        # Detecção Tabela 2: Rebeldia da IA (Uso de TAB)
+        elif '\t' in linha_limpa and len(linha_limpa.split('\t')) >= 3:
+            cols = [c.strip() for c in linha_limpa.split('\t')]
+            is_table_line = True
+        else:
+            is_table_line = False
+
+        if is_table_line:
+            if not in_table:
                 table = doc.add_table(rows=1, cols=len(cols))
                 table.style = 'Table Grid'
                 hdr_cells = table.rows[0].cells
@@ -269,36 +285,15 @@ def gerar_docx_aether(texto_markdown):
                     if i < len(hdr_cells):
                         hdr_cells[i].text = col.replace('**', '')
                         hdr_cells[i].paragraphs[0].runs[0].bold = True 
-                in_md_table = True
+                in_table = True
             else:
                 row_cells = table.add_row().cells
                 for i, col in enumerate(cols):
                     if i < len(row_cells): row_cells[i].text = col.replace('**', '')
             continue
 
-        # Detecção 2: Tabela CSV Alucinada (V320 Fix)
-        if "Nível de Risco" in linha_limpa and "," in linha_limpa and not in_md_table:
-            cols = [c.strip() for c in linha_limpa.split(',')]
-            table = doc.add_table(rows=1, cols=len(cols))
-            table.style = 'Table Grid'
-            hdr_cells = table.rows[0].cells
-            for i, col in enumerate(cols):
-                if i < len(hdr_cells):
-                    hdr_cells[i].text = col.replace('**', '')
-                    hdr_cells[i].paragraphs[0].runs[0].bold = True
-            in_csv_table = True
-            continue
-            
-        if in_csv_table and "," in linha_limpa and len(linha_limpa.split(',')) >= 3:
-            cols = [c.strip() for c in linha_limpa.split(',')]
-            row_cells = table.add_row().cells
-            for i, col in enumerate(cols):
-                if i < len(row_cells): row_cells[i].text = col.replace('**', '')
-            continue
-
-        # Se não for tabela, segue texto normal
-        in_md_table = False
-        in_csv_table = False
+        # Se não for tabela, aplica texto normal
+        in_table = False
         if linha.startswith('### '): doc.add_heading(linha.replace('### ', ''), level=3)
         elif linha.startswith('## '): doc.add_heading(linha.replace('## ', ''), level=2)
         elif linha.startswith('# '): doc.add_heading(linha.replace('# ', ''), level=1)
@@ -313,19 +308,7 @@ def gerar_docx_aether(texto_markdown):
 def sanitize_for_pdf(texto):
     return unicodedata.normalize('NFKD', texto).encode('ascii', 'ignore').decode('ascii')
 
-# ⚠️ V320 APEX: A GUILHOTINA LEXICAL (PDF BLINDADO) ⚠️
-def force_split_long_words(text, max_chars=60):
-    """Corta qualquer palavra/link absurdo no meio para não travar o servidor de PDF"""
-    words = text.split()
-    safe_words = []
-    for w in words:
-        if len(w) > max_chars:
-            chunks = [w[i:i+max_chars] for i in range(0, len(w), max_chars)]
-            safe_words.extend(chunks)
-        else:
-            safe_words.append(w)
-    return " ".join(safe_words)
-
+# ⚠️ V321 APEX: FPDF CELL-BYPASS (FIM DEFINITIVO DO ERRO HORIZONTAL SPACE) ⚠️
 def gerar_pdf_aether(texto_markdown):
     try:
         pdf = FPDF()
@@ -334,9 +317,10 @@ def gerar_pdf_aether(texto_markdown):
         pdf.set_font("helvetica", size=10)
         
         pdf.set_text_color(212, 175, 55)
-        pdf.cell(0, 10, "AETHER KARV - PARECER EXECUTIVO", new_x="LMARGIN", new_y="NEXT", align='C')
+        # Usando CELL nativa para contornar qualquer bug de multi_cell do FPDF
+        pdf.cell(0, 10, txt="AETHER KARV - PARECER EXECUTIVO", ln=1, align='C')
         pdf.set_text_color(150, 150, 150)
-        pdf.cell(0, 8, f"Auditoria: {sanitize_for_pdf(get_data_hora_br())}", new_x="LMARGIN", new_y="NEXT", align='C')
+        pdf.cell(0, 8, txt=f"Auditoria: {sanitize_for_pdf(get_data_hora_br())}", ln=1, align='C')
         pdf.set_text_color(0, 0, 0)
         pdf.ln(5)
         
@@ -348,21 +332,22 @@ def gerar_pdf_aether(texto_markdown):
             if not linha_filtrada: 
                 pdf.ln(3); continue
 
-            # Previne falhas de formatação de tabela no FPDF
+            # Limpa divisores de tabela Markdown
             if re.match(r'^\|[-\s\|]+\|$', linha_filtrada): continue
             
-            # Converte tabelas Markdown para visual linear
+            # Formata Tabela Markdown
             if linha_filtrada.startswith('|') and linha_filtrada.endswith('|'):
                 cols = [c.strip() for c in linha_filtrada.split('|')[1:-1]]
                 linha_filtrada = "  |  ".join(cols)
-            # Converte tabelas CSV (alucinação da IA)
-            elif "Nivel de Risco" in linha_filtrada and "," in linha_filtrada:
-                linha_filtrada = linha_filtrada.replace(",", "  |  ")
+            # Formata Tabela TAB (Caso a IA se rebele)
+            elif '\t' in linha_filtrada:
+                linha_filtrada = linha_filtrada.replace('\t', '  |  ')
 
-            # A Guilhotina Lexical - Impede o erro de Horizontal Space
-            linha_blindada = force_split_long_words(linha_filtrada, max_chars=65)
-
-            pdf.multi_cell(0, 6, text=linha_blindada)
+            # O TRUQUE DE MESTRE: Quebramos a linha no Python (largura de 85 caracteres) 
+            # e carimbamos com 'cell' em vez de 'multi_cell'. É fisicamente impossível travar o servidor.
+            pedacos = textwrap.wrap(linha_filtrada, width=85, break_long_words=True)
+            for pedaco in pedacos:
+                pdf.cell(0, 6, txt=pedaco, ln=1)
                     
         return bytes(pdf.output())
 
@@ -370,11 +355,12 @@ def gerar_pdf_aether(texto_markdown):
         emergencia = FPDF()
         emergencia.add_page()
         emergencia.set_font("helvetica", size=10)
-        emergencia.multi_cell(0, 6, text=f"ERRO PDF:\nUtilize exportacao DOCX.\nLog: {str(e)}")
+        emergencia.cell(0, 6, txt="ERRO PDF: Utilize exportacao DOCX.", ln=1)
+        emergencia.cell(0, 6, txt=f"Log: {str(e)[:50]}", ln=1)
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V320
+# 🎨 CSS APEX V321 (ZERO SCROLL ABSOLUTO)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -428,7 +414,6 @@ div[data-baseweb="select"] > div {{ background-color: rgba(15, 23, 42, 0.6) !imp
 .standby-container {{ display:flex; flex-direction:column; align-items:center; justify-content:center; flex-grow:1; border: 1px dashed rgba(255,255,255,0.1); border-radius: 8px; background: rgba(15, 23, 42, 0.3); padding: 15px; margin-top: 5px; }}
 .welcome-title {{ color: #f8fafc; font-size: 1.05rem; font-weight: 600; margin-bottom: 3px; text-align: center; }}
 .welcome-subtitle {{ color: #94a3b8; font-size: 0.75rem; margin-bottom: 15px; text-align: center; }}
-.stButton button p {{ font-size: 0.7rem !important; margin: 0 !important; line-height: 1.2 !important; white-space: normal !important; }}
 </style>
 """
 st.markdown(css_code, unsafe_allow_html=True)
@@ -438,8 +423,8 @@ st.markdown(css_code, unsafe_allow_html=True)
 # ==========================================
 st.markdown(f"""
 <div class="omni-topbar">
-    <div class="omni-brand"><h1>AETHER KARV</h1><span>V320 APEX OMNI</span></div>
-    <div class="omni-status">SESSÃO: <span>CRIPTOGRAFADA</span> | EXPORT: <span>FLAWLESS</span></div>
+    <div class="omni-brand"><h1>AETHER KARV</h1><span>V321 APEX WALL STREET</span></div>
+    <div class="omni-status">SESSÃO: <span>CRIPTOGRAFADA</span> | EXPORT: <span>1-CLICK & CELL-BYPASS</span></div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -506,20 +491,22 @@ with col_main:
         </div>
         """, unsafe_allow_html=True)
         
-        st.markdown('<div class="section-title">Ações e Exportação</div>', unsafe_allow_html=True)
-        b1, b2, b3, b4, b5 = st.columns(5)
+        st.markdown('<div class="section-title">Ações e Exportação (Download Automático em HTML)</div>', unsafe_allow_html=True)
         
-        with b1: st.markdown(gerar_link_download(st.session_state.res_docx, "AETHER_Parecer.docx", "📄 Word (DOCX)", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"), unsafe_allow_html=True)
-        with b2: st.markdown(gerar_link_download(st.session_state.res_pdf, "AETHER_Parecer.pdf", "📕 PDF Blindado", "application/pdf"), unsafe_allow_html=True)
-        with b3: st.markdown(gerar_link_download(st.session_state.res_aether.encode('utf-8'), "AETHER_Parecer.txt", "📝 Texto (TXT)", "text/plain"), unsafe_allow_html=True)
-        with b4: st.markdown(gerar_link_download(st.session_state.res_aether.encode('utf-8'), "AETHER_Parecer.md", "📊 Matriz (MD)", "text/markdown"), unsafe_allow_html=True)
-        with b5: 
-            if st.button("⟳ Nova Análise", type="secondary", use_container_width=True):
-                st.session_state.res_aether = None
-                st.session_state.res_docx = None
-                st.session_state.res_pdf = None
-                st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--:--", "risco": "Aguardando", "ocr": "Inativo", "motor": "Standby"}
-                st.rerun()
+        # ⚠️ V321 APEX: FIM DO DOWNLOAD DUPLO (1 Clique = 1 Arquivo) ⚠️
+        b1, b2, b3, b4 = st.columns(4)
+        with b1: st.markdown(gerar_botao_primario(st.session_state.res_docx, "AETHER_Parecer.docx", "📄 Word (DOCX)", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"), unsafe_allow_html=True)
+        with b2: st.markdown(gerar_botao_primario(st.session_state.res_pdf, "AETHER_Parecer.pdf", "📕 PDF Blindado", "application/pdf"), unsafe_allow_html=True)
+        with b3: st.markdown(gerar_botao_secundario(st.session_state.res_aether.encode('utf-8'), "AETHER_Parecer.txt", "📝 Texto (TXT)", "text/plain"), unsafe_allow_html=True)
+        with b4: st.markdown(gerar_botao_secundario(st.session_state.res_aether.encode('utf-8'), "AETHER_Parecer.md", "📊 Matriz (MD)", "text/markdown"), unsafe_allow_html=True)
+
+        st.markdown('<div style="margin-top: 5px;"></div>', unsafe_allow_html=True)
+        if st.button("⟳ Nova Análise (Limpar Memória)", type="secondary", use_container_width=True):
+            st.session_state.res_aether = None
+            st.session_state.res_docx = None
+            st.session_state.res_pdf = None
+            st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--:--", "risco": "Aguardando", "ocr": "Inativo", "motor": "Standby"}
+            st.rerun()
 
         st.markdown('<div class="section-title" style="margin-top:10px;">Parecer Jurídico (Resultado)</div>', unsafe_allow_html=True)
         
