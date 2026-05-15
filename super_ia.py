@@ -54,11 +54,11 @@ try:
 except ImportError: MODULO_RAG = False
 
 # --- ⚙️ CONFIGURAÇÃO DE SEGURANÇA E UI ---
-st.set_page_config(page_title="AETHER KARV V325 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="AETHER KARV V326 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
 
 GROQ_KEY = st.secrets.get("GROQ_API_KEY", os.environ.get("GROQ_API_KEY", ""))
 GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
-CNJ_API_KEY = st.secrets.get("CNJ_API_KEY", "DEMO_KEY")
+CNJ_API_KEY = st.secrets.get("CNJ_API_KEY", "DEMO_KEY") # Chave do DataJud
 
 if GEMINI_KEY: genai.configure(api_key=GEMINI_KEY)
 
@@ -91,36 +91,35 @@ def buscar_na_internet(query):
         return res_str
     except: return ""
 
-# ⚠️ V325 APEX: PROTOCOLO DE EXTRAÇÃO PROFUNDA (JUSBRASIL/ESCAVADOR SIMULATION) ⚠️
+# ⚠️ V326 APEX: PROTOCOLO DATAJUD ANTI-SUSTO (MOCK DEIXADO CLARO) ⚠️
 def consultar_datajud(numero_processo, api_key):
     if api_key == "DEMO_KEY" or not api_key:
         time.sleep(1.5) 
-        # O Aether agora gera um dossiê falso, porém incrivelmente rico e detalhado para a IA analisar
+        # Texto alterado para ser CLARAMENTE FICTÍCIO e evitar sustos reais
         return f"""
-        [RELATÓRIO OFICIAL DE EXTRAÇÃO PROFUNDA - TRIBUNAIS INTEGADOS]
+        [⚠️ ALERTA: MODO DE DEMONSTRAÇÃO ATIVADO (DADOS FICTÍCIOS) ⚠️]
+        O sistema está operando sem uma Chave API Oficial do CNJ. Os dados abaixo são 100% inventados para testar a capacidade analítica da IA.
+        
         Alvo da Busca (CPF/CNPJ/Processo): {numero_processo}
         
-        DADOS DO PROCESSO LOCALIZADO:
-        Tribunal: TJSP - Tribunal de Justiça do Estado de São Paulo
-        Comarca: Foro Central Cível da Capital - 42ª Vara Cível
-        Juiz Titular: Dr. Alexandre Albuquerque Mendes
-        Valor da Causa: R$ 850.000,00 (Oitocentos e cinquenta mil reais)
-        Data de Ajuizamento: 12/03/2026
+        DADOS DO PROCESSO SIMULADO:
+        Tribunal: TRIBUNAL DE TESTES DE SOFTWARE DO AETHER KARV
+        Comarca: Foro Central de Demonstração
+        Valor da Causa: R$ 10.000,00 (Valor Simulado)
+        Data de Ajuizamento: {datetime.now().strftime('%d/%m/%Y')}
         
         QUALIFICAÇÃO DAS PARTES:
-        Polo Ativo (Autor): Ministério Público do Estado de São Paulo (MPSP) / Fundo de Proteção ao Consumidor
-        Polo Passivo (Réu): Empresa vinculada ao registro {numero_processo} e seus Sócios-Administradores
+        Polo Ativo (Autor): Cliente Fictício S/A
+        Polo Passivo (Réu): Empresa de Testes Vinculada ao Documento {numero_processo}
         
-        RESUMO DO OBJETO DA AÇÃO (O "Por Quê"):
-        Ação Civil Pública por quebra de contrato, práticas abusivas contra o consumidor e suspeita de evasão de divisas. O Autor alega que a empresa ré não entregou os produtos acordados no último trimestre de 2025, configurando lesão em massa.
+        RESUMO DO OBJETO DA AÇÃO SIMULADA:
+        Ação fictícia criada pelo sistema para demonstrar o layout do Dossiê Processual. O autor simulado exige revisão de cláusulas genéricas.
         
-        HISTÓRICO DE MOVIMENTAÇÕES (Fase Atual: Fase de Conhecimento):
-        - {datetime.now().strftime('%d/%m/%Y')}: Conclusos para Despacho ao Juiz Titular para decisão de tutela de urgência (bloqueio de bens).
-        - Há 5 dias: Juntada de Petição de Contestação pela Defesa, alegando força maior.
-        - Há 15 dias: Certidão de Citação Eletrônica Positiva expedida.
+        HISTÓRICO DE MOVIMENTAÇÕES:
+        - Hoje: Conclusos para Despacho Simulado.
+        - Ontem: Juntada de Petição de Teste.
         """
     
-    # Se houvesse chave real do CNJ, o código bateria na API pública.
     url = "https://api-publica.datajud.cnj.jus.br/api_publica_tjsp/_search"
     headers = {"Authorization": f"ApiKey {api_key}", "Content-Type": "application/json"}
     payload = {"query": {"match": {"numeroProcesso": numero_processo}}}
@@ -221,7 +220,7 @@ def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, tentar_in
 
     return f"[{nome_agente}] Erro Crítico: Sem chaves API configuradas.", "OFFLINE"
 
-# --- 🚀 ORQUESTRADOR MULTI-AGENTE (CÓRTEX DINÂMICO V325) ---
+# --- 🚀 ORQUESTRADOR MULTI-AGENTE (CÓRTEX DINÂMICO) ---
 def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cnj, agente_foco):
     tem_arquivos = len(contexto_arquivos.strip()) > 0
     dados_tribunal = consultar_datajud(num_processo_cnj, CNJ_API_KEY) if num_processo_cnj else ""
@@ -231,24 +230,22 @@ def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cn
     blindagem = "Aplique a LINDB para invalidar responsabilizações injustas." if lindb_ativada else ""
     
     if tem_arquivos:
-        agente_1_sys = f"Auditor Sênior. Foco: {agente_foco}. Cruze números com extenso e denuncie fraudes. Analise os dados processuais anexos detalhadamente."
+        agente_1_sys = f"Auditor Sênior. Foco: {agente_foco}. Cruze números com extenso e denuncie fraudes."
         agente_2_sys = f"Advogado Sócio. Foco: {agente_foco}. Busque nulidades absolutas e avalie a jurisdição do processo (se aplicável). {blindagem}"
         agente_3_sys = """Você é o AETHER OMNI, IA Jurídica. Crie o DOSSIÊ EXECUTIVO DE AUDITORIA.
         REGRA 1: Inicie com uma Matriz de Risco em Tabela Markdown (barras verticais |).
         | Nível de Risco | Item | Descrição | Ação Imediata |
         |---|---|---|---|
-        Após a tabela, disserte profundamente sobre as fraudes, contratos e detalhes do processo localizado (Autor, Réu, Valor)."""
+        Após a tabela, disserte profundamente sobre as fraudes, contratos e detalhes do processo."""
     else:
-        # MODO 2: O ANALISTA DE DADOS DO TRIBUNAL (Alta Letalidade)
-        agente_1_sys = f"Analista Investigativo. Extraia e relacione: Polo Ativo, Polo Passivo, Comarca, Valor da Causa e a Motivação Principal da Ação fornecidos no extrato do DataJud."
-        agente_2_sys = f"Estrategista Jurídico de Elite. Avalie a gravidade do processo, o risco para a empresa (ré) e determine as providências de defesa urgentes com base no andamento."
+        agente_1_sys = f"Analista Investigativo. Extraia e relacione os dados fornecidos no extrato. Deixe claro se for uma simulação."
+        agente_2_sys = f"Estrategista Jurídico de Elite. Avalie a gravidade do processo. Se for um mock de teste, indique que a estratégia é apenas acadêmica."
         agente_3_sys = """Você é o AETHER OMNI, IA de Inteligência Processual.
         Crie o RELATÓRIO DE INTELIGÊNCIA PROCESSUAL com base apenas no extrato judicial fornecido.
         REGRA 1: Inicie com uma Tabela Markdown perfeita com Barras Verticais (|):
-        | Tribunal / Comarca | Polo Ativo (Autor) | Polo Passivo (Réu) | Valor da Causa | Assunto Principal |
+        | Tribunal | Polo Ativo (Autor) | Polo Passivo (Réu) | Valor da Causa | Assunto Principal |
         |---|---|---|---|---|
-        
-        REGRA 2: Abaixo da Tabela, crie a seção 'Diagnóstico e Estratégia' descrevendo detalhadamente os riscos do processo, por que ele existe e quais as defesas cabíveis."""
+        REGRA 2: Após a Tabela, se os dados contiverem o aviso de [MODO SIMULAÇÃO], deixe claro no texto que se trata de uma demonstração do Aether Karv e não de um processo real."""
 
     resultados = {}
     motores_usados = set()
@@ -375,7 +372,7 @@ def gerar_pdf_aether(texto_markdown):
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V325 (BOTÕES STREAMLIT CUSTOMIZADOS)
+# 🎨 CSS APEX V326
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -456,8 +453,8 @@ st.markdown(css_code, unsafe_allow_html=True)
 # ==========================================
 st.markdown(f"""
 <div class="omni-topbar">
-    <div class="omni-brand"><h1>AETHER KARV</h1><span>V325 APEX INTEGRATION</span></div>
-    <div class="omni-status">SESSÃO: <span>CRIPTOGRAFADA</span> | MOTOR: <span>DATAJUD PRO</span></div>
+    <div class="omni-brand"><h1>AETHER KARV</h1><span>V326 APEX DEMO-SAFE</span></div>
+    <div class="omni-status">SESSÃO: <span>CRIPTOGRAFADA</span> | API DATAJUD: <span>{'DEMONSTRAÇÃO' if CNJ_API_KEY == 'DEMO_KEY' else 'ATIVA'}</span></div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -472,6 +469,10 @@ with col_setup:
     ativar_lindb = st.checkbox("Aplicar Filtro de Proteção (Art. 22 LINDB)", value=True)
     
     st.markdown('<div class="section-title">🏛️ Integração DataJud/Escavador</div>', unsafe_allow_html=True)
+    
+    if CNJ_API_KEY == "DEMO_KEY":
+        st.warning("⚠️ MODO SIMULAÇÃO: Sem chave de API, as buscas no DataJud gerarão processos fictícios para testar a inteligência do sistema.")
+        
     num_processo_input = st.text_input("Número do Processo ou CPF/CNPJ", placeholder="Digite aqui o número...", label_visibility="collapsed")
 
     st.markdown('<div class="section-title">💬 Instruções ou Pedidos Especiais</div>', unsafe_allow_html=True)
@@ -527,7 +528,6 @@ with col_main:
         
         st.markdown('<div class="section-title">Ações e Exportação (Botões Nativos Seguros)</div>', unsafe_allow_html=True)
         
-        # ⚠️ V325 APEX: BOTÕES NATIVOS COM CSS INJETADO (DOWNLOAD DIRETO SEM NOVA ABA) ⚠️
         b1, b2, b3, b4, b5 = st.columns(5)
         with b1: st.download_button(label="📄 Word (DOCX)", data=st.session_state.res_docx, file_name="AETHER_Parecer.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", use_container_width=True, key="btn_w")
         with b2: st.download_button(label="📕 PDF Seguro", data=st.session_state.res_pdf, file_name="AETHER_Parecer.pdf", mime="application/pdf", use_container_width=True, key="btn_p")
@@ -551,7 +551,7 @@ with col_main:
             
     else:
         st.markdown('<div class="standby-container">', unsafe_allow_html=True)
-        st.markdown('<div class="welcome-title">AETHER KARV V325 ONLINE</div>', unsafe_allow_html=True)
+        st.markdown('<div class="welcome-title">AETHER KARV V326 ONLINE</div>', unsafe_allow_html=True)
         st.markdown('<div class="welcome-subtitle">Escolha um atalho rápido ou digite o CPF/CNPJ/Processo na aba esquerda para Extração Profunda no DataJud.</div>', unsafe_allow_html=True)
         c1, c2 = st.columns(2)
         with c1:
