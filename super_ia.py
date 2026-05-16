@@ -45,7 +45,7 @@ try:
 except ImportError: MODULO_RAG = False
 
 # --- ⚙️ CONFIGURAÇÃO DE SEGURANÇA E UI ---
-st.set_page_config(page_title="AETHER KARV V330 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="AETHER KARV V331 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
 
 GROQ_KEY = st.secrets.get("GROQ_API_KEY", os.environ.get("GROQ_API_KEY", ""))
 GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
@@ -102,17 +102,14 @@ def consultar_datajud(numero_processo, api_key):
         return f"""
         [⚠️ ALERTA: MODO DE DEMONSTRAÇÃO ATIVADO (DADOS FICTÍCIOS) ⚠️]
         Alvo da Busca (CPF/CNPJ/Processo): {numero_processo}
-        
         DADOS DO PROCESSO SIMULADO:
         Tribunal: TRIBUNAL DE TESTES DE SOFTWARE
         Comarca: Foro Central de Demonstração
         Valor da Causa: R$ 10.000,00 (Valor Simulado)
         Data de Ajuizamento: {datetime.now().strftime('%d/%m/%Y')}
-        
         QUALIFICAÇÃO DAS PARTES:
         Polo Ativo (Autor): Cliente Fictício S/A
         Polo Passivo (Réu): Empresa vinculada ao Documento {numero_processo}
-        
         HISTÓRICO DE MOVIMENTAÇÕES:
         - Hoje: Conclusos para Despacho Simulado.
         - Ontem: Juntada de Petição de Teste.
@@ -126,7 +123,7 @@ def consultar_datajud(numero_processo, api_key):
         else: return f"\n[ALERTA DATAJUD]: Status {response.status_code}"
     except Exception as e: return f"\n[ALERTA DATAJUD]: Falha ({str(e)})"
 
-# --- 👁️ MOTOR DE INGESTÃO (NEXUS) ---
+# --- 👁️ MOTOR DE INGESTÃO (NEXUS MULTIMODAL) ---
 def extrator_nexus_v3(arquivos_upados):
     texto_extraido = ""
     sucesso = 0
@@ -217,7 +214,7 @@ def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, tentar_in
 
     return f"[{nome_agente}] Erro Crítico: Sem chaves API configuradas.", "OFFLINE"
 
-# --- 🚀 ORQUESTRADOR MULTI-AGENTE (V330 APEX - OMNI-SENSE) ---
+# --- 🚀 ORQUESTRADOR MULTI-AGENTE ---
 def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cnj, agente_foco, ativar_redlining):
     dados_tribunal = consultar_datajud(num_processo_cnj, CNJ_API_KEY) if num_processo_cnj else ""
     contexto_final = contexto_arquivos + "\n" + dados_tribunal
@@ -228,33 +225,29 @@ def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cn
     diretriz_redlining = ""
     if ativar_redlining:
         diretriz_redlining = """
-        REGRA 3 (REDLINING AUTOMÁTICO): Para cada erro ou risco grave, você DEVE gerar a correção exata. 
-        Use exatamente o seguinte prefixo para a reescrita:
-        [REDLINING - CLÁUSULA SUGERIDA]: Escreva aqui a cláusula perfeita juridicamente pronta para uso.
+        REGRA 3 (REDLINING AUTOMÁTICO): Para cada erro grave, você DEVE gerar a correção exata. 
+        Use EXATAMENTE o prefixo: [REDLINING - CLAUSULA SUGERIDA]:
         """
     
-    # ⚠️ V330: OMNI-SENSE (Detector Inteligente de Contexto) ⚠️
-    # Se tem arquivo UPADO, ou se o COMANDO tem mais de 100 caracteres (colou o contrato), OU o Foco é Contratos = MODO CONTRATO
     modo_contrato = len(contexto_arquivos.strip()) > 0 or len(comando) > 100 or "Contrato" in agente_foco
 
     if modo_contrato:
-        agente_1_sys = f"Auditor Sênior. Foco: {agente_foco}. Cruze números e denuncie fraudes. Analise os textos fornecidos."
+        agente_1_sys = f"Auditor Sênior. Foco: {agente_foco}. Cruze números e denuncie fraudes. Analise textos."
         agente_2_sys = f"Advogado Sócio. Foco: {agente_foco}. Busque nulidades absolutas. {blindagem}"
-        agente_3_sys = f"""Você é o AETHER OMNI, IA Jurídica de Nível Wall Street. Crie o DOSSIÊ EXECUTIVO DE AUDITORIA DE CONTRATOS.
+        agente_3_sys = f"""Você é o AETHER OMNI, IA Jurídica. Crie o DOSSIÊ EXECUTIVO DE AUDITORIA DE CONTRATOS.
         REGRA 1: Inicie com uma Matriz de Risco em Tabela Markdown (barras verticais |).
         | Nível de Risco | Item | Descrição | Ação Imediata |
         |---|---|---|---|
-        REGRA 2: Disserte profundamente sobre as fraudes após a tabela.
+        REGRA 2: Disserte sobre as fraudes.
         {diretriz_redlining}"""
     else:
-        agente_1_sys = f"Analista Investigativo. Extraia e relacione os dados do extrato DataJud."
-        agente_2_sys = f"Estrategista Jurídico de Elite. Avalie a gravidade processual baseada no andamento do tribunal."
-        agente_3_sys = f"""Você é o AETHER OMNI, IA de Inteligência Processual.
-        Crie o RELATÓRIO DE INTELIGÊNCIA PROCESSUAL com base no extrato judicial.
+        agente_1_sys = f"Analista Investigativo. Extraia os dados do DataJud."
+        agente_2_sys = f"Estrategista Jurídico de Elite. Avalie a gravidade processual."
+        agente_3_sys = f"""Você é o AETHER OMNI. Crie o RELATÓRIO DE INTELIGÊNCIA PROCESSUAL.
         REGRA 1: Inicie com uma Tabela Markdown perfeita com Barras Verticais (|):
         | Tribunal | Polo Ativo (Autor) | Polo Passivo (Réu) | Valor da Causa | Assunto Principal |
         |---|---|---|---|---|
-        REGRA 2: Deixe claro se for uma simulação.
+        REGRA 2: Deixe claro se for simulação.
         {diretriz_redlining}"""
 
     resultados = {}
@@ -273,7 +266,7 @@ def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cn
     
     return dossie_final, " | ".join(list(motores_usados))
 
-# --- 📄 EXPORTAÇÕES OMNI PARSER ---
+# --- 📄 EXPORTAÇÕES (O NOVO MOTOR GEOMÉTRICO DE PDF V331) ---
 def gerar_docx_aether(texto_markdown):
     doc = Document()
     font = doc.styles['Normal'].font
@@ -322,8 +315,7 @@ def gerar_docx_aether(texto_markdown):
             continue
 
         in_table = False
-        if '[REDLINING' in linha.upper(): 
-            is_redlining_mode = True # Ativa a caneta azul para o Word
+        if '[REDLINING' in linha.upper(): is_redlining_mode = True 
 
         if linha.startswith('### '): doc.add_heading(linha.replace('### ', ''), level=3)
         elif linha.startswith('## '): doc.add_heading(linha.replace('## ', ''), level=2)
@@ -346,49 +338,76 @@ def gerar_docx_aether(texto_markdown):
 def sanitize_for_pdf(texto):
     return unicodedata.normalize('NFKD', texto).encode('ascii', 'ignore').decode('ascii')
 
+# ⚠️ V331 APEX: MOTOR DE GEOMETRIA (CÉLULAS REAIS NO PDF SEM TRAVAR) ⚠️
 def gerar_pdf_aether(texto_markdown):
     try:
         pdf = FPDF()
         pdf.add_page()
         pdf.set_auto_page_break(auto=True, margin=15)
-        pdf.set_font("helvetica", size=10)
         
+        # Cabeçalho
+        pdf.set_font("helvetica", "B", 12)
         pdf.set_text_color(212, 175, 55)
-        pdf.cell(0, 10, txt="AETHER KARV - PARECER EXECUTIVO", ln=1, align='C')
+        pdf.cell(0, 8, txt="AETHER KARV - PARECER EXECUTIVO", ln=1, align='C')
+        pdf.set_font("helvetica", "", 9)
         pdf.set_text_color(150, 150, 150)
-        pdf.cell(0, 8, txt=f"Gerado em: {sanitize_for_pdf(get_data_hora_br())}", ln=1, align='C')
+        pdf.cell(0, 6, txt=f"Auditoria Documental: {sanitize_for_pdf(get_data_hora_br())}", ln=1, align='C')
         pdf.set_text_color(0, 0, 0)
         pdf.ln(5)
         
         texto_limpo = texto_markdown.replace('**', '').replace('### ', '').replace('## ', '').replace('# ', '')
         texto_seguro = sanitize_for_pdf(texto_limpo)
         is_redlining_mode = False
+        in_table_header = True # Flag para colorir cabeçalho
         
         for linha in texto_seguro.split('\n'):
             linha_filtrada = linha.strip()
             if not linha_filtrada: 
                 pdf.ln(3); continue
 
+            # Pula linha divisora de markdown
             if re.match(r'^\|[-\s\|]+\|$', linha_filtrada): continue
             
+            # --- O MOTOR DE GRADES (TABLE MAKER V331) ---
             if linha_filtrada.startswith('|') and linha_filtrada.endswith('|'):
                 cols = [c.strip() for c in linha_filtrada.split('|')[1:-1]]
-                linha_filtrada = "  |  ".join(cols)
+                
+                # Calcula a largura de cada coluna para caber perfeitamente nos 190mm da folha
+                col_w = 190 / max(1, len(cols))
+                
+                # Se for o cabeçalho, coloca fundo cinza e negrito
+                if in_table_header:
+                    pdf.set_fill_color(230, 230, 230)
+                    pdf.set_font("helvetica", "B", 8)
+                    for col in cols:
+                        # Cortamos o texto caso seja muito longo para a célula, evitando a quebra de linha que destrói tabelas FPDF simples
+                        pdf.cell(col_w, 8, txt=col[:int(col_w/1.8)], border=1, fill=True, align='C')
+                    in_table_header = False
+                else:
+                    pdf.set_font("helvetica", "", 8)
+                    for col in cols:
+                        pdf.cell(col_w, 8, txt=col[:int(col_w/1.8)], border=1, align='C')
+                pdf.ln()
+                continue
             elif ('Nivel de Risco' in linha_filtrada or 'Tribunal' in linha_filtrada) and (',' in linha_filtrada or '\t' in linha_filtrada):
-                sep = '\t' if '\t' in linha_filtrada else ','
-                cols = [c.strip() for c in linha_filtrada.split(sep)]
-                linha_filtrada = "  |  ".join(cols)
+                # Caso a IA teimosamente gere um CSV na primeira linha, apenas pulamos o erro gráfico
+                continue
 
-            # ⚠️ V330 APEX: CANETA AZUL PERMANENTE PARA A CLÁUSULA
+            in_table_header = True # Reset da flag de cabeçalho para a próxima tabela
+            
+            # --- O MODO CANETA AZUL PERMANENTE ---
             if '[REDLINING' in linha_filtrada.upper():
                 is_redlining_mode = True
                 
             if is_redlining_mode:
                 pdf.set_text_color(0, 102, 204) # Azul Corporativo
+                pdf.set_font("helvetica", "B", 10) if '[REDLINING' in linha_filtrada.upper() else pdf.set_font("helvetica", "", 10)
             else:
                 pdf.set_text_color(0, 0, 0)
+                pdf.set_font("helvetica", "", 10)
 
-            pedacos = textwrap.wrap(linha_filtrada, width=85, break_long_words=True)
+            # Texto Normal
+            pedacos = textwrap.wrap(linha_filtrada, width=95, break_long_words=True)
             for pedaco in pedacos:
                 pdf.cell(0, 6, txt=pedaco, ln=1)
                     
@@ -398,12 +417,12 @@ def gerar_pdf_aether(texto_markdown):
         emergencia = FPDF()
         emergencia.add_page()
         emergencia.set_font("helvetica", size=10)
-        emergencia.cell(0, 6, txt="ERRO PDF: Utilize exportacao DOCX.", ln=1)
+        emergencia.cell(0, 6, txt="ERRO PDF: Modo Grafico Falhou. Utilize exportacao DOCX.", ln=1)
         emergencia.cell(0, 6, txt=f"Log: {str(e)[:50]}", ln=1)
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V330
+# 🎨 CSS APEX V331
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -457,10 +476,10 @@ st.markdown(css_code, unsafe_allow_html=True)
 # ==========================================
 
 with st.sidebar:
-    st.markdown('<div class="omni-brand" style="margin-bottom: 20px;"><h1>AETHER KARV</h1><span>V330 APEX BLUE-INK</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="omni-brand" style="margin-bottom: 20px;"><h1>AETHER KARV</h1><span>V331 APEX GRID-MASTER</span></div>', unsafe_allow_html=True)
     
     st.markdown('<div class="section-title">📁 Base de Conhecimento</div>', unsafe_allow_html=True)
-    up = st.file_uploader("Contratos, petições ou imagens...", accept_multiple_files=True, label_visibility="collapsed", help="Faça upload dos documentos base. A IA fará a ingestão e leitura completa.")
+    up = st.file_uploader("Contratos, petições ou imagens...", accept_multiple_files=True, label_visibility="collapsed", help="Faça upload dos documentos base.")
     
     st.markdown('<div class="section-title">⚖️ Motor Jurídico</div>', unsafe_allow_html=True)
     agente_foco = st.selectbox("Especialidade", ["Análise de Contratos", "Due Diligence Societária", "Compliance e Risco", "Auditoria Trabalhista", "Direito Público"], label_visibility="collapsed")
@@ -491,7 +510,7 @@ with st.sidebar:
             progress_bar.progress(40, text="Consultando bases e estruturando RAG...")
             resposta, motor_usado = orquestrador_omni(cmd, texto_arquivos, ativar_lindb, num_processo_input, agente_foco, ativar_redlining)
             
-            progress_bar.progress(75, text="Renderizando PDF (Blue-Ink) e DOCX...")
+            progress_bar.progress(75, text="Renderizando Grades Nativas no PDF e DOCX...")
             docx_buffer = gerar_docx_aether(resposta)
             pdf_data = gerar_pdf_aether(resposta)
             
