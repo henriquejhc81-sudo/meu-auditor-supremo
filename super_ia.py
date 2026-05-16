@@ -1,7 +1,7 @@
 import streamlit as st
 
-# ⚠️ V334 APEX: SEQUÊNCIA DE IGNIÇÃO BLINDADA (Deve ser o 1º comando após o import) ⚠️
-st.set_page_config(page_title="AETHER KARV V334 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
+# ⚠️ V335 APEX: SEQUÊNCIA DE IGNIÇÃO BLINDADA ⚠️
+st.set_page_config(page_title="AETHER KARV V335 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
 
 import pandas as pd
 import os, time, base64, io, re
@@ -26,13 +26,13 @@ try:
     import docx2txt
     from docx import Document
     from docx.shared import Pt, RGBColor
-except ImportError: st.error("⚠️ Biblioteca 'python-docx' ausente. Verifique o requirements.txt.")
+except ImportError: st.error("⚠️ Biblioteca 'python-docx' ausente.")
 try: from fpdf import FPDF
 except ImportError: pass
 try: import PyPDF2
 except ImportError: pass
 
-# --- 👁️ VISÃO COMPUTACIONAL (OCR + OPENCV) ---
+# --- 👁️ VISÃO COMPUTACIONAL (OCR) ---
 try:
     import cv2
     import numpy as np
@@ -124,7 +124,7 @@ def consultar_datajud(numero_processo, api_key):
         else: return f"\n[ALERTA DATAJUD]: Status {response.status_code}"
     except Exception as e: return f"\n[ALERTA DATAJUD]: Falha ({str(e)})"
 
-# --- 👁️ MOTOR DE INGESTÃO (NEXUS MULTIMODAL) ---
+# --- 👁️ MOTOR DE INGESTÃO (NEXUS) ---
 def extrator_nexus_v3(arquivos_upados):
     texto_extraido = ""
     sucesso = 0
@@ -215,10 +215,16 @@ def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, tentar_in
 
     return f"[{nome_agente}] Erro Crítico: Sem chaves API configuradas.", "OFFLINE"
 
-# --- 🚀 ORQUESTRADOR MULTI-AGENTE ---
-def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cnj, agente_foco, ativar_redlining):
+# --- 🚀 ORQUESTRADOR MULTI-AGENTE (V335 - MÁQUINA DE DINHEIRO INJETADA) ---
+def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cnj, agente_foco, ativar_redlining, valor_hora):
     dados_tribunal = consultar_datajud(num_processo_cnj, CNJ_API_KEY) if num_processo_cnj else ""
     contexto_final = contexto_arquivos + "\n" + dados_tribunal
+    
+    # ⚠️ CÁLCULO DO TIMESHEET INTELIGENTE ⚠️
+    # A IA estima as horas humanas baseadas no tamanho do contrato ou complexidade processual
+    tamanho_dados = len(contexto_final) + len(comando)
+    horas_humanas_estimadas = max(1.5, tamanho_dados / 4000) # Mínimo de 1.5 horas
+    faturamento_total = horas_humanas_estimadas * valor_hora
     
     if len(contexto_final) > 60000: contexto_final = processar_com_rag(contexto_final, comando)
     blindagem = "Aplique a LINDB para invalidar responsabilizações injustas." if lindb_ativada else ""
@@ -233,7 +239,7 @@ def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cn
     modo_contrato = len(contexto_arquivos.strip()) > 0 or len(comando) > 100 or "Contrato" in agente_foco
 
     if modo_contrato:
-        agente_1_sys = f"Auditor Sênior. Foco: {agente_foco}. Cruze números e denuncie fraudes. Analise textos."
+        agente_1_sys = f"Auditor Sênior. Foco: {agente_foco}. Cruze números e denuncie fraudes."
         agente_2_sys = f"Advogado Sócio. Foco: {agente_foco}. Busque nulidades absolutas. {blindagem}"
         agente_3_sys = f"""Você é o AETHER OMNI, IA Jurídica. Crie o DOSSIÊ EXECUTIVO DE AUDITORIA DE CONTRATOS.
         REGRA 1: Inicie com uma Matriz de Risco em Tabela Markdown (barras verticais |).
@@ -265,9 +271,20 @@ def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cn
     dossie_final, m3 = chamar_agente_hydra("AETHER OMNI", agente_3_sys, "Crie o Dossiê Final. Use Tabela Markdown com barras verticais (|).", contexto_sintese)
     motores_usados.add(m3)
     
+    # ⚠️ INJEÇÃO DA FATURA NO FINAL DO RELATÓRIO ⚠️
+    bloco_fatura = f"""
+    
+---
+### 💰 Fatura Pro-Forma (Timesheet Audit)
+* **Tempo Humano Estimado Poupado:** {horas_humanas_estimadas:.1f} horas
+* **Valor da Hora Técnica (Informada):** R$ {valor_hora:.2f}
+* **Total Sugerido para Cobrança do Cliente:** **R$ {faturamento_total:.2f}**
+"""
+    dossie_final += bloco_fatura
+    
     return dossie_final, " | ".join(list(motores_usados))
 
-# --- 📄 EXPORTAÇÕES OMNI PARSER ---
+# --- 📄 EXPORTAÇÕES OMNI PARSER (V335 - FIM DO VAZAMENTO AZUL) ---
 def gerar_docx_aether(texto_markdown):
     doc = Document()
     font = doc.styles['Normal'].font
@@ -317,6 +334,11 @@ def gerar_docx_aether(texto_markdown):
             continue
 
         in_table = False
+        
+        # ⚠️ O TAMPÃO DA CANETA AZUL ⚠️
+        if linha.startswith('#') or linha.startswith('**') or 'CONCLUSÃO' in linha.upper() or 'RECOMENDAÇÕES' in linha.upper() or '---' in linha:
+            is_redlining_mode = False 
+
         if '[REDLINING' in linha.upper(): is_redlining_mode = True 
 
         if linha.startswith('### '): doc.add_heading(linha.replace('### ', ''), level=3)
@@ -340,7 +362,6 @@ def gerar_docx_aether(texto_markdown):
 def sanitize_for_pdf(texto):
     return unicodedata.normalize('NFKD', texto).encode('ascii', 'ignore').decode('ascii')
 
-# ⚠️ V334 APEX: THE OMNI-CARD ENGINE (Unificado para CSV e Markdown com Aspas) ⚠️
 def gerar_pdf_aether(texto_markdown):
     try:
         pdf = FPDF()
@@ -368,7 +389,6 @@ def gerar_pdf_aether(texto_markdown):
 
             if re.match(r'^\|[-\s\|]+\|$', linha_filtrada): continue
             
-            # --- O MOTOR OMNI-CARD (Agora entende CSV com Aspas) ---
             is_table_line = False
             cols = []
             
@@ -376,7 +396,6 @@ def gerar_pdf_aether(texto_markdown):
                 cols = [c.strip() for c in linha_filtrada.split('|')[1:-1]]
                 is_table_line = True
             elif ('Nivel de Risco' in linha_filtrada or 'Tribunal' in linha_filtrada or 'Polo Ativo' in linha_filtrada) and (',' in linha_filtrada or '\t' in linha_filtrada):
-                # V334: Limpeza forçada de aspas geradas pela IA
                 linha_limpa_csv = linha_filtrada.replace('"', '')
                 sep = '\t' if '\t' in linha_limpa_csv else ','
                 cols = [c.strip() for c in linha_limpa_csv.split(sep)]
@@ -407,7 +426,10 @@ def gerar_pdf_aether(texto_markdown):
             else:
                 table_headers = []
 
-            # --- MODO CANETA AZUL PERMANENTE ---
+            # ⚠️ O TAMPÃO DA CANETA AZUL (PDF) ⚠️
+            if linha_filtrada.startswith('#') or 'CONCLUSAO' in linha_filtrada.upper() or 'RECOMENDACOES' in linha_filtrada.upper() or '---' in linha_filtrada:
+                is_redlining_mode = False
+
             if '[REDLINING' in linha_filtrada.upper():
                 is_redlining_mode = True
                 
@@ -433,7 +455,7 @@ def gerar_pdf_aether(texto_markdown):
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V334
+# 🎨 CSS APEX V335
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -457,9 +479,9 @@ html, body {{ overflow-x: hidden !important; width: 100vw !important; margin: 0;
 .section-title::before {{ content: ''; display: block; width: 3px; height: 12px; background: #D4AF37; border-radius: 4px; }}
 
 div[data-baseweb="select"] > div {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.8rem !important; border-radius: 6px !important; }}
-.stTextArea label, .stCheckbox label span, .stTextInput label {{ font-size: 0.7rem !important; color: #cbd5e1 !important; font-weight: 600 !important; }}
-.stTextArea textarea, .stTextInput input {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.8rem !important; border-radius: 6px !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); }}
-.stTextArea textarea:focus, .stTextInput input:focus {{ border-color: #D4AF37 !important; box-shadow: 0 0 8px rgba(212, 175, 55, 0.1) !important; }}
+.stTextArea label, .stCheckbox label span, .stTextInput label, .stNumberInput label {{ font-size: 0.7rem !important; color: #cbd5e1 !important; font-weight: 600 !important; }}
+.stTextArea textarea, .stTextInput input, .stNumberInput input {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.8rem !important; border-radius: 6px !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); }}
+.stTextArea textarea:focus, .stTextInput input:focus, .stNumberInput input:focus {{ border-color: #D4AF37 !important; box-shadow: 0 0 8px rgba(212, 175, 55, 0.1) !important; }}
 
 .stButton > button[kind="primary"] {{ background: linear-gradient(135deg, #B8860B, #D4AF37) !important; border-radius: 6px !important; font-weight: 700 !important; color: #020617 !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; padding: 10px !important; border: none !important; width: 100% !important; transition: 0.3s; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2); margin-top: 15px; }}
 .stButton > button[kind="primary"]:hover {{ transform: translateY(-2px); box-shadow: 0 6px 15px rgba(212, 175, 55, 0.4); }}
@@ -487,21 +509,25 @@ st.markdown(css_code, unsafe_allow_html=True)
 # ==========================================
 
 with st.sidebar:
-    st.markdown('<div class="omni-brand" style="margin-bottom: 20px;"><h1>AETHER KARV</h1><span>V334 APEX BYPASS</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="omni-brand" style="margin-bottom: 20px;"><h1>AETHER KARV</h1><span>V335 APEX BILLING</span></div>', unsafe_allow_html=True)
     
     st.markdown('<div class="section-title">📁 Base de Conhecimento</div>', unsafe_allow_html=True)
-    up = st.file_uploader("Contratos, petições ou imagens...", accept_multiple_files=True, label_visibility="collapsed", help="Faça upload dos documentos base. A IA fará a ingestão e leitura completa.")
+    up = st.file_uploader("Contratos, petições ou imagens...", accept_multiple_files=True, label_visibility="collapsed", help="Faça upload dos documentos base.")
     
     st.markdown('<div class="section-title">⚖️ Motor Jurídico</div>', unsafe_allow_html=True)
     agente_foco = st.selectbox("Especialidade", ["Análise de Contratos", "Due Diligence Societária", "Compliance e Risco", "Auditoria Trabalhista", "Direito Público"], label_visibility="collapsed")
     
-    ativar_redlining = st.checkbox("Ativar Redlining (Reescrita Ativa)", value=False, help="Se ativado, a IA não apenas apontará o risco, mas escreverá a cláusula substituta perfeita.")
+    ativar_redlining = st.checkbox("Ativar Redlining (Reescrita Ativa)", value=False)
     ativar_lindb = st.checkbox("Filtro de Proteção (Art. 22 LINDB)", value=True)
     
     st.markdown('<div class="section-title">🏛️ DataJud (CNJ)</div>', unsafe_allow_html=True)
     if CNJ_API_KEY == "DEMO_KEY":
         st.warning("⚠️ Modo Simulação: Dados fictícios (Mockup).")
     num_processo_input = st.text_input("Nº do Processo / CNPJ", placeholder="Insira para extração...", label_visibility="collapsed")
+
+    # ⚠️ V335 APEX: MÓDULO FINANCEIRO ⚠️
+    st.markdown('<div class="section-title">💰 Faturamento (Timesheet)</div>', unsafe_allow_html=True)
+    valor_hora = st.number_input("Valor da sua Hora Técnica (R$)", min_value=50.0, max_value=5000.0, value=350.0, step=50.0, help="Defina quanto vale sua hora. A IA calculará o tempo poupado e gerará a fatura automática do cliente.")
 
     st.markdown('<div class="section-title">💬 Comando Direto</div>', unsafe_allow_html=True)
     cmd = st.text_area("", key="cmd_input", placeholder="Instruções ou cole o contrato aqui...", label_visibility="collapsed")
@@ -519,9 +545,9 @@ with st.sidebar:
             texto_arquivos, num_arquivos, usou_ocr = extrator_nexus_v3(up) if up else ("", 0, False)
             
             progress_bar.progress(40, text="Consultando bases e estruturando RAG...")
-            resposta, motor_usado = orquestrador_omni(cmd, texto_arquivos, ativar_lindb, num_processo_input, agente_foco, ativar_redlining)
+            resposta, motor_usado = orquestrador_omni(cmd, texto_arquivos, ativar_lindb, num_processo_input, agente_foco, ativar_redlining, valor_hora)
             
-            progress_bar.progress(75, text="Renderizando OMNI-CARDS no PDF e DOCX...")
+            progress_bar.progress(75, text="Calculando Honorários e Renderizando PDF...")
             docx_buffer = gerar_docx_aether(resposta)
             pdf_data = gerar_pdf_aether(resposta)
             
@@ -574,7 +600,6 @@ if st.session_state.res_aether:
     with tab2:
         st.write("Selecione o formato para baixar o relatório blindado gerado pelo Aether Karv:")
         c1, c2, c3, c4 = st.columns(4)
-        # ⚠️ V334 APEX: DOWNLOADS MASCARADOS COM APPLICATION/OCTET-STREAM ⚠️
         with c1: st.markdown(gerar_botao_primario(st.session_state.res_docx, "AETHER_Parecer.docx", "📄 Download WORD", "application/octet-stream"), unsafe_allow_html=True)
         with c2: st.markdown(gerar_botao_primario(st.session_state.res_pdf, "AETHER_Parecer.pdf", "📕 Download PDF", "application/octet-stream"), unsafe_allow_html=True)
         with c3: st.markdown(gerar_botao_secundario(st.session_state.res_aether.encode('utf-8'), "AETHER_Parecer.txt", "📝 Download TXT", "application/octet-stream"), unsafe_allow_html=True)
