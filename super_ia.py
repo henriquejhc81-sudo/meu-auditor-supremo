@@ -45,7 +45,7 @@ try:
 except ImportError: MODULO_RAG = False
 
 # --- ⚙️ CONFIGURAÇÃO DE SEGURANÇA E UI ---
-st.set_page_config(page_title="AETHER KARV V328 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="AETHER KARV V329 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
 
 GROQ_KEY = st.secrets.get("GROQ_API_KEY", os.environ.get("GROQ_API_KEY", ""))
 GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
@@ -219,8 +219,8 @@ def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, tentar_in
 
     return f"[{nome_agente}] Erro Crítico: Sem chaves API configuradas.", "OFFLINE"
 
-# --- 🚀 ORQUESTRADOR MULTI-AGENTE ---
-def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cnj, agente_foco):
+# --- 🚀 ORQUESTRADOR MULTI-AGENTE (V329 APEX - REDLINING ENGINE) ---
+def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cnj, agente_foco, ativar_redlining):
     tem_arquivos = len(contexto_arquivos.strip()) > 0
     dados_tribunal = consultar_datajud(num_processo_cnj, CNJ_API_KEY) if num_processo_cnj else ""
     contexto_final = contexto_arquivos + "\n" + dados_tribunal
@@ -228,23 +228,34 @@ def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cn
     if len(contexto_final) > 60000: contexto_final = processar_com_rag(contexto_final, comando)
     blindagem = "Aplique a LINDB para invalidar responsabilizações injustas." if lindb_ativada else ""
     
+    # Injeção da Diretriz de Redlining Global
+    diretriz_redlining = ""
+    if ativar_redlining:
+        diretriz_redlining = """
+        REGRA 3 (REDLINING AUTOMÁTICO): Para cada erro, fraude ou risco grave encontrado, você DEVE gerar a correção exata. 
+        Use exatamente o seguinte prefixo para a reescrita:
+        [REDLINING - CLAUSULA SUGERIDA]: Escreva aqui a cláusula perfeita juridicamente ou o esboço da tese de defesa pronta para uso.
+        """
+    
     if tem_arquivos:
-        agente_1_sys = f"Auditor Sênior. Foco: {agente_foco}. Cruze números com extenso e denuncie fraudes. Analise os dados processuais anexos."
+        agente_1_sys = f"Auditor Sênior. Foco: {agente_foco}. Cruze números com extenso e denuncie fraudes."
         agente_2_sys = f"Advogado Sócio. Foco: {agente_foco}. Busque nulidades absolutas e avalie a jurisdição. {blindagem}"
-        agente_3_sys = """Você é o AETHER OMNI, IA Jurídica. Crie o DOSSIÊ EXECUTIVO DE AUDITORIA.
+        agente_3_sys = f"""Você é o AETHER OMNI, IA Jurídica de Nível Wall Street. Crie o DOSSIÊ EXECUTIVO.
         REGRA 1: Inicie com uma Matriz de Risco em Tabela Markdown (barras verticais |).
         | Nível de Risco | Item | Descrição | Ação Imediata |
         |---|---|---|---|
-        Após a tabela, disserte profundamente sobre as fraudes."""
+        REGRA 2: Disserte profundamente sobre as fraudes após a tabela.
+        {diretriz_redlining}"""
     else:
-        agente_1_sys = f"Analista Investigativo. Extraia e relacione os dados do extrato."
+        agente_1_sys = f"Analista Investigativo. Extraia e relacione os dados do extrato DataJud."
         agente_2_sys = f"Estrategista Jurídico de Elite. Avalie a gravidade processual."
-        agente_3_sys = """Você é o AETHER OMNI, IA Processual.
-        Crie o RELATÓRIO DE INTELIGÊNCIA PROCESSUAL.
+        agente_3_sys = f"""Você é o AETHER OMNI, IA de Inteligência Processual.
+        Crie o RELATÓRIO DE INTELIGÊNCIA PROCESSUAL com base apenas no extrato judicial.
         REGRA 1: Inicie com uma Tabela Markdown perfeita com Barras Verticais (|):
         | Tribunal | Polo Ativo (Autor) | Polo Passivo (Réu) | Valor da Causa | Assunto Principal |
         |---|---|---|---|---|
-        REGRA 2: Após a Tabela, crie 'Diagnóstico e Estratégia'."""
+        REGRA 2: Deixe claro se for uma simulação de testes do Aether.
+        {diretriz_redlining}"""
 
     resultados = {}
     motores_usados = set()
@@ -262,7 +273,7 @@ def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cn
     
     return dossie_final, " | ".join(list(motores_usados))
 
-# --- 📄 EXPORTAÇÕES ---
+# --- 📄 EXPORTAÇÕES OMNI PARSER ---
 def gerar_docx_aether(texto_markdown):
     doc = Document()
     font = doc.styles['Normal'].font
@@ -314,6 +325,11 @@ def gerar_docx_aether(texto_markdown):
         elif linha.startswith('## '): doc.add_heading(linha.replace('## ', ''), level=2)
         elif linha.startswith('# '): doc.add_heading(linha.replace('# ', ''), level=1)
         elif linha.startswith('**') and linha.endswith('**'): doc.add_paragraph().add_run(linha.replace('**', '')).bold = True
+        elif '[REDLINING' in linha: # V329: Destaque de Redlining no Word
+            p = doc.add_paragraph()
+            r = p.add_run(linha.replace('**', ''))
+            r.bold = True
+            r.font.color.rgb = RGBColor(0, 102, 204)
         else: doc.add_paragraph(linha.replace('**', ''))
 
     buffer = io.BytesIO()
@@ -356,6 +372,11 @@ def gerar_pdf_aether(texto_markdown):
                 cols = [c.strip() for c in linha_filtrada.split(sep)]
                 linha_filtrada = "  |  ".join(cols)
 
+            if '[REDLINING' in linha_filtrada:
+                pdf.set_text_color(0, 102, 204) # Cor azul para destacar a reescrita no PDF
+            else:
+                pdf.set_text_color(0, 0, 0)
+
             pedacos = textwrap.wrap(linha_filtrada, width=85, break_long_words=True)
             for pedaco in pedacos:
                 pdf.cell(0, 6, txt=pedaco, ln=1)
@@ -371,7 +392,7 @@ def gerar_pdf_aether(texto_markdown):
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V328 (WORKSPACE DESIGN)
+# 🎨 CSS APEX V329
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -383,7 +404,6 @@ html, body {{ overflow-x: hidden !important; width: 100vw !important; margin: 0;
 .stApp {{ {bg_css} color: #cbd5e1; font-family: 'Inter', sans-serif; }}
 [data-testid="stHeader"], footer {{ display: none !important; }}
 
-/* SIDEBAR STYLING */
 [data-testid="stSidebar"] {{ background: rgba(15, 23, 42, 0.95) !important; border-right: 1px solid rgba(212, 175, 55, 0.2) !important; padding-top: 20px; }}
 [data-testid="stSidebarContent"] {{ padding: 0 15px; }}
 
@@ -403,14 +423,12 @@ div[data-baseweb="select"] > div {{ background-color: rgba(15, 23, 42, 0.6) !imp
 .stButton > button[kind="primary"] {{ background: linear-gradient(135deg, #B8860B, #D4AF37) !important; border-radius: 6px !important; font-weight: 700 !important; color: #020617 !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; padding: 10px !important; border: none !important; width: 100% !important; transition: 0.3s; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2); margin-top: 15px; }}
 .stButton > button[kind="primary"]:hover {{ transform: translateY(-2px); box-shadow: 0 6px 15px rgba(212, 175, 55, 0.4); }}
 
-/* MAIN CONTENT AREA */
 .custom-kpi-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; }}
 .kpi-box {{ background: rgba(30, 41, 59, 0.4); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); border-left: 3px solid #D4AF37; padding: 12px 15px; backdrop-filter: blur(10px); }}
 .kpi-title {{ color: #94a3b8; font-size: 0.60rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; display:block; margin-bottom: 4px; }}
 .kpi-value {{ color: #f8fafc; font-size: 1.1rem; font-weight: 600; line-height: 1.2; display:block; }}
 .kpi-value.highlight {{ color: #D4AF37; font-weight: 700; }}
 
-/* TABS STYLING */
 [data-testid="stTabs"] button {{ padding: 10px 20px !important; font-weight: 600 !important; color: #94a3b8 !important; border-bottom: 2px solid transparent !important; }}
 [data-testid="stTabs"] button[aria-selected="true"] {{ color: #D4AF37 !important; border-bottom: 2px solid #D4AF37 !important; background: rgba(212, 175, 55, 0.05) !important; border-radius: 6px 6px 0 0; }}
 
@@ -418,10 +436,6 @@ div[data-baseweb="select"] > div {{ background-color: rgba(15, 23, 42, 0.6) !imp
 .welcome-title {{ color: #f8fafc; font-size: 1.5rem; font-weight: 700; margin-bottom: 10px; text-align: center; }}
 .welcome-subtitle {{ color: #94a3b8; font-size: 0.9rem; margin-bottom: 20px; text-align: center; max-width: 600px; }}
 
-.stButton > button[kind="secondary"] {{ background: rgba(255,255,255,0.05) !important; color: #cbd5e1 !important; border: 1px solid rgba(255,255,255,0.15) !important; border-radius: 6px !important; font-weight: 600 !important; transition: 0.3s; }}
-.stButton > button[kind="secondary"]:hover {{ background: rgba(212,175,55,0.1) !important; color: #fff !important; border-color: #D4AF37 !important; }}
-
-/* PROGRESS BAR STYLING */
 .stProgress > div > div > div > div {{ background-color: #D4AF37 !important; }}
 </style>
 """
@@ -432,30 +446,31 @@ st.markdown(css_code, unsafe_allow_html=True)
 # ==========================================
 
 with st.sidebar:
-    st.markdown('<div class="omni-brand" style="margin-bottom: 20px;"><h1>AETHER KARV</h1><span>V328 ASTREA-UX</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="omni-brand" style="margin-bottom: 20px;"><h1>AETHER KARV</h1><span>V329 DRAFT-ENGINE</span></div>', unsafe_allow_html=True)
     
-    # Tooltips incorporados usando help=""
     st.markdown('<div class="section-title">📁 Base de Conhecimento</div>', unsafe_allow_html=True)
-    up = st.file_uploader("Contratos, petições ou imagens...", accept_multiple_files=True, label_visibility="collapsed", help="Faça upload dos documentos base. A IA fará a ingestão e leitura completa (incluindo imagens via OCR).")
+    up = st.file_uploader("Contratos, petições ou imagens...", accept_multiple_files=True, label_visibility="collapsed", help="Faça upload dos documentos base. A IA fará a ingestão e leitura completa.")
     
     st.markdown('<div class="section-title">⚖️ Motor Jurídico</div>', unsafe_allow_html=True)
-    agente_foco = st.selectbox("Especialidade", ["Análise de Contratos", "Due Diligence Societária", "Compliance e Risco", "Auditoria Trabalhista", "Direito Público"], label_visibility="collapsed", help="Define o perfil cognitivo dos Agentes. A IA moldará seu vocabulário e rigor baseado nesta escolha.")
-    ativar_lindb = st.checkbox("Filtro de Proteção (Art. 22 LINDB)", value=True, help="Ativa a proteção legal contra responsabilização injusta de gestores públicos.")
+    agente_foco = st.selectbox("Especialidade", ["Análise de Contratos", "Due Diligence Societária", "Compliance e Risco", "Auditoria Trabalhista", "Direito Público"], label_visibility="collapsed")
+    
+    # ⚠️ V329: O TOGGLE DA MÁQUINA DE DINHEIRO (REDLINING) ⚠️
+    ativar_redlining = st.checkbox("Ativar Redlining (Reescrita Ativa)", value=False, help="Se ativado, a IA não apenas apontará o risco, mas escreverá a cláusula substituta perfeita ou a tese de defesa pronta.")
+    ativar_lindb = st.checkbox("Filtro de Proteção (Art. 22 LINDB)", value=True)
     
     st.markdown('<div class="section-title">🏛️ DataJud (CNJ)</div>', unsafe_allow_html=True)
     if CNJ_API_KEY == "DEMO_KEY":
         st.warning("⚠️ Modo Simulação: Dados gerados serão fictícios (Mockup).")
-    num_processo_input = st.text_input("Nº do Processo / CNPJ", placeholder="Insira para extração...", label_visibility="collapsed", help="Insira um CPF ou Número de Processo para consultar as bases do Tribunal via integração de API.")
+    num_processo_input = st.text_input("Nº do Processo / CNPJ", placeholder="Insira para extração...", label_visibility="collapsed")
 
     st.markdown('<div class="section-title">💬 Comando Direto</div>', unsafe_allow_html=True)
-    cmd = st.text_area("", key="cmd_input", placeholder="Instruções para a IA...", label_visibility="collapsed", help="Exemplo: 'Busque brechas na cláusula 4' ou 'Qual o risco deste processo?'")
+    cmd = st.text_area("", key="cmd_input", placeholder="Instruções para a IA...", label_visibility="collapsed")
 
     if st.button("🚀 INICIAR AUDITORIA OMNI", type="primary"):
         if not GROQ_KEY and not GEMINI_KEY:
             st.error("⚠️ ERRO: Chaves API não configuradas.")
             st.toast("Falha: Chaves API ausentes.", icon="❌")
         elif cmd or up or num_processo_input:
-            # ⚠️ V328: SISTEMA DE TOASTS E BARRA DE PROGRESSO DINÂMICA (Estilo Astrea) ⚠️
             st.toast("Iniciando Motor Hydra...", icon="🔥")
             progress_bar = st.progress(5, text="Iniciando Córtex de Ingestão...")
             time.sleep(0.5)
@@ -464,7 +479,7 @@ with st.sidebar:
             texto_arquivos, num_arquivos, usou_ocr = extrator_nexus_v3(up) if up else ("", 0, False)
             
             progress_bar.progress(40, text="Consultando DataJud e estruturando RAG...")
-            resposta, motor_usado = orquestrador_omni(cmd, texto_arquivos, ativar_lindb, num_processo_input, agente_foco)
+            resposta, motor_usado = orquestrador_omni(cmd, texto_arquivos, ativar_lindb, num_processo_input, agente_foco, ativar_redlining)
             
             progress_bar.progress(75, text="Renderizando Tabelas Nativas e PDF Blindado...")
             docx_buffer = gerar_docx_aether(resposta)
@@ -502,8 +517,8 @@ t = st.session_state.telemetria
 st.markdown(f"""
 <div class="custom-kpi-grid">
     <div class="kpi-box" title="Volume de contratos e peças inseridos no sistema."><span class="kpi-title">Documentos Digeridos</span><span class="kpi-value">{t['arquivos']}</span></div>
-    <div class="kpi-box" title="Modelo de IA de Elite que processou os dados (Groq/Gemini)."><span class="kpi-title">Nó de Processamento</span><span class="kpi-value highlight">{t['motor']}</span></div>
-    <div class="kpi-box" title="Status do sistema de leitura visual para PDFs escaneados ou imagens."><span class="kpi-title">Módulo de Visão</span><span class="kpi-value">{t['ocr']}</span></div>
+    <div class="kpi-box" title="Modelo de IA de Elite que processou os dados."><span class="kpi-title">Nó de Processamento</span><span class="kpi-value highlight">{t['motor']}</span></div>
+    <div class="kpi-box" title="Status do sistema de leitura visual para PDFs escaneados."><span class="kpi-title">Módulo de Visão</span><span class="kpi-value">{t['ocr']}</span></div>
     <div class="kpi-box" title="Andamento atual do orquestrador Omni."><span class="kpi-title">Status da Operação</span><span class="kpi-value highlight">{t['risco']}</span></div>
 </div>
 """, unsafe_allow_html=True)
@@ -539,11 +554,11 @@ if st.session_state.res_aether:
 else:
     st.markdown('<div class="standby-container">', unsafe_allow_html=True)
     st.markdown('<div class="welcome-title">O Workspace do Aether Karv está Online.</div>', unsafe_allow_html=True)
-    st.markdown('<div class="welcome-subtitle">Utilize a barra de ferramentas à esquerda para injetar documentos, conectar-se ao DataJud ou inserir instruções paramétricas para a Inteligência Artificial. Dica: Passe o mouse sobre as opções para dicas visuais.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="welcome-subtitle">Utilize a barra de ferramentas à esquerda para injetar documentos, conectar-se ao DataJud ou ativar o Redlining de Contratos (Reescrita).</div>', unsafe_allow_html=True)
     
     col_a, col_b = st.columns(2)
     with col_a:
-        if st.button("📄 Simular Análise de Risco de Contrato", use_container_width=True): set_template("Faça uma due diligence deste documento e aponte cláusulas abusivas.")
+        if st.button("📄 Simular Análise com Redlining", use_container_width=True): set_template("Faça uma due diligence deste documento, aponte cláusulas abusivas e redija a correção (ative o Redlining no painel).")
     with col_b:
-        if st.button("🏛️ Simular Diagnóstico Processual", use_container_width=True): set_template("Analise as movimentações judiciais e sugira a melhor estratégia de defesa.")
+        if st.button("🏛️ Simular Esboço de Defesa (DataJud)", use_container_width=True): set_template("Analise as movimentações judiciais e redija o esqueleto da petição de defesa (ative o Redlining no painel).")
     st.markdown('</div>', unsafe_allow_html=True)
