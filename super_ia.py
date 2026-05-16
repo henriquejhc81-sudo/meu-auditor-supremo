@@ -1,7 +1,7 @@
 import streamlit as st
 
-# ⚠️ V333 APEX: SEQUÊNCIA DE IGNIÇÃO BLINDADA (Deve ser o 1º comando após o import) ⚠️
-st.set_page_config(page_title="AETHER KARV V333 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
+# ⚠️ V334 APEX: SEQUÊNCIA DE IGNIÇÃO BLINDADA (Deve ser o 1º comando após o import) ⚠️
+st.set_page_config(page_title="AETHER KARV V334 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
 
 import pandas as pd
 import os, time, base64, io, re
@@ -267,7 +267,7 @@ def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cn
     
     return dossie_final, " | ".join(list(motores_usados))
 
-# --- 📄 EXPORTAÇÕES (DOCX) ---
+# --- 📄 EXPORTAÇÕES OMNI PARSER ---
 def gerar_docx_aether(texto_markdown):
     doc = Document()
     font = doc.styles['Normal'].font
@@ -295,8 +295,9 @@ def gerar_docx_aether(texto_markdown):
             cols = [c.strip() for c in linha_limpa.split('|')[1:-1]]
             is_table_line = True
         elif ('Nível de Risco' in linha_limpa or 'Tribunal' in linha_limpa or 'Polo Ativo' in linha_limpa) and (',' in linha_limpa or '\t' in linha_limpa):
-            separador = '\t' if '\t' in linha_limpa else ','
-            cols = [c.strip() for c in linha_limpa.split(separador)]
+            linha_limpa_csv = linha_limpa.replace('"', '')
+            separador = '\t' if '\t' in linha_limpa_csv else ','
+            cols = [c.strip() for c in linha_limpa_csv.split(separador)]
             if len(cols) >= 3: is_table_line = True
 
         if is_table_line:
@@ -339,7 +340,7 @@ def gerar_docx_aether(texto_markdown):
 def sanitize_for_pdf(texto):
     return unicodedata.normalize('NFKD', texto).encode('ascii', 'ignore').decode('ascii')
 
-# ⚠️ V333 APEX: THE OMNI-CARD ENGINE (Smart Linear Fallback para PDFs - Preservado!) ⚠️
+# ⚠️ V334 APEX: THE OMNI-CARD ENGINE (Unificado para CSV e Markdown com Aspas) ⚠️
 def gerar_pdf_aether(texto_markdown):
     try:
         pdf = FPDF()
@@ -367,10 +368,21 @@ def gerar_pdf_aether(texto_markdown):
 
             if re.match(r'^\|[-\s\|]+\|$', linha_filtrada): continue
             
-            # --- O MOTOR OMNI-CARD PARA PDF ---
+            # --- O MOTOR OMNI-CARD (Agora entende CSV com Aspas) ---
+            is_table_line = False
+            cols = []
+            
             if linha_filtrada.startswith('|') and linha_filtrada.endswith('|'):
                 cols = [c.strip() for c in linha_filtrada.split('|')[1:-1]]
+                is_table_line = True
+            elif ('Nivel de Risco' in linha_filtrada or 'Tribunal' in linha_filtrada or 'Polo Ativo' in linha_filtrada) and (',' in linha_filtrada or '\t' in linha_filtrada):
+                # V334: Limpeza forçada de aspas geradas pela IA
+                linha_limpa_csv = linha_filtrada.replace('"', '')
+                sep = '\t' if '\t' in linha_limpa_csv else ','
+                cols = [c.strip() for c in linha_limpa_csv.split(sep)]
+                if len(cols) >= 3: is_table_line = True
                 
+            if is_table_line:
                 if not table_headers:
                     table_headers = cols
                     continue
@@ -391,9 +403,6 @@ def gerar_pdf_aether(texto_markdown):
                     for pedaco in pedacos:
                         pdf.cell(0, 6, txt=pedaco, ln=1)
                 pdf.ln(4)
-                continue
-                
-            elif ('Nivel de Risco' in linha_filtrada or 'Tribunal' in linha_filtrada) and (',' in linha_filtrada or '\t' in linha_filtrada):
                 continue
             else:
                 table_headers = []
@@ -424,7 +433,7 @@ def gerar_pdf_aether(texto_markdown):
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V333
+# 🎨 CSS APEX V334
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -478,10 +487,10 @@ st.markdown(css_code, unsafe_allow_html=True)
 # ==========================================
 
 with st.sidebar:
-    st.markdown('<div class="omni-brand" style="margin-bottom: 20px;"><h1>AETHER KARV</h1><span>V333 APEX BULLETPROOF</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="omni-brand" style="margin-bottom: 20px;"><h1>AETHER KARV</h1><span>V334 APEX BYPASS</span></div>', unsafe_allow_html=True)
     
     st.markdown('<div class="section-title">📁 Base de Conhecimento</div>', unsafe_allow_html=True)
-    up = st.file_uploader("Contratos, petições ou imagens...", accept_multiple_files=True, label_visibility="collapsed", help="Faça upload dos documentos base.")
+    up = st.file_uploader("Contratos, petições ou imagens...", accept_multiple_files=True, label_visibility="collapsed", help="Faça upload dos documentos base. A IA fará a ingestão e leitura completa.")
     
     st.markdown('<div class="section-title">⚖️ Motor Jurídico</div>', unsafe_allow_html=True)
     agente_foco = st.selectbox("Especialidade", ["Análise de Contratos", "Due Diligence Societária", "Compliance e Risco", "Auditoria Trabalhista", "Direito Público"], label_visibility="collapsed")
@@ -565,10 +574,11 @@ if st.session_state.res_aether:
     with tab2:
         st.write("Selecione o formato para baixar o relatório blindado gerado pelo Aether Karv:")
         c1, c2, c3, c4 = st.columns(4)
-        with c1: st.markdown(gerar_botao_primario(st.session_state.res_docx, "AETHER_Parecer.docx", "📄 Download WORD", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"), unsafe_allow_html=True)
-        with c2: st.markdown(gerar_botao_primario(st.session_state.res_pdf, "AETHER_Parecer.pdf", "📕 Download PDF", "application/pdf"), unsafe_allow_html=True)
-        with c3: st.markdown(gerar_botao_secundario(st.session_state.res_aether.encode('utf-8'), "AETHER_Parecer.txt", "📝 Download TXT", "text/plain"), unsafe_allow_html=True)
-        with c4: st.markdown(gerar_botao_secundario(st.session_state.res_aether.encode('utf-8'), "AETHER_Parecer.md", "📊 Download MD", "text/markdown"), unsafe_allow_html=True)
+        # ⚠️ V334 APEX: DOWNLOADS MASCARADOS COM APPLICATION/OCTET-STREAM ⚠️
+        with c1: st.markdown(gerar_botao_primario(st.session_state.res_docx, "AETHER_Parecer.docx", "📄 Download WORD", "application/octet-stream"), unsafe_allow_html=True)
+        with c2: st.markdown(gerar_botao_primario(st.session_state.res_pdf, "AETHER_Parecer.pdf", "📕 Download PDF", "application/octet-stream"), unsafe_allow_html=True)
+        with c3: st.markdown(gerar_botao_secundario(st.session_state.res_aether.encode('utf-8'), "AETHER_Parecer.txt", "📝 Download TXT", "application/octet-stream"), unsafe_allow_html=True)
+        with c4: st.markdown(gerar_botao_secundario(st.session_state.res_aether.encode('utf-8'), "AETHER_Parecer.md", "📊 Download MD", "application/octet-stream"), unsafe_allow_html=True)
         
         st.markdown("<br>", unsafe_allow_html=True)
         if st.button("⟳ Limpar Workspace (Nova Análise)", use_container_width=True):
