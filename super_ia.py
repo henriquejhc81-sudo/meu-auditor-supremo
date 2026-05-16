@@ -1,3 +1,8 @@
+import streamlit as st
+
+# ⚠️ V333 APEX: SEQUÊNCIA DE IGNIÇÃO BLINDADA (Deve ser o 1º comando após o import) ⚠️
+st.set_page_config(page_title="AETHER KARV V333 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
+
 import pandas as pd
 import os, time, base64, io, re
 import textwrap
@@ -21,7 +26,7 @@ try:
     import docx2txt
     from docx import Document
     from docx.shared import Pt, RGBColor
-except ImportError: st.error("⚠️ Biblioteca 'python-docx' ausente.")
+except ImportError: st.error("⚠️ Biblioteca 'python-docx' ausente. Verifique o requirements.txt.")
 try: from fpdf import FPDF
 except ImportError: pass
 try: import PyPDF2
@@ -42,9 +47,6 @@ try:
     from langchain_google_genai import GoogleGenerativeAIEmbeddings
     MODULO_RAG = True
 except ImportError: MODULO_RAG = False
-
-# --- ⚙️ CONFIGURAÇÃO DE SEGURANÇA E UI ---
-st.set_page_config(page_title="AETHER KARV V332 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
 
 GROQ_KEY = st.secrets.get("GROQ_API_KEY", os.environ.get("GROQ_API_KEY", ""))
 GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
@@ -265,7 +267,7 @@ def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cn
     
     return dossie_final, " | ".join(list(motores_usados))
 
-# --- 📄 EXPORTAÇÕES OMNI PARSER ---
+# --- 📄 EXPORTAÇÕES (DOCX) ---
 def gerar_docx_aether(texto_markdown):
     doc = Document()
     font = doc.styles['Normal'].font
@@ -337,14 +339,13 @@ def gerar_docx_aether(texto_markdown):
 def sanitize_for_pdf(texto):
     return unicodedata.normalize('NFKD', texto).encode('ascii', 'ignore').decode('ascii')
 
-# ⚠️ V332 APEX: THE OMNI-CARD ENGINE (Smart Linear Fallback para PDFs) ⚠️
+# ⚠️ V333 APEX: THE OMNI-CARD ENGINE (Smart Linear Fallback para PDFs - Preservado!) ⚠️
 def gerar_pdf_aether(texto_markdown):
     try:
         pdf = FPDF()
         pdf.add_page()
         pdf.set_auto_page_break(auto=True, margin=15)
         
-        # Cabeçalho
         pdf.set_font("helvetica", "B", 12)
         pdf.set_text_color(212, 175, 55)
         pdf.cell(0, 8, txt="AETHER KARV - PARECER EXECUTIVO", ln=1, align='C')
@@ -364,30 +365,25 @@ def gerar_pdf_aether(texto_markdown):
             if not linha_filtrada: 
                 pdf.ln(3); continue
 
-            # Pula divisores de markdown
             if re.match(r'^\|[-\s\|]+\|$', linha_filtrada): continue
             
-            # --- O MOTOR OMNI-CARD PARA PDF (Substitui grades quebradas por Fichas elegantes) ---
+            # --- O MOTOR OMNI-CARD PARA PDF ---
             if linha_filtrada.startswith('|') and linha_filtrada.endswith('|'):
                 cols = [c.strip() for c in linha_filtrada.split('|')[1:-1]]
                 
-                # Se for a primeira linha da tabela, guarda os cabeçalhos
                 if not table_headers:
                     table_headers = cols
                     continue
                 
-                # Para as linhas de dados, cria um Smart Card Linear
                 pdf.set_font("helvetica", "B", 10)
-                pdf.set_text_color(212, 175, 55) # Dourado para o título do Card
+                pdf.set_text_color(212, 175, 55) 
                 
-                # Usa a primeira coluna como Título do Card (Ex: Nível de Risco: Alto)
                 titulo_card = f"[{table_headers[0] if table_headers else 'Item'}: {cols[0]}]"
                 pdf.cell(0, 6, txt=titulo_card, ln=1)
                 
                 pdf.set_font("helvetica", "", 10)
                 pdf.set_text_color(0, 0, 0)
                 
-                # Imprime o resto das colunas em texto corrido (Evita corte de texto no PDF)
                 for i in range(1, len(cols)):
                     header_name = table_headers[i] if i < len(table_headers) else f"Coluna {i+1}"
                     texto_card = f"{header_name}: {cols[i]}"
@@ -398,23 +394,21 @@ def gerar_pdf_aether(texto_markdown):
                 continue
                 
             elif ('Nivel de Risco' in linha_filtrada or 'Tribunal' in linha_filtrada) and (',' in linha_filtrada or '\t' in linha_filtrada):
-                # Ignora CSV teimoso para não poluir o PDF com lixo
                 continue
             else:
-                table_headers = [] # Reset se saiu da tabela
+                table_headers = []
 
-            # --- O MODO CANETA AZUL PERMANENTE ---
+            # --- MODO CANETA AZUL PERMANENTE ---
             if '[REDLINING' in linha_filtrada.upper():
                 is_redlining_mode = True
                 
             if is_redlining_mode:
-                pdf.set_text_color(0, 102, 204) # Azul Corporativo
+                pdf.set_text_color(0, 102, 204)
                 pdf.set_font("helvetica", "B", 10) if '[REDLINING' in linha_filtrada.upper() else pdf.set_font("helvetica", "", 10)
             else:
                 pdf.set_text_color(0, 0, 0)
                 pdf.set_font("helvetica", "", 10)
 
-            # Texto Normal (Wrap seguro em 95 caracteres por linha)
             pedacos = textwrap.wrap(linha_filtrada, width=95, break_long_words=True)
             for pedaco in pedacos:
                 pdf.cell(0, 6, txt=pedaco, ln=1)
@@ -430,7 +424,7 @@ def gerar_pdf_aether(texto_markdown):
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V332
+# 🎨 CSS APEX V333
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -484,7 +478,7 @@ st.markdown(css_code, unsafe_allow_html=True)
 # ==========================================
 
 with st.sidebar:
-    st.markdown('<div class="omni-brand" style="margin-bottom: 20px;"><h1>AETHER KARV</h1><span>V332 APEX OMNI-CARD</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="omni-brand" style="margin-bottom: 20px;"><h1>AETHER KARV</h1><span>V333 APEX BULLETPROOF</span></div>', unsafe_allow_html=True)
     
     st.markdown('<div class="section-title">📁 Base de Conhecimento</div>', unsafe_allow_html=True)
     up = st.file_uploader("Contratos, petições ou imagens...", accept_multiple_files=True, label_visibility="collapsed", help="Faça upload dos documentos base.")
