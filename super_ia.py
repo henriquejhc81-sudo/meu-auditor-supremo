@@ -1,4 +1,3 @@
-import streamlit as st
 import pandas as pd
 import os, time, base64, io, re
 import textwrap
@@ -45,7 +44,7 @@ try:
 except ImportError: MODULO_RAG = False
 
 # --- ⚙️ CONFIGURAÇÃO DE SEGURANÇA E UI ---
-st.set_page_config(page_title="AETHER KARV V331 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="AETHER KARV V332 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
 
 GROQ_KEY = st.secrets.get("GROQ_API_KEY", os.environ.get("GROQ_API_KEY", ""))
 GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
@@ -266,7 +265,7 @@ def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cn
     
     return dossie_final, " | ".join(list(motores_usados))
 
-# --- 📄 EXPORTAÇÕES (O NOVO MOTOR GEOMÉTRICO DE PDF V331) ---
+# --- 📄 EXPORTAÇÕES OMNI PARSER ---
 def gerar_docx_aether(texto_markdown):
     doc = Document()
     font = doc.styles['Normal'].font
@@ -338,7 +337,7 @@ def gerar_docx_aether(texto_markdown):
 def sanitize_for_pdf(texto):
     return unicodedata.normalize('NFKD', texto).encode('ascii', 'ignore').decode('ascii')
 
-# ⚠️ V331 APEX: MOTOR DE GEOMETRIA (CÉLULAS REAIS NO PDF SEM TRAVAR) ⚠️
+# ⚠️ V332 APEX: THE OMNI-CARD ENGINE (Smart Linear Fallback para PDFs) ⚠️
 def gerar_pdf_aether(texto_markdown):
     try:
         pdf = FPDF()
@@ -358,43 +357,52 @@ def gerar_pdf_aether(texto_markdown):
         texto_limpo = texto_markdown.replace('**', '').replace('### ', '').replace('## ', '').replace('# ', '')
         texto_seguro = sanitize_for_pdf(texto_limpo)
         is_redlining_mode = False
-        in_table_header = True # Flag para colorir cabeçalho
+        table_headers = []
         
         for linha in texto_seguro.split('\n'):
             linha_filtrada = linha.strip()
             if not linha_filtrada: 
                 pdf.ln(3); continue
 
-            # Pula linha divisora de markdown
+            # Pula divisores de markdown
             if re.match(r'^\|[-\s\|]+\|$', linha_filtrada): continue
             
-            # --- O MOTOR DE GRADES (TABLE MAKER V331) ---
+            # --- O MOTOR OMNI-CARD PARA PDF (Substitui grades quebradas por Fichas elegantes) ---
             if linha_filtrada.startswith('|') and linha_filtrada.endswith('|'):
                 cols = [c.strip() for c in linha_filtrada.split('|')[1:-1]]
                 
-                # Calcula a largura de cada coluna para caber perfeitamente nos 190mm da folha
-                col_w = 190 / max(1, len(cols))
+                # Se for a primeira linha da tabela, guarda os cabeçalhos
+                if not table_headers:
+                    table_headers = cols
+                    continue
                 
-                # Se for o cabeçalho, coloca fundo cinza e negrito
-                if in_table_header:
-                    pdf.set_fill_color(230, 230, 230)
-                    pdf.set_font("helvetica", "B", 8)
-                    for col in cols:
-                        # Cortamos o texto caso seja muito longo para a célula, evitando a quebra de linha que destrói tabelas FPDF simples
-                        pdf.cell(col_w, 8, txt=col[:int(col_w/1.8)], border=1, fill=True, align='C')
-                    in_table_header = False
-                else:
-                    pdf.set_font("helvetica", "", 8)
-                    for col in cols:
-                        pdf.cell(col_w, 8, txt=col[:int(col_w/1.8)], border=1, align='C')
-                pdf.ln()
+                # Para as linhas de dados, cria um Smart Card Linear
+                pdf.set_font("helvetica", "B", 10)
+                pdf.set_text_color(212, 175, 55) # Dourado para o título do Card
+                
+                # Usa a primeira coluna como Título do Card (Ex: Nível de Risco: Alto)
+                titulo_card = f"[{table_headers[0] if table_headers else 'Item'}: {cols[0]}]"
+                pdf.cell(0, 6, txt=titulo_card, ln=1)
+                
+                pdf.set_font("helvetica", "", 10)
+                pdf.set_text_color(0, 0, 0)
+                
+                # Imprime o resto das colunas em texto corrido (Evita corte de texto no PDF)
+                for i in range(1, len(cols)):
+                    header_name = table_headers[i] if i < len(table_headers) else f"Coluna {i+1}"
+                    texto_card = f"{header_name}: {cols[i]}"
+                    pedacos = textwrap.wrap(texto_card, width=95, break_long_words=True)
+                    for pedaco in pedacos:
+                        pdf.cell(0, 6, txt=pedaco, ln=1)
+                pdf.ln(4)
                 continue
+                
             elif ('Nivel de Risco' in linha_filtrada or 'Tribunal' in linha_filtrada) and (',' in linha_filtrada or '\t' in linha_filtrada):
-                # Caso a IA teimosamente gere um CSV na primeira linha, apenas pulamos o erro gráfico
+                # Ignora CSV teimoso para não poluir o PDF com lixo
                 continue
+            else:
+                table_headers = [] # Reset se saiu da tabela
 
-            in_table_header = True # Reset da flag de cabeçalho para a próxima tabela
-            
             # --- O MODO CANETA AZUL PERMANENTE ---
             if '[REDLINING' in linha_filtrada.upper():
                 is_redlining_mode = True
@@ -406,7 +414,7 @@ def gerar_pdf_aether(texto_markdown):
                 pdf.set_text_color(0, 0, 0)
                 pdf.set_font("helvetica", "", 10)
 
-            # Texto Normal
+            # Texto Normal (Wrap seguro em 95 caracteres por linha)
             pedacos = textwrap.wrap(linha_filtrada, width=95, break_long_words=True)
             for pedaco in pedacos:
                 pdf.cell(0, 6, txt=pedaco, ln=1)
@@ -422,7 +430,7 @@ def gerar_pdf_aether(texto_markdown):
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V331
+# 🎨 CSS APEX V332
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -476,7 +484,7 @@ st.markdown(css_code, unsafe_allow_html=True)
 # ==========================================
 
 with st.sidebar:
-    st.markdown('<div class="omni-brand" style="margin-bottom: 20px;"><h1>AETHER KARV</h1><span>V331 APEX GRID-MASTER</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="omni-brand" style="margin-bottom: 20px;"><h1>AETHER KARV</h1><span>V332 APEX OMNI-CARD</span></div>', unsafe_allow_html=True)
     
     st.markdown('<div class="section-title">📁 Base de Conhecimento</div>', unsafe_allow_html=True)
     up = st.file_uploader("Contratos, petições ou imagens...", accept_multiple_files=True, label_visibility="collapsed", help="Faça upload dos documentos base.")
@@ -510,7 +518,7 @@ with st.sidebar:
             progress_bar.progress(40, text="Consultando bases e estruturando RAG...")
             resposta, motor_usado = orquestrador_omni(cmd, texto_arquivos, ativar_lindb, num_processo_input, agente_foco, ativar_redlining)
             
-            progress_bar.progress(75, text="Renderizando Grades Nativas no PDF e DOCX...")
+            progress_bar.progress(75, text="Renderizando OMNI-CARDS no PDF e DOCX...")
             docx_buffer = gerar_docx_aether(resposta)
             pdf_data = gerar_pdf_aether(resposta)
             
