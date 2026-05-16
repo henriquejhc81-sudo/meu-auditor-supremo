@@ -45,7 +45,7 @@ try:
 except ImportError: MODULO_RAG = False
 
 # --- ⚙️ CONFIGURAÇÃO DE SEGURANÇA E UI ---
-st.set_page_config(page_title="AETHER KARV V329 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="AETHER KARV V330 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
 
 GROQ_KEY = st.secrets.get("GROQ_API_KEY", os.environ.get("GROQ_API_KEY", ""))
 GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
@@ -101,8 +101,6 @@ def consultar_datajud(numero_processo, api_key):
         time.sleep(1.5) 
         return f"""
         [⚠️ ALERTA: MODO DE DEMONSTRAÇÃO ATIVADO (DADOS FICTÍCIOS) ⚠️]
-        O sistema está operando sem uma Chave API Oficial. Os dados abaixo são 100% inventados para testar o sistema.
-        
         Alvo da Busca (CPF/CNPJ/Processo): {numero_processo}
         
         DADOS DO PROCESSO SIMULADO:
@@ -128,7 +126,7 @@ def consultar_datajud(numero_processo, api_key):
         else: return f"\n[ALERTA DATAJUD]: Status {response.status_code}"
     except Exception as e: return f"\n[ALERTA DATAJUD]: Falha ({str(e)})"
 
-# --- 👁️ MOTOR DE INGESTÃO (NEXUS MULTIMODAL) ---
+# --- 👁️ MOTOR DE INGESTÃO (NEXUS) ---
 def extrator_nexus_v3(arquivos_upados):
     texto_extraido = ""
     sucesso = 0
@@ -219,28 +217,30 @@ def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, tentar_in
 
     return f"[{nome_agente}] Erro Crítico: Sem chaves API configuradas.", "OFFLINE"
 
-# --- 🚀 ORQUESTRADOR MULTI-AGENTE (V329 APEX - REDLINING ENGINE) ---
+# --- 🚀 ORQUESTRADOR MULTI-AGENTE (V330 APEX - OMNI-SENSE) ---
 def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cnj, agente_foco, ativar_redlining):
-    tem_arquivos = len(contexto_arquivos.strip()) > 0
     dados_tribunal = consultar_datajud(num_processo_cnj, CNJ_API_KEY) if num_processo_cnj else ""
     contexto_final = contexto_arquivos + "\n" + dados_tribunal
     
     if len(contexto_final) > 60000: contexto_final = processar_com_rag(contexto_final, comando)
     blindagem = "Aplique a LINDB para invalidar responsabilizações injustas." if lindb_ativada else ""
     
-    # Injeção da Diretriz de Redlining Global
     diretriz_redlining = ""
     if ativar_redlining:
         diretriz_redlining = """
-        REGRA 3 (REDLINING AUTOMÁTICO): Para cada erro, fraude ou risco grave encontrado, você DEVE gerar a correção exata. 
+        REGRA 3 (REDLINING AUTOMÁTICO): Para cada erro ou risco grave, você DEVE gerar a correção exata. 
         Use exatamente o seguinte prefixo para a reescrita:
-        [REDLINING - CLAUSULA SUGERIDA]: Escreva aqui a cláusula perfeita juridicamente ou o esboço da tese de defesa pronta para uso.
+        [REDLINING - CLÁUSULA SUGERIDA]: Escreva aqui a cláusula perfeita juridicamente pronta para uso.
         """
     
-    if tem_arquivos:
-        agente_1_sys = f"Auditor Sênior. Foco: {agente_foco}. Cruze números com extenso e denuncie fraudes."
-        agente_2_sys = f"Advogado Sócio. Foco: {agente_foco}. Busque nulidades absolutas e avalie a jurisdição. {blindagem}"
-        agente_3_sys = f"""Você é o AETHER OMNI, IA Jurídica de Nível Wall Street. Crie o DOSSIÊ EXECUTIVO.
+    # ⚠️ V330: OMNI-SENSE (Detector Inteligente de Contexto) ⚠️
+    # Se tem arquivo UPADO, ou se o COMANDO tem mais de 100 caracteres (colou o contrato), OU o Foco é Contratos = MODO CONTRATO
+    modo_contrato = len(contexto_arquivos.strip()) > 0 or len(comando) > 100 or "Contrato" in agente_foco
+
+    if modo_contrato:
+        agente_1_sys = f"Auditor Sênior. Foco: {agente_foco}. Cruze números e denuncie fraudes. Analise os textos fornecidos."
+        agente_2_sys = f"Advogado Sócio. Foco: {agente_foco}. Busque nulidades absolutas. {blindagem}"
+        agente_3_sys = f"""Você é o AETHER OMNI, IA Jurídica de Nível Wall Street. Crie o DOSSIÊ EXECUTIVO DE AUDITORIA DE CONTRATOS.
         REGRA 1: Inicie com uma Matriz de Risco em Tabela Markdown (barras verticais |).
         | Nível de Risco | Item | Descrição | Ação Imediata |
         |---|---|---|---|
@@ -248,13 +248,13 @@ def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cn
         {diretriz_redlining}"""
     else:
         agente_1_sys = f"Analista Investigativo. Extraia e relacione os dados do extrato DataJud."
-        agente_2_sys = f"Estrategista Jurídico de Elite. Avalie a gravidade processual."
+        agente_2_sys = f"Estrategista Jurídico de Elite. Avalie a gravidade processual baseada no andamento do tribunal."
         agente_3_sys = f"""Você é o AETHER OMNI, IA de Inteligência Processual.
-        Crie o RELATÓRIO DE INTELIGÊNCIA PROCESSUAL com base apenas no extrato judicial.
+        Crie o RELATÓRIO DE INTELIGÊNCIA PROCESSUAL com base no extrato judicial.
         REGRA 1: Inicie com uma Tabela Markdown perfeita com Barras Verticais (|):
         | Tribunal | Polo Ativo (Autor) | Polo Passivo (Réu) | Valor da Causa | Assunto Principal |
         |---|---|---|---|---|
-        REGRA 2: Deixe claro se for uma simulação de testes do Aether.
+        REGRA 2: Deixe claro se for uma simulação.
         {diretriz_redlining}"""
 
     resultados = {}
@@ -287,6 +287,7 @@ def gerar_docx_aether(texto_markdown):
     
     in_table = False
     table = None
+    is_redlining_mode = False
     
     for linha in texto_markdown.split('\n'):
         linha_limpa = linha.strip()
@@ -321,16 +322,21 @@ def gerar_docx_aether(texto_markdown):
             continue
 
         in_table = False
+        if '[REDLINING' in linha.upper(): 
+            is_redlining_mode = True # Ativa a caneta azul para o Word
+
         if linha.startswith('### '): doc.add_heading(linha.replace('### ', ''), level=3)
         elif linha.startswith('## '): doc.add_heading(linha.replace('## ', ''), level=2)
         elif linha.startswith('# '): doc.add_heading(linha.replace('# ', ''), level=1)
-        elif linha.startswith('**') and linha.endswith('**'): doc.add_paragraph().add_run(linha.replace('**', '')).bold = True
-        elif '[REDLINING' in linha: # V329: Destaque de Redlining no Word
+        elif linha.startswith('**') and linha.endswith('**'): 
             p = doc.add_paragraph()
             r = p.add_run(linha.replace('**', ''))
             r.bold = True
-            r.font.color.rgb = RGBColor(0, 102, 204)
-        else: doc.add_paragraph(linha.replace('**', ''))
+            if is_redlining_mode: r.font.color.rgb = RGBColor(0, 102, 204)
+        else: 
+            p = doc.add_paragraph()
+            r = p.add_run(linha.replace('**', ''))
+            if is_redlining_mode: r.font.color.rgb = RGBColor(0, 102, 204)
 
     buffer = io.BytesIO()
     doc.save(buffer)
@@ -356,6 +362,7 @@ def gerar_pdf_aether(texto_markdown):
         
         texto_limpo = texto_markdown.replace('**', '').replace('### ', '').replace('## ', '').replace('# ', '')
         texto_seguro = sanitize_for_pdf(texto_limpo)
+        is_redlining_mode = False
         
         for linha in texto_seguro.split('\n'):
             linha_filtrada = linha.strip()
@@ -372,8 +379,12 @@ def gerar_pdf_aether(texto_markdown):
                 cols = [c.strip() for c in linha_filtrada.split(sep)]
                 linha_filtrada = "  |  ".join(cols)
 
-            if '[REDLINING' in linha_filtrada:
-                pdf.set_text_color(0, 102, 204) # Cor azul para destacar a reescrita no PDF
+            # ⚠️ V330 APEX: CANETA AZUL PERMANENTE PARA A CLÁUSULA
+            if '[REDLINING' in linha_filtrada.upper():
+                is_redlining_mode = True
+                
+            if is_redlining_mode:
+                pdf.set_text_color(0, 102, 204) # Azul Corporativo
             else:
                 pdf.set_text_color(0, 0, 0)
 
@@ -392,7 +403,7 @@ def gerar_pdf_aether(texto_markdown):
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V329
+# 🎨 CSS APEX V330
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -417,7 +428,7 @@ html, body {{ overflow-x: hidden !important; width: 100vw !important; margin: 0;
 
 div[data-baseweb="select"] > div {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.8rem !important; border-radius: 6px !important; }}
 .stTextArea label, .stCheckbox label span, .stTextInput label {{ font-size: 0.7rem !important; color: #cbd5e1 !important; font-weight: 600 !important; }}
-.stTextArea textarea, .stTextInput input {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.8rem !important; border-radius: 6px !important; }}
+.stTextArea textarea, .stTextInput input {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.8rem !important; border-radius: 6px !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); }}
 .stTextArea textarea:focus, .stTextInput input:focus {{ border-color: #D4AF37 !important; box-shadow: 0 0 8px rgba(212, 175, 55, 0.1) !important; }}
 
 .stButton > button[kind="primary"] {{ background: linear-gradient(135deg, #B8860B, #D4AF37) !important; border-radius: 6px !important; font-weight: 700 !important; color: #020617 !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; padding: 10px !important; border: none !important; width: 100% !important; transition: 0.3s; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2); margin-top: 15px; }}
@@ -446,7 +457,7 @@ st.markdown(css_code, unsafe_allow_html=True)
 # ==========================================
 
 with st.sidebar:
-    st.markdown('<div class="omni-brand" style="margin-bottom: 20px;"><h1>AETHER KARV</h1><span>V329 DRAFT-ENGINE</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="omni-brand" style="margin-bottom: 20px;"><h1>AETHER KARV</h1><span>V330 APEX BLUE-INK</span></div>', unsafe_allow_html=True)
     
     st.markdown('<div class="section-title">📁 Base de Conhecimento</div>', unsafe_allow_html=True)
     up = st.file_uploader("Contratos, petições ou imagens...", accept_multiple_files=True, label_visibility="collapsed", help="Faça upload dos documentos base. A IA fará a ingestão e leitura completa.")
@@ -454,17 +465,16 @@ with st.sidebar:
     st.markdown('<div class="section-title">⚖️ Motor Jurídico</div>', unsafe_allow_html=True)
     agente_foco = st.selectbox("Especialidade", ["Análise de Contratos", "Due Diligence Societária", "Compliance e Risco", "Auditoria Trabalhista", "Direito Público"], label_visibility="collapsed")
     
-    # ⚠️ V329: O TOGGLE DA MÁQUINA DE DINHEIRO (REDLINING) ⚠️
-    ativar_redlining = st.checkbox("Ativar Redlining (Reescrita Ativa)", value=False, help="Se ativado, a IA não apenas apontará o risco, mas escreverá a cláusula substituta perfeita ou a tese de defesa pronta.")
+    ativar_redlining = st.checkbox("Ativar Redlining (Reescrita Ativa)", value=False, help="Se ativado, a IA não apenas apontará o risco, mas escreverá a cláusula substituta perfeita.")
     ativar_lindb = st.checkbox("Filtro de Proteção (Art. 22 LINDB)", value=True)
     
     st.markdown('<div class="section-title">🏛️ DataJud (CNJ)</div>', unsafe_allow_html=True)
     if CNJ_API_KEY == "DEMO_KEY":
-        st.warning("⚠️ Modo Simulação: Dados gerados serão fictícios (Mockup).")
+        st.warning("⚠️ Modo Simulação: Dados fictícios (Mockup).")
     num_processo_input = st.text_input("Nº do Processo / CNPJ", placeholder="Insira para extração...", label_visibility="collapsed")
 
     st.markdown('<div class="section-title">💬 Comando Direto</div>', unsafe_allow_html=True)
-    cmd = st.text_area("", key="cmd_input", placeholder="Instruções para a IA...", label_visibility="collapsed")
+    cmd = st.text_area("", key="cmd_input", placeholder="Instruções ou cole o contrato aqui...", label_visibility="collapsed")
 
     if st.button("🚀 INICIAR AUDITORIA OMNI", type="primary"):
         if not GROQ_KEY and not GEMINI_KEY:
@@ -475,13 +485,13 @@ with st.sidebar:
             progress_bar = st.progress(5, text="Iniciando Córtex de Ingestão...")
             time.sleep(0.5)
             
-            progress_bar.progress(20, text="Extraindo dados dos arquivos e OCR...")
+            progress_bar.progress(20, text="Extraindo dados...")
             texto_arquivos, num_arquivos, usou_ocr = extrator_nexus_v3(up) if up else ("", 0, False)
             
-            progress_bar.progress(40, text="Consultando DataJud e estruturando RAG...")
+            progress_bar.progress(40, text="Consultando bases e estruturando RAG...")
             resposta, motor_usado = orquestrador_omni(cmd, texto_arquivos, ativar_lindb, num_processo_input, agente_foco, ativar_redlining)
             
-            progress_bar.progress(75, text="Renderizando Tabelas Nativas e PDF Blindado...")
+            progress_bar.progress(75, text="Renderizando PDF (Blue-Ink) e DOCX...")
             docx_buffer = gerar_docx_aether(resposta)
             pdf_data = gerar_pdf_aether(resposta)
             
