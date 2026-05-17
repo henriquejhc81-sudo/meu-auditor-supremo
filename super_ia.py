@@ -1,7 +1,7 @@
 import streamlit as st
 
-# ⚠️ V335 APEX: SEQUÊNCIA DE IGNIÇÃO BLINDADA ⚠️
-st.set_page_config(page_title="AETHER KARV V335 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
+# ⚠️ V336 APEX: SEQUÊNCIA DE IGNIÇÃO BLINDADA ⚠️
+st.set_page_config(page_title="AETHER KARV V336 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
 
 import pandas as pd
 import os, time, base64, io, re
@@ -10,8 +10,43 @@ import unicodedata
 import concurrent.futures
 import requests
 import json
+import sqlite3
 from datetime import datetime, timedelta
 from PIL import Image
+
+# ==========================================
+# 🗄️ MÓDULO DE BANCO DE DADOS (V336 APEX)
+# ==========================================
+def init_db():
+    conn = sqlite3.connect('aether_fortknox.db')
+    c = conn.cursor()
+    c.execute('CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY, password TEXT)')
+    c.execute('CREATE TABLE IF NOT EXISTS history (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, data_hora TEXT, tipo TEXT, conteudo TEXT)')
+    # Cria o usuário admin padrão se não existir
+    c.execute("INSERT OR IGNORE INTO users (username, password) VALUES ('admin', 'admin123')")
+    conn.commit()
+    conn.close()
+
+def save_dossier(username, tipo, conteudo):
+    conn = sqlite3.connect('aether_fortknox.db')
+    c = conn.cursor()
+    c.execute("INSERT INTO history (username, data_hora, tipo, conteudo) VALUES (?, ?, ?, ?)", (username, get_data_hora_br(), tipo, conteudo))
+    conn.commit()
+    conn.close()
+
+def load_history(username):
+    conn = sqlite3.connect('aether_fortknox.db')
+    c = conn.cursor()
+    c.execute("SELECT data_hora, tipo, conteudo FROM history WHERE username = ? ORDER BY id DESC", (username,))
+    data = c.fetchall()
+    conn.close()
+    return data
+
+init_db()
+
+# --- CONTROLE DE SESSÃO E LOGIN ---
+if "logged_in" not in st.session_state: st.session_state.logged_in = False
+if "username" not in st.session_state: st.session_state.username = ""
 
 # --- 🛡️ PROTOCOLO DE PRESERVAÇÃO TOTAL & LIBS TÁTICAS ---
 try: from groq import Groq
@@ -31,16 +66,12 @@ try: from fpdf import FPDF
 except ImportError: pass
 try: import PyPDF2
 except ImportError: pass
-
-# --- 👁️ VISÃO COMPUTACIONAL (OCR) ---
 try:
     import cv2
     import numpy as np
     import pytesseract
     MODULO_VISAO = True
 except ImportError: MODULO_VISAO = False
-
-# --- 🧠 MEMÓRIA VETORIAL / RAG ---
 try:
     from langchain.text_splitter import RecursiveCharacterTextSplitter
     from langchain_community.vectorstores import FAISS
@@ -215,15 +246,12 @@ def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, tentar_in
 
     return f"[{nome_agente}] Erro Crítico: Sem chaves API configuradas.", "OFFLINE"
 
-# --- 🚀 ORQUESTRADOR MULTI-AGENTE (V335 - MÁQUINA DE DINHEIRO INJETADA) ---
 def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cnj, agente_foco, ativar_redlining, valor_hora):
     dados_tribunal = consultar_datajud(num_processo_cnj, CNJ_API_KEY) if num_processo_cnj else ""
     contexto_final = contexto_arquivos + "\n" + dados_tribunal
     
-    # ⚠️ CÁLCULO DO TIMESHEET INTELIGENTE ⚠️
-    # A IA estima as horas humanas baseadas no tamanho do contrato ou complexidade processual
     tamanho_dados = len(contexto_final) + len(comando)
-    horas_humanas_estimadas = max(1.5, tamanho_dados / 4000) # Mínimo de 1.5 horas
+    horas_humanas_estimadas = max(1.5, tamanho_dados / 4000) 
     faturamento_total = horas_humanas_estimadas * valor_hora
     
     if len(contexto_final) > 60000: contexto_final = processar_com_rag(contexto_final, comando)
@@ -271,7 +299,6 @@ def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cn
     dossie_final, m3 = chamar_agente_hydra("AETHER OMNI", agente_3_sys, "Crie o Dossiê Final. Use Tabela Markdown com barras verticais (|).", contexto_sintese)
     motores_usados.add(m3)
     
-    # ⚠️ INJEÇÃO DA FATURA NO FINAL DO RELATÓRIO ⚠️
     bloco_fatura = f"""
     
 ---
@@ -281,10 +308,9 @@ def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cn
 * **Total Sugerido para Cobrança do Cliente:** **R$ {faturamento_total:.2f}**
 """
     dossie_final += bloco_fatura
-    
     return dossie_final, " | ".join(list(motores_usados))
 
-# --- 📄 EXPORTAÇÕES OMNI PARSER (V335 - FIM DO VAZAMENTO AZUL) ---
+# --- 📄 EXPORTAÇÕES OMNI PARSER ---
 def gerar_docx_aether(texto_markdown):
     doc = Document()
     font = doc.styles['Normal'].font
@@ -335,7 +361,6 @@ def gerar_docx_aether(texto_markdown):
 
         in_table = False
         
-        # ⚠️ O TAMPÃO DA CANETA AZUL ⚠️
         if linha.startswith('#') or linha.startswith('**') or 'CONCLUSÃO' in linha.upper() or 'RECOMENDAÇÕES' in linha.upper() or '---' in linha:
             is_redlining_mode = False 
 
@@ -426,7 +451,6 @@ def gerar_pdf_aether(texto_markdown):
             else:
                 table_headers = []
 
-            # ⚠️ O TAMPÃO DA CANETA AZUL (PDF) ⚠️
             if linha_filtrada.startswith('#') or 'CONCLUSAO' in linha_filtrada.upper() or 'RECOMENDACOES' in linha_filtrada.upper() or '---' in linha_filtrada:
                 is_redlining_mode = False
 
@@ -455,7 +479,7 @@ def gerar_pdf_aether(texto_markdown):
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V335
+# 🎨 CSS APEX V336 (WORKSPACE DESIGN)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -480,11 +504,14 @@ html, body {{ overflow-x: hidden !important; width: 100vw !important; margin: 0;
 
 div[data-baseweb="select"] > div {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.8rem !important; border-radius: 6px !important; }}
 .stTextArea label, .stCheckbox label span, .stTextInput label, .stNumberInput label {{ font-size: 0.7rem !important; color: #cbd5e1 !important; font-weight: 600 !important; }}
-.stTextArea textarea, .stTextInput input, .stNumberInput input {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.8rem !important; border-radius: 6px !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); }}
-.stTextArea textarea:focus, .stTextInput input:focus, .stNumberInput input:focus {{ border-color: #D4AF37 !important; box-shadow: 0 0 8px rgba(212, 175, 55, 0.1) !important; }}
+.stTextArea textarea, .stTextInput input, .stNumberInput input, input[type="password"] {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.8rem !important; border-radius: 6px !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); }}
+.stTextArea textarea:focus, .stTextInput input:focus, .stNumberInput input:focus, input[type="password"]:focus {{ border-color: #D4AF37 !important; box-shadow: 0 0 8px rgba(212, 175, 55, 0.1) !important; }}
 
 .stButton > button[kind="primary"] {{ background: linear-gradient(135deg, #B8860B, #D4AF37) !important; border-radius: 6px !important; font-weight: 700 !important; color: #020617 !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; padding: 10px !important; border: none !important; width: 100% !important; transition: 0.3s; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2); margin-top: 15px; }}
 .stButton > button[kind="primary"]:hover {{ transform: translateY(-2px); box-shadow: 0 6px 15px rgba(212, 175, 55, 0.4); }}
+
+.stButton > button[kind="secondary"] {{ background: rgba(255,255,255,0.05) !important; color: #cbd5e1 !important; border: 1px solid rgba(255,255,255,0.15) !important; border-radius: 6px !important; font-weight: 600 !important; transition: 0.3s; }}
+.stButton > button[kind="secondary"]:hover {{ background: rgba(212,175,55,0.1) !important; color: #fff !important; border-color: #D4AF37 !important; }}
 
 .custom-kpi-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; }}
 .kpi-box {{ background: rgba(30, 41, 59, 0.4); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); border-left: 3px solid #D4AF37; padding: 12px 15px; backdrop-filter: blur(10px); }}
@@ -499,132 +526,189 @@ div[data-baseweb="select"] > div {{ background-color: rgba(15, 23, 42, 0.6) !imp
 .welcome-title {{ color: #f8fafc; font-size: 1.5rem; font-weight: 700; margin-bottom: 10px; text-align: center; }}
 .welcome-subtitle {{ color: #94a3b8; font-size: 0.9rem; margin-bottom: 20px; text-align: center; max-width: 600px; }}
 
+.login-box {{ background: rgba(30, 41, 59, 0.6); padding: 40px; border-radius: 12px; border: 1px solid rgba(212, 175, 55, 0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-width: 400px; margin: 100px auto; text-align: center; backdrop-filter: blur(10px); }}
+.login-title {{ color: #f8fafc; font-size: 1.8rem; font-weight: 700; margin-bottom: 5px; }}
+.login-subtitle {{ color: #D4AF37; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; }}
+
 .stProgress > div > div > div > div {{ background-color: #D4AF37 !important; }}
 </style>
 """
 st.markdown(css_code, unsafe_allow_html=True)
 
 # ==========================================
-# INTERFACE PRINCIPAL (SIDEBAR WORKSPACE)
+# 🔐 MURALHA DE GELO (TELA DE LOGIN)
 # ==========================================
-
-with st.sidebar:
-    st.markdown('<div class="omni-brand" style="margin-bottom: 20px;"><h1>AETHER KARV</h1><span>V335 APEX BILLING</span></div>', unsafe_allow_html=True)
+if not st.session_state.logged_in:
+    st.markdown('<div class="login-box">', unsafe_allow_html=True)
+    st.markdown('<div class="login-title">AETHER KARV</div>', unsafe_allow_html=True)
+    st.markdown('<div class="login-subtitle">ENTERPRISE EDITION V336</div>', unsafe_allow_html=True)
     
-    st.markdown('<div class="section-title">📁 Base de Conhecimento</div>', unsafe_allow_html=True)
-    up = st.file_uploader("Contratos, petições ou imagens...", accept_multiple_files=True, label_visibility="collapsed", help="Faça upload dos documentos base.")
+    st.markdown("<p style='color: #94a3b8; font-size: 0.85rem; margin-bottom: 20px;'>Acesso Restrito ao Cofre de Dados</p>", unsafe_allow_html=True)
     
-    st.markdown('<div class="section-title">⚖️ Motor Jurídico</div>', unsafe_allow_html=True)
-    agente_foco = st.selectbox("Especialidade", ["Análise de Contratos", "Due Diligence Societária", "Compliance e Risco", "Auditoria Trabalhista", "Direito Público"], label_visibility="collapsed")
+    login_user = st.text_input("Usuário", placeholder="Digite seu usuário...")
+    login_pass = st.text_input("Senha", type="password", placeholder="Digite sua senha...")
     
-    ativar_redlining = st.checkbox("Ativar Redlining (Reescrita Ativa)", value=False)
-    ativar_lindb = st.checkbox("Filtro de Proteção (Art. 22 LINDB)", value=True)
-    
-    st.markdown('<div class="section-title">🏛️ DataJud (CNJ)</div>', unsafe_allow_html=True)
-    if CNJ_API_KEY == "DEMO_KEY":
-        st.warning("⚠️ Modo Simulação: Dados fictícios (Mockup).")
-    num_processo_input = st.text_input("Nº do Processo / CNPJ", placeholder="Insira para extração...", label_visibility="collapsed")
-
-    # ⚠️ V335 APEX: MÓDULO FINANCEIRO ⚠️
-    st.markdown('<div class="section-title">💰 Faturamento (Timesheet)</div>', unsafe_allow_html=True)
-    valor_hora = st.number_input("Valor da sua Hora Técnica (R$)", min_value=50.0, max_value=5000.0, value=350.0, step=50.0, help="Defina quanto vale sua hora. A IA calculará o tempo poupado e gerará a fatura automática do cliente.")
-
-    st.markdown('<div class="section-title">💬 Comando Direto</div>', unsafe_allow_html=True)
-    cmd = st.text_area("", key="cmd_input", placeholder="Instruções ou cole o contrato aqui...", label_visibility="collapsed")
-
-    if st.button("🚀 INICIAR AUDITORIA OMNI", type="primary"):
-        if not GROQ_KEY and not GEMINI_KEY:
-            st.error("⚠️ ERRO: Chaves API não configuradas.")
-            st.toast("Falha: Chaves API ausentes.", icon="❌")
-        elif cmd or up or num_processo_input:
-            st.toast("Iniciando Motor Hydra...", icon="🔥")
-            progress_bar = st.progress(5, text="Iniciando Córtex de Ingestão...")
-            time.sleep(0.5)
-            
-            progress_bar.progress(20, text="Extraindo dados...")
-            texto_arquivos, num_arquivos, usou_ocr = extrator_nexus_v3(up) if up else ("", 0, False)
-            
-            progress_bar.progress(40, text="Consultando bases e estruturando RAG...")
-            resposta, motor_usado = orquestrador_omni(cmd, texto_arquivos, ativar_lindb, num_processo_input, agente_foco, ativar_redlining, valor_hora)
-            
-            progress_bar.progress(75, text="Calculando Honorários e Renderizando PDF...")
-            docx_buffer = gerar_docx_aether(resposta)
-            pdf_data = gerar_pdf_aether(resposta)
-            
-            progress_bar.progress(100, text="Auditoria Concluída com Sucesso!")
-            st.toast("Dossiê Executivo Gerado!", icon="✅")
-            time.sleep(0.5)
-            progress_bar.empty()
-            
-            st.session_state.res_aether = resposta
-            st.session_state.res_docx = docx_buffer.getvalue()
-            st.session_state.res_pdf = pdf_data
-            st.session_state.telemetria = {
-                "arquivos": str(num_arquivos),
-                "volume": f"{len(texto_arquivos)/1024:.1f} KB",
-                "tempo": get_data_hora_br().split("às ")[1], 
-                "risco": "Missão Cumprida",
-                "ocr": "Online" if usou_ocr else ("Standby" if MODULO_VISAO else "Offline"),
-                "motor": motor_usado
-            }
-            st.rerun() 
+    if st.button("🔐 AUTENTICAR ACESSO", type="primary"):
+        conn = sqlite3.connect('aether_fortknox.db')
+        c = conn.cursor()
+        c.execute("SELECT * FROM users WHERE username=? AND password=?", (login_user, login_pass))
+        user = c.fetchone()
+        conn.close()
+        
+        if user:
+            st.session_state.logged_in = True
+            st.session_state.username = login_user
+            st.toast("Autenticação Suprema Confirmada.", icon="✅")
+            time.sleep(1)
+            st.rerun()
         else:
-            st.warning("Forneça um documento, processo ou comando.")
+            st.error("Credenciais Inválidas. Acesso Negado.")
+    
+    st.markdown("</div>", unsafe_allow_html=True)
 
-# --- ÁREA PRINCIPAL (WORKSPACE) ---
-st.markdown(f"""
-<div class="omni-topbar">
-    <div style="font-weight: 600; color: #f8fafc; font-size: 0.9rem;">DASHBOARD ANALÍTICO</div>
-    <div style="font-size: 0.75rem; color: #94a3b8;">Status de Conexão: <span style="color: #22c55e;">ESTÁVEL</span></div>
-</div>
-""", unsafe_allow_html=True)
+# ==========================================
+# INTERFACE PRINCIPAL (SÓ APARECE SE LOGADO)
+# ==========================================
+else:
+    with st.sidebar:
+        st.markdown(f'<div class="omni-brand" style="margin-bottom: 20px;"><h1>AETHER KARV</h1><span>V336 DATABASE LOGGED: {st.session_state.username.upper()}</span></div>', unsafe_allow_html=True)
+        
+        st.markdown('<div class="section-title">📁 Base de Conhecimento</div>', unsafe_allow_html=True)
+        up = st.file_uploader("Contratos, petições ou imagens...", accept_multiple_files=True, label_visibility="collapsed")
+        
+        st.markdown('<div class="section-title">⚖️ Motor Jurídico</div>', unsafe_allow_html=True)
+        agente_foco = st.selectbox("Especialidade", ["Análise de Contratos", "Due Diligence Societária", "Compliance e Risco", "Auditoria Trabalhista", "Direito Público"], label_visibility="collapsed")
+        
+        ativar_redlining = st.checkbox("Ativar Redlining (Reescrita Ativa)", value=False)
+        ativar_lindb = st.checkbox("Filtro de Proteção (Art. 22 LINDB)", value=True)
+        
+        st.markdown('<div class="section-title">🏛️ DataJud (CNJ)</div>', unsafe_allow_html=True)
+        if CNJ_API_KEY == "DEMO_KEY":
+            st.warning("⚠️ Modo Simulação Ativado.")
+        num_processo_input = st.text_input("Nº do Processo / CNPJ", placeholder="Insira para extração...", label_visibility="collapsed")
 
-t = st.session_state.telemetria
-st.markdown(f"""
-<div class="custom-kpi-grid">
-    <div class="kpi-box" title="Volume de contratos e peças inseridos no sistema."><span class="kpi-title">Documentos Digeridos</span><span class="kpi-value">{t['arquivos']}</span></div>
-    <div class="kpi-box" title="Modelo de IA de Elite que processou os dados."><span class="kpi-title">Nó de Processamento</span><span class="kpi-value highlight">{t['motor']}</span></div>
-    <div class="kpi-box" title="Status do sistema de leitura visual para PDFs escaneados."><span class="kpi-title">Módulo de Visão</span><span class="kpi-value">{t['ocr']}</span></div>
-    <div class="kpi-box" title="Andamento atual do orquestrador Omni."><span class="kpi-title">Status da Operação</span><span class="kpi-value highlight">{t['risco']}</span></div>
-</div>
-""", unsafe_allow_html=True)
+        st.markdown('<div class="section-title">💰 Faturamento (Timesheet)</div>', unsafe_allow_html=True)
+        valor_hora = st.number_input("Valor da sua Hora Técnica (R$)", min_value=50.0, max_value=5000.0, value=350.0, step=50.0)
 
-if st.session_state.res_aether:
-    tab1, tab2, tab3 = st.tabs(["📊 Dossiê Executivo", "📥 Central de Exportação", "🕵️‍♂️ Código Raw"])
+        st.markdown('<div class="section-title">💬 Comando Direto</div>', unsafe_allow_html=True)
+        cmd = st.text_area("", key="cmd_input", placeholder="Instruções ou cole o contrato aqui...", label_visibility="collapsed")
+
+        if st.button("🚀 INICIAR AUDITORIA OMNI", type="primary"):
+            if not GROQ_KEY and not GEMINI_KEY:
+                st.error("⚠️ ERRO: Chaves API não configuradas.")
+                st.toast("Falha: Chaves API ausentes.", icon="❌")
+            elif cmd or up or num_processo_input:
+                st.toast("Iniciando Motor Hydra...", icon="🔥")
+                progress_bar = st.progress(5, text="Iniciando Córtex de Ingestão...")
+                time.sleep(0.5)
+                
+                progress_bar.progress(20, text="Extraindo dados...")
+                texto_arquivos, num_arquivos, usou_ocr = extrator_nexus_v3(up) if up else ("", 0, False)
+                
+                progress_bar.progress(40, text="Consultando bases e estruturando RAG...")
+                resposta, motor_usado = orquestrador_omni(cmd, texto_arquivos, ativar_lindb, num_processo_input, agente_foco, ativar_redlining, valor_hora)
+                
+                progress_bar.progress(75, text="Gravando no Banco de Dados (Fort Knox)...")
+                # ⚠️ V336: SALVAMENTO AUTOMÁTICO NO BANCO ⚠️
+                tipo_doc = "Parecer de Contrato" if "Contrato" in agente_foco else "Inteligência Processual"
+                save_dossier(st.session_state.username, tipo_doc, resposta)
+                
+                docx_buffer = gerar_docx_aether(resposta)
+                pdf_data = gerar_pdf_aether(resposta)
+                
+                progress_bar.progress(100, text="Auditoria Salva com Sucesso!")
+                st.toast("Dossiê Executivo Salvo no Banco!", icon="✅")
+                time.sleep(0.5)
+                progress_bar.empty()
+                
+                st.session_state.res_aether = resposta
+                st.session_state.res_docx = docx_buffer.getvalue()
+                st.session_state.res_pdf = pdf_data
+                st.session_state.telemetria = {
+                    "arquivos": str(num_arquivos),
+                    "volume": f"{len(texto_arquivos)/1024:.1f} KB",
+                    "tempo": get_data_hora_br().split("às ")[1], 
+                    "risco": "Gravado na Nuvem",
+                    "ocr": "Online" if usou_ocr else ("Standby" if MODULO_VISAO else "Offline"),
+                    "motor": motor_usado
+                }
+                st.rerun() 
+            else:
+                st.warning("Forneça um documento, processo ou comando.")
+                
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("🚪 LOGOUT", type="secondary"):
+            st.session_state.logged_in = False
+            st.session_state.username = ""
+            st.session_state.res_aether = None
+            st.rerun()
+
+    # --- ÁREA PRINCIPAL (WORKSPACE) ---
+    st.markdown(f"""
+    <div class="omni-topbar">
+        <div style="font-weight: 600; color: #f8fafc; font-size: 0.9rem;">DASHBOARD ANALÍTICO</div>
+        <div style="font-size: 0.75rem; color: #94a3b8;">Status de Conexão: <span style="color: #22c55e;">BANCO DE DADOS ATIVO</span></div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    t = st.session_state.telemetria
+    st.markdown(f"""
+    <div class="custom-kpi-grid">
+        <div class="kpi-box" title="Volume de contratos e peças inseridos no sistema."><span class="kpi-title">Documentos Digeridos</span><span class="kpi-value">{t['arquivos']}</span></div>
+        <div class="kpi-box" title="Modelo de IA de Elite que processou os dados."><span class="kpi-title">Nó de Processamento</span><span class="kpi-value highlight">{t['motor']}</span></div>
+        <div class="kpi-box" title="Status do sistema de leitura visual para PDFs escaneados."><span class="kpi-title">Módulo de Visão</span><span class="kpi-value">{t['ocr']}</span></div>
+        <div class="kpi-box" title="Andamento atual do orquestrador Omni."><span class="kpi-title">Status da Operação</span><span class="kpi-value highlight">{t['risco']}</span></div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ⚠️ V336: ADICIONADA A 4ª ABA PARA O BANCO DE DADOS ⚠️
+    tab1, tab2, tab3, tab4 = st.tabs(["📊 Dossiê Executivo", "📥 Central de Exportação", "🕵️‍♂️ Código Raw", "🗄️ Histórico Salvo (Nuvem)"])
     
     with tab1:
-        st.markdown('<div style="background: rgba(15,23,42,0.5); padding: 25px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin-top: 10px;">', unsafe_allow_html=True)
-        st.markdown(st.session_state.res_aether)
-        st.markdown('</div>', unsafe_allow_html=True)
-        
+        if st.session_state.res_aether:
+            st.markdown('<div style="background: rgba(15,23,42,0.5); padding: 25px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin-top: 10px;">', unsafe_allow_html=True)
+            st.markdown(st.session_state.res_aether)
+            st.markdown('</div>', unsafe_allow_html=True)
+        else:
+            st.markdown('<div class="standby-container">', unsafe_allow_html=True)
+            st.markdown('<div class="welcome-title">O Workspace do Aether Karv está Online.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="welcome-subtitle">Injete documentos ou verifique o seu Histórico Salvo na aba ao lado.</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+            
     with tab2:
-        st.write("Selecione o formato para baixar o relatório blindado gerado pelo Aether Karv:")
-        c1, c2, c3, c4 = st.columns(4)
-        with c1: st.markdown(gerar_botao_primario(st.session_state.res_docx, "AETHER_Parecer.docx", "📄 Download WORD", "application/octet-stream"), unsafe_allow_html=True)
-        with c2: st.markdown(gerar_botao_primario(st.session_state.res_pdf, "AETHER_Parecer.pdf", "📕 Download PDF", "application/octet-stream"), unsafe_allow_html=True)
-        with c3: st.markdown(gerar_botao_secundario(st.session_state.res_aether.encode('utf-8'), "AETHER_Parecer.txt", "📝 Download TXT", "application/octet-stream"), unsafe_allow_html=True)
-        with c4: st.markdown(gerar_botao_secundario(st.session_state.res_aether.encode('utf-8'), "AETHER_Parecer.md", "📊 Download MD", "application/octet-stream"), unsafe_allow_html=True)
-        
-        st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("⟳ Limpar Workspace (Nova Análise)", use_container_width=True):
-            st.session_state.res_aether = None
-            st.session_state.res_docx = None
-            st.session_state.res_pdf = None
-            st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--:--", "risco": "Aguardando", "ocr": "Inativo", "motor": "Standby"}
-            st.rerun()
+        if st.session_state.res_aether:
+            st.write("Selecione o formato para baixar o relatório blindado gerado pelo Aether Karv:")
+            c1, c2, c3, c4 = st.columns(4)
+            with c1: st.markdown(gerar_botao_primario(st.session_state.res_docx, "AETHER_Parecer.docx", "📄 Download WORD", "application/octet-stream"), unsafe_allow_html=True)
+            with c2: st.markdown(gerar_botao_primario(st.session_state.res_pdf, "AETHER_Parecer.pdf", "📕 Download PDF", "application/octet-stream"), unsafe_allow_html=True)
+            with c3: st.markdown(gerar_botao_secundario(st.session_state.res_aether.encode('utf-8'), "AETHER_Parecer.txt", "📝 Download TXT", "application/octet-stream"), unsafe_allow_html=True)
+            with c4: st.markdown(gerar_botao_secundario(st.session_state.res_aether.encode('utf-8'), "AETHER_Parecer.md", "📊 Download MD", "application/octet-stream"), unsafe_allow_html=True)
+            
+            st.markdown("<br>", unsafe_allow_html=True)
+            if st.button("⟳ Limpar Workspace (Nova Análise)", use_container_width=True):
+                st.session_state.res_aether = None
+                st.session_state.res_docx = None
+                st.session_state.res_pdf = None
+                st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--:--", "risco": "Aguardando", "ocr": "Inativo", "motor": "Standby"}
+                st.rerun()
+        else:
+            st.info("Gere uma análise para habilitar a exportação.")
             
     with tab3:
-        st.write("Visualização nativa em Markdown gerada pelos motores da Inteligência Artificial.")
-        st.code(st.session_state.res_aether, language="markdown")
+        if st.session_state.res_aether:
+            st.code(st.session_state.res_aether, language="markdown")
+        else:
+            st.info("Nenhum código raw na memória.")
+            
+    with tab4:
+        st.write(f"Bem-vindo ao Cofre, **{st.session_state.username.upper()}**. Aqui estão as suas análises antigas salvas no banco de dados.")
+        historico = load_history(st.session_state.username)
         
-else:
-    st.markdown('<div class="standby-container">', unsafe_allow_html=True)
-    st.markdown('<div class="welcome-title">O Workspace do Aether Karv está Online.</div>', unsafe_allow_html=True)
-    st.markdown('<div class="welcome-subtitle">Utilize a barra de ferramentas à esquerda para injetar documentos, conectar-se ao DataJud ou ativar o Redlining de Contratos (Reescrita).</div>', unsafe_allow_html=True)
-    
-    col_a, col_b = st.columns(2)
-    with col_a:
-        if st.button("📄 Simular Análise com Redlining", use_container_width=True): set_template("Faça uma due diligence deste documento, aponte cláusulas abusivas e redija a correção (ative o Redlining no painel).")
-    with col_b:
-        if st.button("🏛️ Simular Esboço de Defesa (DataJud)", use_container_width=True): set_template("Analise as movimentações judiciais e redija o esqueleto da petição de defesa (ative o Redlining no painel).")
-    st.markdown('</div>', unsafe_allow_html=True)
+        if len(historico) == 0:
+            st.warning("O seu cofre de dados está vazio. Inicie uma nova auditoria para salvá-la.")
+        else:
+            for idx, (data_hora, tipo, conteudo) in enumerate(historico):
+                with st.expander(f"📁 {tipo} | 🕒 {data_hora}"):
+                    st.markdown(conteudo)
+                    # Dá a opção de baixar os relatórios antigos puxados do banco!
+                    st.markdown(gerar_botao_secundario(conteudo.encode('utf-8'), f"Backup_Aether_{idx}.md", "Baixar Backup (MD)", "application/octet-stream"), unsafe_allow_html=True)
