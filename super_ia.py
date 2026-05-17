@@ -1,7 +1,7 @@
 import streamlit as st
 
-# ⚠️ V349 SUPREME: A ARQUITETURA DEFINITIVA ⚠️
-st.set_page_config(page_title="AETHER KARV V349 SUPREME", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
+# ⚠️ V350 APEX: SEQUÊNCIA DE IGNIÇÃO BLINDADA ⚠️
+st.set_page_config(page_title="AETHER KARV V350 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
 
 import pandas as pd
 import os, time, base64, io, re
@@ -16,7 +16,7 @@ from datetime import datetime, timedelta, date
 from PIL import Image
 
 # ==========================================
-# ☁️ MÓDULO OMNI-CLOUD DB (Híbrido e Indestrutível)
+# ☁️ MÓDULO OMNI-CLOUD DB (Híbrido)
 # ==========================================
 def init_db():
     conn = sqlite3.connect('aether_fortknox.db')
@@ -119,21 +119,6 @@ def get_base64_image(file):
         with open(file, "rb") as f: return base64.b64encode(f.read()).decode()
     return ""
 
-def gerar_botao_primario(buffer, filename, label, mime):
-    b64 = base64.b64encode(buffer).decode()
-    css = "background: linear-gradient(135deg, #B8860B, #D4AF37); color: #020617; border-radius: 6px; padding: 10px; text-align: center; text-decoration: none; display: block; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-bottom: 5px; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2); transition: 0.3s;"
-    hover_css = "this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 15px rgba(212,175,55,0.4)';"
-    out_css = "this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 10px rgba(212,175,55,0.2)';"
-    return f'<a href="data:{mime};base64,{b64}" download="{filename}" style="{css}" onmouseover="{hover_css}" onmouseout="{out_css}">{label}</a>'
-
-def gerar_botao_secundario(buffer, filename, label, mime):
-    b64 = base64.b64encode(buffer).decode()
-    css = "background: rgba(255,255,255,0.05); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 10px; text-align: center; text-decoration: none; display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; transition: 0.3s;"
-    hover_css = "this.style.background='rgba(212,175,55,0.1)'; this.style.borderColor='#D4AF37'; this.style.color='#fff';"
-    out_css = "this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='rgba(255,255,255,0.15)'; this.style.color='#cbd5e1';"
-    return f'<a href="data:{mime};base64,{b64}" download="{filename}" style="{css}" onmouseover="{hover_css}" onmouseout="{out_css}">{label}</a>'
-
-# ⚠️ V349: CHRONOS ENGINE E JURIMETRIA ADVERSÁRIA ⚠️
 def calcular_prazo_cpc(dias_uteis, data_inicial):
     data_atual = datetime(data_inicial.year, data_inicial.month, data_inicial.day)
     dias_adicionados = 0
@@ -143,9 +128,8 @@ def calcular_prazo_cpc(dias_uteis, data_inicial):
             dias_adicionados += 1
     return data_atual.strftime('%d/%m/%Y (%A)')
 
-def gerar_jurimetria(numero_processo, foco):
+def gerar_jurimetria(numero_processo):
     if not numero_processo: return ""
-    # Simulação Preditiva baseada nos Magistrados e Assunto (Conforme PRD)
     taxa_sucesso = random.randint(45, 85)
     tempo_meses = random.randint(8, 36)
     return f"""
@@ -153,7 +137,7 @@ def gerar_jurimetria(numero_processo, foco):
 ### ⚖️ JURIMETRIA PREDITIVA ADVERSÁRIA (AETHER ANALYTICS)
 * **Alvo de Análise:** {numero_processo}
 * **Magistrado Analisado:** Perfil Jurisprudencial Médio Local
-* **Taxa Histórica de Procedência ({foco}):** {taxa_sucesso}% de sentenças favoráveis
+* **Taxa Histórica de Procedência:** {taxa_sucesso}% de sentenças favoráveis
 * **Tempo Médio Estimado para Sentença:** {tempo_meses} meses
 * **Risco Jurisprudencial:** {'Alto' if taxa_sucesso < 55 else 'Moderado' if taxa_sucesso < 70 else 'Baixo (Favorável)'}
 """
@@ -288,8 +272,8 @@ def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, groq_key,
         except: pass
     return f"[{nome_agente}] Falha de API.", "OFFLINE"
 
-# ⚠️ V349 SUPREME: TRIBUNAL MULTI-AGENTE (PAINEL DE JUÍZES) ⚠️
-def orquestrador_omni(comando, contexto_arquivos, num_processo_cnj, agente_foco, valor_hora, data_intimacao, groq_k, gemini_k, cnj_k):
+# ⚠️ TRIBUNAL MULTI-AGENTE (V350 AUTO-SENSE) ⚠️
+def orquestrador_omni(comando, contexto_arquivos, num_processo_cnj, valor_hora, data_intimacao, groq_k, gemini_k, cnj_k):
     if not comando.strip() and not contexto_arquivos.strip() and not num_processo_cnj.strip():
         return "ERRO FATAL: O Aether não encontrou textos.", "FALHA"
 
@@ -305,11 +289,9 @@ def orquestrador_omni(comando, contexto_arquivos, num_processo_cnj, agente_foco,
     blindagem = "Invoque leis precisas, súmulas e teses reais. Aplique a LINDB e o CDC/CPC."
     diretriz_redlining = "REGRA: Para CADA erro, você DEVE gerar o Redlining com a Cláusula exata ou Tese de Defesa. Prefixo obrigatório: [REDLINING - CLAUSULA SUGERIDA]:"
     
-    # AGENTES DEBATEDORES (Buscando o Risco e a Defesa)
-    agente_1_sys = f"Auditor Acusador / Promotor. Identifique o tipo de documento. Cruze números, encontre as piores brechas, multas, e desvantagens contra o seu cliente. Seja agressivo."
-    agente_2_sys = f"Advogado Sócio de Defesa. Você é o escudo do cliente. Busque nulidades absolutas (ex: citação nula), prescrição, e teses de defesa reais do STJ/STF. {blindagem}"
+    agente_1_sys = f"Auditor Acusador / Promotor. Identifique automaticamente o tipo de documento e o ramo do direito. Cruze números, encontre as piores brechas, multas, e desvantagens contra o seu cliente. Seja agressivo."
+    agente_2_sys = f"Advogado Sócio de Defesa. Identifique automaticamente o ramo do direito. Você é o escudo do cliente. Busque nulidades absolutas (ex: citação nula), prescrição, e teses de defesa reais do STJ/STF. {blindagem}"
     
-    # O JUIZ REVISOR (O Aether Central)
     agente_3_sys = f"""Você é o AETHER SUPREME, Juiz Revisor e Estrategista Chefe. 
     Analise os laudos da Acusação e Defesa. Extraia a verdade e crie o DOSSIÊ EXECUTIVO FINAL IMPLACÁVEL.
     REGRA 1: Inicie com uma Matriz de Risco (Tabela Markdown com |).
@@ -332,23 +314,19 @@ def orquestrador_omni(comando, contexto_arquivos, num_processo_cnj, agente_foco,
     dossie_final, m3 = chamar_agente_hydra("JUIZ REVISOR", agente_3_sys, "Sintetize os laudos e crie o Dossiê Final Definitivo usando a Tabela Markdown.", contexto_sintese, groq_k, gemini_k)
     motores_usados.add(m3)
     
-    # Injeção da Jurimetria (Se houver Processo)
-    if num_processo_cnj:
-        dossie_final += gerar_jurimetria(num_processo_cnj, agente_foco)
+    if num_processo_cnj: dossie_final += gerar_jurimetria(num_processo_cnj)
 
-    # Injeção Automática de Prazos
     data_inicio_str = data_intimacao.strftime('%d/%m/%Y')
     prazo_fatal_str = calcular_prazo_cpc(15, data_intimacao)
     bloco_prazos = f"\n---\n### ALERTA DE PRAZO (Motor Chronos - CPC)\n* **Data de Início (Intimação):** {data_inicio_str}\n* **Regra Aplicada:** 15 dias úteis (Art. 219 CPC)\n* **DATA FATAL:** **{prazo_fatal_str}**\n*(Nota: O Motor Chronos excluiu sábados e domingos do cálculo).* \n"
     dossie_final += bloco_prazos
 
-    # Injeção da Fatura
     bloco_fatura = f"\n---\n### Fatura Pro-Forma (Timesheet Audit)\n* **Tempo Poupado:** {horas_humanas_estimadas:.1f} horas\n* **Hora Técnica Aplicada:** R$ {valor_hora:.2f}\n* **Total Sugerido para Cobrança:** **R$ {faturamento_total:.2f}**\n"
     dossie_final += bloco_fatura
     
     return dossie_final, " | ".join(list(motores_usados))
 
-# --- 📄 EXPORTAÇÕES OMNI PARSER (BLINDADAS) ---
+# --- 📄 EXPORTAÇÕES OMNI PARSER ---
 def gerar_docx_aether(texto_markdown):
     doc = Document()
     font = doc.styles['Normal'].font
@@ -516,7 +494,7 @@ def gerar_pdf_aether(texto_markdown):
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V349 (ULTRA CLEAN)
+# 🎨 CSS APEX V350 (ULTRA CLEAN & ZERO-UI)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -542,17 +520,23 @@ div[data-testid="stExpander"] {{ background: rgba(15, 23, 42, 0.3) !important; b
 div[data-testid="stExpander"] p {{ font-size: 0.65rem !important; font-weight: 600 !important; color: #D4AF37 !important; text-transform: uppercase; margin: 0 !important; }}
 div[data-testid="stExpander"] > div {{ padding-bottom: 5px !important; padding-top: 5px !important; }}
 
+/* V350 Ajuste Fino dos Inputs */
 .stTextArea label, .stTextInput label, .stDateInput label, .stNumberInput label {{ font-size: 0.60rem !important; color: #cbd5e1 !important; font-weight: 600 !important; margin-bottom: 0px !important; }}
 .stTextArea textarea, .stTextInput input, .stDateInput input, .stNumberInput input, input[type="password"] {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.70rem !important; border-radius: 6px !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); padding: 4px !important; min-height: 25px !important; }}
 .stTextArea textarea {{ height: 50px !important; min-height: 50px !important; }} 
-[data-testid="stFileUploaderDropzone"] {{ padding: 2px !important; min-height: 35px !important; }}
-[data-testid="stFileUploaderDropzone"] > div > span {{ font-size: 0.65rem !important; }}
+[data-testid="stFileUploaderDropzone"] {{ padding: 2px !important; min-height: 35px !important; border: 1px dashed rgba(212, 175, 55, 0.3) !important; background: rgba(15, 23, 42, 0.6) !important; border-radius: 6px !important; }}
+[data-testid="stFileUploaderDropzone"] > div > span {{ font-size: 0.65rem !important; color: #94a3b8 !important; }}
 [data-testid="stFileUploaderDropzone"] small {{ display: none !important; }}
 
 .stButton > button[kind="primary"] {{ background: linear-gradient(135deg, #B8860B, #D4AF37) !important; border-radius: 6px !important; font-weight: 700 !important; color: #020617 !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; padding: 5px !important; border: none !important; width: 100% !important; transition: 0.3s; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2); margin-top: 2px; font-size: 0.75rem !important; }}
 .stButton > button[kind="primary"]:hover {{ transform: translateY(-2px); box-shadow: 0 6px 15px rgba(212, 175, 55, 0.4); }}
 
-/* BI KPI DASHBOARD */
+[data-testid="stDownloadButton"] button {{ background: rgba(255,255,255,0.05) !important; color: #cbd5e1 !important; border: 1px solid rgba(255,255,255,0.15) !important; border-radius: 6px !important; font-size: 0.70rem !important; font-weight: 600 !important; padding: 4px !important; width: 100% !important; transition: 0.3s !important; }}
+[data-testid="stDownloadButton"] button:hover {{ background: rgba(212,175,55,0.1) !important; color: #fff !important; border-color: #D4AF37 !important; }}
+
+.stButton > button[kind="secondary"] {{ background: rgba(255,255,255,0.05) !important; color: #cbd5e1 !important; border: 1px solid rgba(255,255,255,0.15) !important; border-radius: 6px !important; font-weight: 600 !important; transition: 0.3s; padding: 4px !important; font-size: 0.70rem !important; width: 100% !important; }}
+.stButton > button[kind="secondary"]:hover {{ background: rgba(212,175,55,0.1) !important; color: #fff !important; border-color: #D4AF37 !important; }}
+
 .custom-kpi-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 8px; }}
 .kpi-box {{ background: rgba(30, 41, 59, 0.4); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); border-left: 3px solid #D4AF37; padding: 6px 10px; backdrop-filter: blur(10px); }}
 .kpi-title {{ color: #94a3b8; font-size: 0.50rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; display:block; margin-bottom: 2px; }}
@@ -579,7 +563,7 @@ if not st.session_state.logged_in:
     with col_m:
         with st.form("login_form"):
             st.markdown('<div class="login-title">AETHER KARV</div>', unsafe_allow_html=True)
-            st.markdown('<div class="login-subtitle">ENTERPRISE V349 SUPREME</div>', unsafe_allow_html=True)
+            st.markdown('<div class="login-subtitle">ENTERPRISE V350 SUPREME</div>', unsafe_allow_html=True)
             
             login_user = st.text_input("Usuário", placeholder="Ex: henrique...")
             login_pass = st.text_input("Senha", type="password", placeholder="Sua senha secreta...")
@@ -619,17 +603,18 @@ else:
     CNJ_API_KEY = st.secrets.get("CNJ_API_KEY", "DEMO_KEY")
 
     with st.sidebar:
-        st.markdown(f'<div class="omni-brand" style="margin-bottom: 10px;"><h1>AETHER KARV</h1><span>V349 SUPREME | {st.session_state.username.upper()}</span></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="omni-brand" style="margin-bottom: 10px;"><h1>AETHER KARV</h1><span>V350 APEX | {st.session_state.username.upper()}</span></div>', unsafe_allow_html=True)
 
-        with st.expander("📁 DADOS DA AUDITORIA", expanded=True):
-            up = st.file_uploader("Documentos base...", accept_multiple_files=True, label_visibility="collapsed")
-            num_processo_input = st.text_input("DataJud / Jurimetria", placeholder="Nº do Processo / CNPJ...", label_visibility="collapsed")
-            cmd = st.text_area("", key="cmd_input", placeholder="Instruções ou cole o texto aqui...", label_visibility="collapsed")
+        up = st.file_uploader("Documentos base...", accept_multiple_files=True, label_visibility="collapsed")
+        num_processo_input = st.text_input("DataJud", placeholder="Nº Processo/CNPJ (Extração)...", label_visibility="collapsed")
+        cmd = st.text_area("", key="cmd_input", placeholder="Comandos ou cole o texto aqui...", label_visibility="collapsed")
 
-        with st.expander("⚙️ CONFIGURAÇÕES (OPCIONAL)", expanded=False):
-            data_intimacao = st.date_input("Data Intimação/Citação", value=date.today())
+        # ⚠️ V350: PARÂMETROS MINIMALISTAS E DATA CORRIGIDA ⚠️
+        col_date, col_hour = st.columns(2)
+        with col_date:
+            data_intimacao = st.date_input("Data Intimação", value=date.today(), format="DD/MM/YYYY")
+        with col_hour:
             valor_hora = st.number_input("Valor Hora (R$)", min_value=50.0, max_value=5000.0, value=350.0, step=50.0)
-            agente_foco = st.selectbox("Especialidade", ["Análise de Contratos", "Due Diligence Societária", "Compliance e Risco", "Auditoria Trabalhista", "Direito Público"])
 
         if st.button("🚀 INICIAR TRIBUNAL DE IA", type="primary"):
             if cmd or up or num_processo_input:
@@ -639,7 +624,7 @@ else:
                 texto_arquivos, num_arquivos, usou_ocr = extrator_nexus_v3(up, GEMINI_KEY) if up else ("", 0, False)
                 
                 progress_bar.progress(40, text="Debate entre Promotor e Defesa (RAG)...")
-                resposta, motor_usado = orquestrador_omni(cmd, texto_arquivos, num_processo_input, agente_foco, valor_hora, data_intimacao, GROQ_KEY, GEMINI_KEY, CNJ_API_KEY)
+                resposta, motor_usado = orquestrador_omni(cmd, texto_arquivos, num_processo_input, valor_hora, data_intimacao, GROQ_KEY, GEMINI_KEY, CNJ_API_KEY)
                 
                 progress_bar.progress(75, text="Juiz Revisor emitindo Dossiê para a Nuvem...")
                 
@@ -702,10 +687,11 @@ else:
             
     with tab2:
         if st.session_state.res_aether:
-            st.write("Bypass de Extensão Ativo (Baixe direto para a máquina):")
+            st.write("Baixe seus arquivos (Se o navegador bloquear, clique com o botão direito no botão nativo e selecione 'Salvar link como...'):")
             c1, c2 = st.columns(2)
-            with c1: st.markdown(gerar_botao_primario(st.session_state.res_docx, "AETHER_Parecer_Supreme.docx", "📄 Word (DOCX)", "application/octet-stream"), unsafe_allow_html=True)
-            with c2: st.markdown(gerar_botao_primario(st.session_state.res_pdf, "AETHER_Parecer_Supreme.pdf", "📕 PDF Protegido", "application/octet-stream"), unsafe_allow_html=True)
+            # ⚠️ V350: VOLTAMOS PARA OS BOTÕES NATIVOS SEGUROS DO STREAMLIT ⚠️
+            with c1: st.download_button("📄 Word (DOCX)", data=st.session_state.res_docx, file_name="AETHER_Parecer_Supreme.docx", mime="application/octet-stream", use_container_width=True)
+            with c2: st.download_button("📕 PDF Protegido", data=st.session_state.res_pdf, file_name="AETHER_Parecer_Supreme.pdf", mime="application/octet-stream", use_container_width=True)
             
             if st.button("⟳ Limpar Tela", use_container_width=True):
                 st.session_state.res_aether = None
@@ -717,9 +703,10 @@ else:
             
     with tab4:
         st.write(f"Cofre Criptografado & Analytics: **{st.session_state.username.upper()}**")
+        historico = load_history(st.session_state.username)
         if len(historico) == 0: st.warning("Cofre vazio.")
         else:
             for idx, (data_hora, titulo, conteudo) in enumerate(historico):
                 with st.expander(f"📁 {titulo} | 🕒 {data_hora}"):
                     st.markdown(conteudo)
-                    st.markdown(gerar_botao_secundario(conteudo.encode('utf-8'), f"Backup_{idx}.txt", "Baixar TXT", "application/octet-stream"), unsafe_allow_html=True)
+                    st.download_button("Baixar Backup (TXT)", data=conteudo.encode('utf-8'), file_name=f"Backup_Aether_{idx}.txt", mime="application/octet-stream", key=f"bkp_{idx}")
