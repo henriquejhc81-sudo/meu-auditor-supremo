@@ -1,7 +1,7 @@
 import streamlit as st
 
-# ⚠️ V363 APEX OMNI-OS: ARQUITETURA MODULAR (FIM DO SCROLL, UX TIPO ASTREA/HARVEY) ⚠️
-st.set_page_config(page_title="AETHER KARV V363", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
+# ⚠️ V364 APEX PERFECTA: UX/UI DE ELITE (FIM DO QUADRADO DUPLO E SCROLL COMPRIMIDO) ⚠️
+st.set_page_config(page_title="AETHER KARV V364", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
 
 import pandas as pd
 import os, time, base64, io, re
@@ -458,7 +458,7 @@ def gerar_pdf_aether(texto_markdown):
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V363 (A REVOLUÇÃO OMNI-OS - MENU SUPERIOR)
+# 🎨 CSS APEX V364 (ERRADICAÇÃO DO SCROLL E BORDAS FANTASMAS)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -469,77 +469,68 @@ css_code = f"""
 html, body {{ overflow-x: hidden !important; width: 100vw !important; margin: 0; padding: 0; }}
 .stApp {{ {bg_css} color: #cbd5e1; font-family: 'Inter', sans-serif; }}
 [data-testid="stHeader"], footer {{ display: none !important; }}
+[data-testid="stSidebar"], [data-testid="collapsedControl"] {{ display: none !important; }} 
 
-/* OCULTAR SIDEBAR TOTALMENTE */
-[data-testid="stSidebar"] {{ display: none !important; }}
-[data-testid="collapsedControl"] {{ display: none !important; }} 
+/* ⚠️ V364: COMPRESSÃO ABSOLUTA DO CONTAINER PARA MATAR O SCROLL ⚠️ */
+[data-testid="block-container"] {{ padding-top: 1rem !important; padding-bottom: 0rem !important; max-width: 1200px !important; margin: 0 auto; }}
 
-/* EXPANDE CONTAINER PRINCIPAL E REMOVE MARGENS INÚTEIS */
-[data-testid="block-container"] {{ padding-top: 1rem !important; padding-bottom: 2rem !important; max-width: 1200px !important; margin: 0 auto; }}
+/* ⚠️ V364: ANIQUILAÇÃO DA BORDA DUPLA NATIVA DO STREAMLIT (FOCUS RING) ⚠️ */
+[data-baseweb="input"], [data-baseweb="base-input"] {{ background-color: transparent !important; border: none !important; }}
+[data-baseweb="input"]:focus-within {{ box-shadow: none !important; border: none !important; outline: none !important; }}
 
-/* ⚠️ V363: TOP NAV CORPORATIVA ⚠️ */
-.top-nav-os {{ display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: rgba(15, 23, 42, 0.8); border-radius: 12px; border: 1px solid rgba(212, 175, 55, 0.3); box-shadow: 0 4px 20px rgba(0,0,0,0.5); margin-bottom: 25px; backdrop-filter: blur(15px); }}
+/* NAV TOP COMPRIMIDA */
+.top-nav-os {{ display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: rgba(15, 23, 42, 0.8); border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.3); box-shadow: 0 4px 15px rgba(0,0,0,0.5); margin-bottom: 15px; backdrop-filter: blur(15px); }}
 .os-brand {{ display: flex; align-items: center; gap: 12px; }}
-.os-brand h1 {{ margin: 0; font-family: 'Inter', sans-serif; font-size: 1.6rem; color: #D4AF37; font-weight: 800; letter-spacing: 1px; }}
-.os-brand span {{ color: #cbd5e1; font-size: 0.75rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; padding-left: 10px; border-left: 2px solid rgba(255,255,255,0.1); }}
+.os-brand h1 {{ margin: 0; font-family: 'Inter', sans-serif; font-size: 1.4rem; color: #D4AF37; font-weight: 800; letter-spacing: 1px; }}
+.os-brand span {{ color: #cbd5e1; font-size: 0.70rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; padding-left: 10px; border-left: 2px solid rgba(255,255,255,0.1); }}
 
-/* ⚠️ V363: AS TABS AGORA SÃO O MENU PRINCIPAL DA APLICAÇÃO ⚠️ */
+/* TABS COMO MENU (REDUZIDAS) */
 [data-testid="stTabs"] {{ background: transparent !important; }}
-[data-testid="stTabs"] > div:first-child {{ border-bottom: 2px solid rgba(212, 175, 55, 0.2) !important; margin-bottom: 20px; padding-bottom: 5px; }}
-[data-testid="stTabs"] button {{ padding: 12px 24px !important; font-size: 0.95rem !important; font-weight: 700 !important; color: #94a3b8 !important; border: none !important; background: transparent !important; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }}
-[data-testid="stTabs"] button:hover {{ color: #fff !important; background: rgba(255,255,255,0.05) !important; border-radius: 8px; }}
-[data-testid="stTabs"] button[aria-selected="true"] {{ color: #020617 !important; background: linear-gradient(135deg, #B8860B, #D4AF37) !important; border-radius: 8px; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4); }}
+[data-testid="stTabs"] > div:first-child {{ border-bottom: 2px solid rgba(212, 175, 55, 0.2) !important; margin-bottom: 10px; padding-bottom: 0px; }}
+[data-testid="stTabs"] button {{ padding: 8px 20px !important; font-size: 0.85rem !important; font-weight: 700 !important; color: #94a3b8 !important; border: none !important; background: transparent !important; transition: 0.3s; text-transform: uppercase; }}
+[data-testid="stTabs"] button:hover {{ color: #fff !important; background: rgba(255,255,255,0.05) !important; border-radius: 6px; }}
+[data-testid="stTabs"] button[aria-selected="true"] {{ color: #020617 !important; background: linear-gradient(135deg, #B8860B, #D4AF37) !important; border-radius: 6px; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.4); }}
 
-/* FORMULÁRIOS E INPUTS MODERNIZADOS */
-.stTextInput label, .stDateInput label, .stNumberInput label {{ font-size: 0.75rem !important; color: #94a3b8 !important; font-weight: 700 !important; margin-bottom: 6px !important; text-transform: uppercase; }}
-.stTextInput input, .stDateInput input, .stNumberInput input {{ background-color: rgba(15, 23, 42, 0.9) !important; border: 1px solid rgba(255,255,255,0.15) !important; color: #f8fafc !important; font-size: 0.95rem !important; border-radius: 8px !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.3); padding: 12px !important; margin-bottom: 15px !important; transition: 0.3s; }}
-.stTextInput input:focus, .stDateInput input:focus, .stNumberInput input:focus {{ border-color: #D4AF37 !important; box-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }}
+/* INPUTS MILITARES */
+.stTextInput label, .stDateInput label, .stNumberInput label {{ font-size: 0.70rem !important; color: #94a3b8 !important; font-weight: 700 !important; margin-bottom: 4px !important; text-transform: uppercase; }}
+/* Aplicamos o design direto no input, burlando a caixa externa do Streamlit */
+.stTextInput input, .stDateInput input, .stNumberInput input {{ background-color: rgba(15, 23, 42, 0.9) !important; border: 1px solid rgba(255,255,255,0.15) !important; color: #f8fafc !important; font-size: 0.90rem !important; border-radius: 6px !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.3); padding: 10px !important; margin-bottom: 10px !important; transition: 0.3s; width: 100%; }}
+.stTextInput input:focus, .stDateInput input:focus, .stNumberInput input:focus {{ border-color: #D4AF37 !important; box-shadow: 0 0 8px rgba(212, 175, 55, 0.3) !important; outline: none !important; }}
 
-/* UPLOADER GIGANTE E LIMPO PARA A ZONA CENTRAL */
-[data-testid="stFileUploaderDropzone"] {{ padding: 30px !important; min-height: 120px !important; margin-bottom: 20px !important; border: 2px dashed rgba(212, 175, 55, 0.4) !important; background: rgba(15, 23, 42, 0.5) !important; border-radius: 12px !important; transition: 0.3s; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; }}
+/* UPLOADER COMPRIMIDO */
+[data-testid="stFileUploaderDropzone"] {{ padding: 15px !important; min-height: 80px !important; margin-bottom: 10px !important; border: 2px dashed rgba(212, 175, 55, 0.4) !important; background: rgba(15, 23, 42, 0.5) !important; border-radius: 8px !important; transition: 0.3s; text-align: center; }}
 [data-testid="stFileUploaderDropzone"]:hover {{ border-color: #D4AF37 !important; background: rgba(212, 175, 55, 0.1) !important; }}
-[data-testid="stFileUploaderDropzone"] > div > span {{ font-size: 1rem !important; color: #cbd5e1 !important; font-weight: 600; }}
-[data-testid="stUploadedFile"] {{ background: rgba(0,0,0,0.6) !important; border-radius: 8px; padding: 10px; margin-top: 10px; border-left: 4px solid #D4AF37; }}
+[data-testid="stFileUploaderDropzone"] > div > span {{ font-size: 0.9rem !important; color: #cbd5e1 !important; font-weight: 600; }}
+[data-testid="stUploadedFile"] {{ background: rgba(0,0,0,0.6) !important; border-radius: 6px; padding: 6px; margin-top: 6px; border-left: 3px solid #D4AF37; }}
 
-/* BOTÃO INICIAR MASSIVO E LETAL */
-.stButton > button[kind="primary"] {{ background: linear-gradient(135deg, #B8860B, #D4AF37) !important; border-radius: 10px !important; font-weight: 800 !important; color: #020617 !important; text-transform: uppercase !important; letter-spacing: 2px !important; padding: 16px !important; border: none !important; width: 100% !important; transition: 0.3s; box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4); margin-top: 10px; font-size: 1.1rem !important; }}
-.stButton > button[kind="primary"]:hover {{ transform: translateY(-3px); box-shadow: 0 12px 30px rgba(212, 175, 55, 0.6); }}
+/* BOTÕES DE DISPARO */
+.stButton > button[kind="primary"] {{ background: linear-gradient(135deg, #B8860B, #D4AF37) !important; border-radius: 8px !important; font-weight: 800 !important; color: #020617 !important; text-transform: uppercase !important; letter-spacing: 1px !important; padding: 12px !important; border: none !important; width: 100% !important; transition: 0.3s; box-shadow: 0 6px 15px rgba(212, 175, 55, 0.4); margin-top: 8px; font-size: 1rem !important; }}
+.stButton > button[kind="primary"]:hover {{ transform: translateY(-2px); box-shadow: 0 8px 20px rgba(212, 175, 55, 0.6); }}
 
-.stButton > button[kind="secondary"] {{ background: rgba(255,255,255,0.05) !important; color: #cbd5e1 !important; border: 1px solid rgba(255,255,255,0.2) !important; border-radius: 8px !important; font-weight: 600 !important; transition: 0.3s; padding: 10px 15px !important; font-size: 0.80rem !important; text-transform: uppercase; width: 100% !important; }}
+.stButton > button[kind="secondary"] {{ background: rgba(255,255,255,0.05) !important; color: #cbd5e1 !important; border: 1px solid rgba(255,255,255,0.2) !important; border-radius: 6px !important; font-weight: 600 !important; transition: 0.3s; padding: 8px 12px !important; font-size: 0.75rem !important; text-transform: uppercase; width: 100% !important; }}
 .stButton > button[kind="secondary"]:hover {{ background: rgba(255,255,255,0.15) !important; color: #fff !important; border-color: #fff !important; }}
 
-/* KPIS E KANBAN */
-.custom-kpi-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; margin-top: 20px; }}
-.kpi-box {{ background: rgba(30, 41, 59, 0.6); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); border-left: 4px solid #D4AF37; padding: 20px; backdrop-filter: blur(10px); transition: 0.3s; }}
-.kpi-box:hover {{ transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.3); border-color: rgba(212, 175, 55, 0.3); }}
-.kpi-title {{ color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; display:block; margin-bottom: 8px; }}
-.kpi-value {{ color: #f8fafc; font-size: 1.6rem; font-weight: 800; line-height: 1.1; display:block; }}
-
-.kanban-board {{ display: flex; gap: 20px; overflow-x: auto; padding-bottom: 15px; margin-top: 20px; }}
-.kanban-col {{ background: rgba(30, 41, 59, 0.6); border-radius: 12px; padding: 20px; min-width: 320px; flex: 1; border: 1px solid rgba(255,255,255,0.05); }}
-.kanban-col-title {{ font-size: 1rem; font-weight: 800; color: #D4AF37; text-transform: uppercase; margin-bottom: 20px; border-bottom: 2px solid rgba(212, 175, 55, 0.2); padding-bottom: 10px; }}
-.kanban-card {{ background: rgba(15, 23, 42, 0.9); border-left: 4px solid #D4AF37; padding: 15px; border-radius: 6px; margin-bottom: 12px; font-size: 0.95rem; color: #f8fafc; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: grab; transition: 0.2s; }}
-.kanban-card:hover {{ transform: scale(1.02); }}
-
-/* LOGIN CLEAN */
-[data-testid="stForm"] {{ border: none !important; padding: 0 !important; background: transparent !important; box-shadow: none !important; max-width: 450px !important; margin: 15vh auto !important; }}
-.custom-login-box {{ background: rgba(30, 41, 59, 0.85); padding: 50px; border-radius: 20px; border: 1px solid rgba(212, 175, 55, 0.5); box-shadow: 0 20px 50px rgba(0,0,0,0.7); text-align: center; backdrop-filter: blur(20px); }}
-.login-title {{ color: #D4AF37; font-size: 2.2rem; font-weight: 900; margin-bottom: 5px; line-height: 1.2; letter-spacing: 2px; text-align: center; }}
-.login-subtitle {{ color: #94a3b8; font-size: 0.90rem; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 30px; text-align: center; font-weight: 600; }}
+/* ⚠️ V364: CAIXA DE LOGIN GEOMETRICAMENTE CENTRADA E SEM CONFLITOS ⚠️ */
+[data-testid="stForm"] {{ border: none !important; background: transparent !important; padding: 0 !important; box-shadow: none !important; }}
+.custom-login-wrapper {{ display: flex; justify-content: center; align-items: center; min-height: 80vh; }}
+.custom-login-box {{ background: rgba(30, 41, 59, 0.85); padding: 40px; border-radius: 16px; border: 1px solid rgba(212, 175, 55, 0.4); box-shadow: 0 15px 40px rgba(0,0,0,0.6); text-align: center; backdrop-filter: blur(20px); width: 100%; max-width: 400px; }}
+.login-title {{ color: #D4AF37; font-size: 2rem; font-weight: 900; margin-bottom: 5px; line-height: 1.2; letter-spacing: 2px; text-align: center; }}
+.login-subtitle {{ color: #94a3b8; font-size: 0.80rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px; text-align: center; font-weight: 600; }}
 .stProgress > div > div > div > div {{ background-color: #D4AF37 !important; }}
 </style>
 """
 st.markdown(css_code, unsafe_allow_html=True)
 
 # ==========================================
-# 🔐 MURALHA DE GELO (LOGIN LIMPO)
+# 🔐 MURALHA DE GELO (LOGIN PERFEITO V364)
 # ==========================================
 if not st.session_state.logged_in:
+    st.markdown('<div class="custom-login-wrapper">', unsafe_allow_html=True)
     with st.form("login_form"):
         st.markdown("""
         <div class="custom-login-box">
             <div class="login-title">AETHER KARV</div>
-            <div class="login-subtitle">V363 OMNI-OS</div>
+            <div class="login-subtitle">V364 APEX PERFECTA</div>
         """, unsafe_allow_html=True)
         
         login_user = st.text_input("Utilizador", placeholder="Ex: henrique...")
@@ -568,16 +559,16 @@ if not st.session_state.logged_in:
                         st.success("Conta criada! Clique novamente para entrar.")
                 else: st.warning("Preencha os dados.")
             conn.close()
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # ==========================================
-# INTERFACE PRINCIPAL (O SISTEMA OPERATIVO)
+# INTERFACE PRINCIPAL (SISTEMA OPERATIVO)
 # ==========================================
 else:
     GROQ_KEY = st.secrets.get("GROQ_API_KEY", "")
     GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", "")
     CNJ_API_KEY = st.secrets.get("CNJ_API_KEY", "DEMO_KEY")
 
-    # --- TOP NAV CORPORATIVA ---
     st.markdown(f"""
         <div class="top-nav-os">
             <div class="os-brand">
@@ -586,11 +577,9 @@ else:
         </div>
     """, unsafe_allow_html=True)
 
-    # --- NAVEGAÇÃO PRINCIPAL POR ABAS (A REVOLUÇÃO ASTREA/HARVEY) ---
-    tab_op, tab_dash, tab_cofre = st.tabs(["⚡ CÓRTEX CENTRAL (NOVA OPERAÇÃO)", "📊 DASHBOARD & KANBAN", "🗄️ COFRE & EXPORTAÇÃO"])
+    tab_op, tab_dash, tab_cofre = st.tabs(["⚡ CÓRTEX CENTRAL (OPERAÇÃO)", "📊 DASHBOARD & KANBAN", "🗄️ COFRE & EXPORTAÇÃO"])
 
     with tab_op:
-        # AQUI VIVEM OS INPUTS E OS RESULTADOS DIRETOS. ZERO SCROLL PERDIDO.
         c_up, c_cmds = st.columns([1.5, 2])
         
         with c_up:
@@ -644,16 +633,15 @@ else:
             else:
                 st.warning("Insira um documento, OAB ou comando para iniciar.")
 
-        # --- ÁREA DE RESULTADOS E CHAT (SÓ APARECE SE HOUVER RESULTADO) ---
         if st.session_state.res_aether:
-            st.markdown("<hr style='border-color: rgba(212, 175, 55, 0.3); margin-top: 40px; margin-bottom: 40px;'>", unsafe_allow_html=True)
-            st.markdown("<h2 style='color:#D4AF37; text-align:center;'>📄 DOSSIÊ PROCESSADO</h2>", unsafe_allow_html=True)
+            st.markdown("<hr style='border-color: rgba(212, 175, 55, 0.3); margin-top: 20px; margin-bottom: 20px;'>", unsafe_allow_html=True)
+            st.markdown("<h3 style='color:#D4AF37; text-align:center;'>📄 DOSSIÊ PROCESSADO</h3>", unsafe_allow_html=True)
             
-            st.markdown('<div style="background: rgba(15,23,42,0.8); padding: 30px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin-top: 20px; font-size: 1.05rem; line-height: 1.8;">', unsafe_allow_html=True)
+            st.markdown('<div style="background: rgba(15,23,42,0.8); padding: 25px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin-top: 10px; font-size: 1rem; line-height: 1.6;">', unsafe_allow_html=True)
             st.markdown(st.session_state.res_aether)
             st.markdown('</div>', unsafe_allow_html=True)
 
-            st.markdown("<br><h3 style='color:#f8fafc;'>💬 OMNI-CHAT (Fale com o Documento)</h3>", unsafe_allow_html=True)
+            st.markdown("<br><h4 style='color:#f8fafc;'>💬 OMNI-CHAT (Fale com o Documento)</h4>", unsafe_allow_html=True)
             try:
                 valid_history = [m for m in st.session_state.chat_history if isinstance(m, dict) and "role" in m and "content" in m]
                 for msg in valid_history:
@@ -705,7 +693,6 @@ else:
                 <div class="kanban-col">
                     <div class="kanban-col-title">✅ Concluído (Faturado)</div>
                     <div class="kanban-card" style="border-left-color: #22c55e;">Dossiê Trabalhista Entregue<br><small style="color:#22c55e">Fatura: Gerada no Timesheet</small></div>
-                    <div class="kanban-card" style="border-left-color: #22c55e;">Kit Contrato Locação<br><small style="color:#22c55e">Fatura: Gerada no Timesheet</small></div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -717,7 +704,7 @@ else:
             with c1: st.markdown(gerar_botao_primario(st.session_state.res_docx, "AETHER_Documento.docx", "📄 Descarregar Word", "application/octet-stream"), unsafe_allow_html=True)
             with c2: st.markdown(gerar_botao_primario(st.session_state.res_pdf, "AETHER_Documento.pdf", "📕 Descarregar PDF", "application/octet-stream"), unsafe_allow_html=True)
             
-            st.markdown("<hr style='border-color: rgba(255,255,255,0.1); margin: 30px 0;'>", unsafe_allow_html=True)
+            st.markdown("<hr style='border-color: rgba(255,255,255,0.1); margin: 20px 0;'>", unsafe_allow_html=True)
             st.markdown("<h3>📲 Envio Expresso (Webhook WhatsApp)</h3>", unsafe_allow_html=True)
             col_phone, col_send, _space = st.columns([1.5, 1.5, 2])
             with col_phone:
@@ -728,24 +715,26 @@ else:
                         msg_wa = "Olá! O parecer estratégico do seu caso já foi processado pelo nosso escritório. Segue a análise inicial."
                         url_msg = urllib.parse.quote(msg_wa)
                         link_wa = f"https://wa.me/{re.sub(r'[^0-9]', '', telefone)}?text={url_msg}"
-                        st.markdown(f'<a href="{link_wa}" target="_blank" style="background: #25D366; color: white; border-radius: 8px; padding: 12px; text-align: center; text-decoration: none; display: block; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-top:10px;">Abrir WhatsApp Web</a>', unsafe_allow_html=True)
+                        st.markdown(f'<a href="{link_wa}" target="_blank" style="background: #25D366; color: white; border-radius: 8px; padding: 10px; text-align: center; text-decoration: none; display: block; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-top:5px;">Abrir WhatsApp Web</a>', unsafe_allow_html=True)
                     else: st.warning("Insira o número.")
-            st.markdown("<hr style='border-color: rgba(255,255,255,0.1); margin: 30px 0;'>", unsafe_allow_html=True)
+            st.markdown("<hr style='border-color: rgba(255,255,255,0.1); margin: 20px 0;'>", unsafe_allow_html=True)
 
-        st.markdown("<h3>🗄️ Cofre Criptografado & Base de Conhecimento</h3>", unsafe_allow_html=True)
+        st.markdown("<h3>🗄️ Cofre Criptografado & Histórico</h3>", unsafe_allow_html=True)
         historico = load_history(st.session_state.username)
-        if len(historico) == 0: st.info("O seu cofre está vazio. Processe auditorias para gerar histórico.")
+        if len(historico) == 0: st.info("O seu cofre está vazio.")
         else:
             for idx, (data_hora, titulo, conteudo) in enumerate(historico):
                 with st.expander(f"📁 {titulo} | 🕒 {data_hora}"):
                     st.markdown(conteudo)
                     st.markdown(gerar_botao_secundario(conteudo.encode('utf-8'), f"Backup_{idx}.txt", "Baixar Cópia TXT", "application/octet-stream"), unsafe_allow_html=True)
 
-    # Botão global de Logout fixado no fundo, fora do caminho
+    # Botão Sair Isolado
     st.markdown("<br><br>", unsafe_allow_html=True)
-    if st.button("🚪 Encerrar Sessão Segura", type="secondary"):
-        st.session_state.logged_in = False
-        st.session_state.username = ""
-        st.session_state.res_aether = None
-        st.session_state.chat_history = []
-        st.rerun()
+    c_out1, c_out2, c_out3 = st.columns([2,1,2])
+    with c_out2:
+        if st.button("🚪 Encerrar Sessão", type="secondary"):
+            st.session_state.logged_in = False
+            st.session_state.username = ""
+            st.session_state.res_aether = None
+            st.session_state.chat_history = []
+            st.rerun()
