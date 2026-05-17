@@ -1,7 +1,7 @@
 import streamlit as st
 
-# ⚠️ V359 APEX UNIFIED: TELA 100% UNIFICADA (FIM DA BARRA LATERAL) ⚠️
-st.set_page_config(page_title="AETHER KARV V359", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
+# ⚠️ V360 APEX JUGGERNAUT: ESCUDO LGPD, RAG SEMÂNTICO E TRIAGEM MASSIVA ⚠️
+st.set_page_config(page_title="AETHER KARV V360", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
 
 import pandas as pd
 import os, time, base64, io, re
@@ -15,6 +15,18 @@ import random
 import urllib.parse
 from datetime import datetime, timedelta, date
 from PIL import Image
+
+# ==========================================
+# 🛡️ MÓDULO DE SEGURANÇA (LGPD ANONYMIZER) V360
+# ==========================================
+def lgpd_anonymizer(texto):
+    """Varre o texto e mascara dados sensíveis antes de enviar para as APIs LLM."""
+    if not texto: return texto
+    # Mascara CPF (ex: 123.456.789-00 ou 12345678900)
+    texto_seguro = re.sub(r'\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b', '[CPF PROTEGIDO LGPD]', texto)
+    # Mascara CNPJ (ex: 12.345.678/0001-90)
+    texto_seguro = re.sub(r'\b\d{2}\.?\d{3}\.?\d{3}/?\d{4}-?\d{2}\b', '[CNPJ PROTEGIDO LGPD]', texto_seguro)
+    return texto_seguro
 
 # ==========================================
 # ☁️ MÓDULO OMNI-CLOUD DB (Híbrido)
@@ -234,12 +246,19 @@ def extrator_nexus_v3(arquivos_upados, gemini_key):
         except Exception:
             continue
             
-    return texto_extraido, sucesso, usou_ocr
+    # Aplica Proteção LGPD antes de sair do extrator
+    return lgpd_anonymizer(texto_extraido), sucesso, usou_ocr
 
+# ⚠️ V360: RAG SEMÂNTICO JURÍDICO (Fim da Fragmentação de Contexto) ⚠️
 def processar_com_rag(texto, comando, gemini_api_key):
     if not MODULO_RAG or not gemini_api_key: return texto[:90000]
     try:
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=4000, chunk_overlap=400)
+        # Usa separadores jurídicos inteligentes para não cortar cláusulas ao meio
+        text_splitter = RecursiveCharacterTextSplitter(
+            separators=["\n\n", "\n", "Art.", "Cláusula", "."],
+            chunk_size=4000, 
+            chunk_overlap=400
+        )
         chunks = text_splitter.split_text(texto)
         embeddings = GoogleGenerativeAIEmbeddings(google_api_key=gemini_api_key, model="models/embedding-001")
         vector_store = FAISS.from_texts(chunks, embeddings)
@@ -278,7 +297,7 @@ def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, groq_key,
         except: pass
     return f"[{nome_agente}] Falha de API.", "OFFLINE"
 
-def orquestrador_omni(comando, contexto_arquivos, num_processo_cnj, valor_hora, data_intimacao, groq_k, gemini_k, cnj_k):
+def orquestrador_omni(comando, contexto_arquivos, num_processo_cnj, num_arquivos, valor_hora, data_intimacao, groq_k, gemini_k, cnj_k):
     if not comando.strip() and not contexto_arquivos.strip() and not num_processo_cnj.strip():
         return "ERRO FATAL: Forneça um comando, arquivo ou OAB/DataJud.", "FALHA"
 
@@ -292,6 +311,9 @@ def orquestrador_omni(comando, contexto_arquivos, num_processo_cnj, valor_hora, 
     if len(contexto_final) > 60000: contexto_final = processar_com_rag(contexto_final, comando, gemini_k)
     
     modo_criacao = len(contexto_arquivos.strip()) < 50 and ("cri" in comando.lower() or "redij" in comando.lower() or "elabore" in comando.lower())
+    
+    # ⚠️ V360: MODO TRIAGEM MASSIVA (DUE DILIGENCE) ⚠️
+    modo_lote = num_arquivos > 1
 
     if modo_criacao:
         agente_3_sys = """Você é o AETHER SUPREME, Sócio Sênior de um escritório de Elite.
@@ -302,10 +324,17 @@ def orquestrador_omni(comando, contexto_arquivos, num_processo_cnj, valor_hora, 
         bloco_fatura = f"\n---\n### Fatura Pro-Forma (Drafting)\n* **Tempo Poupado:** {horas_humanas_estimadas:.1f} horas\n* **Hora Técnica:** R$ {valor_hora:.2f}\n* **Total Sugerido:** **R$ {faturamento_total:.2f}**\n"
         return dossie_final + bloco_fatura, motor
 
+    elif modo_lote:
+        agente_1_sys = "Auditor de Triagem. O usuário enviou MÚLTIPLOS documentos. Mapeie o objetivo principal e as ameaças de CADA um separadamente."
+        agente_2_sys = "Defensor de Triagem. Para cada ameaça mapeada nos múltiplos documentos, aponte uma defesa imediata (Prazo, Contestação, Acordo)."
+        agente_3_sys = """Você é o AETHER SUPREME THANOS. O usuário submeteu uma TRIAGEM EM LOTE (Vários arquivos).
+        ESTRUTURA OBRIGATÓRIA:
+        1. RESUMO EXECUTIVO DO LOTE (Quantos documentos, qual a urgência geral).
+        2. MATRIZ DE AÇÃO MASSIVA (Tabela Markdown: Documento/Assunto | Risco | Prazo Fatal/Urgência | Ação Imediata).
+        3. REDLINING GERAL: Esboços rápidos das teses para os documentos mais críticos."""
     else:
         agente_1_sys = "Promotor / Auditor Técnico Executivo. Mapeie vulnerabilidades, fraudes, prazos e nulidades absolutas."
         agente_2_sys = "Defensor / Sócio Contencioso. Reúna teses defensivas fortes baseadas no STJ/STF."
-        
         agente_3_sys = """Você é o AETHER SUPREME THANOS. 
         ESTRUTURA OBRIGATÓRIA:
         1. MATRIZ DE RISCO (Tabela Markdown: Nível de Risco | Ponto Crítico | Base Legal | Ação Bélica Imediata)
@@ -313,28 +342,28 @@ def orquestrador_omni(comando, contexto_arquivos, num_processo_cnj, valor_hora, 
         3. MINUTA PRONTA DA DEFESA (REDLINING): Redija o trecho literal da petição judicial pronta para uso. Prefixo obrigatório: [REDLINING - CLAUSULA SUGERIDA]:
         4. CONCLUSÃO DA ESTRATÉGIA."""
 
-        resultados = {}
-        motores_usados = set()
-        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-            f_risco = executor.submit(chamar_agente_hydra, "PROMOTOR", agente_1_sys, comando, contexto_final, groq_k, gemini_k, True)
-            f_legal = executor.submit(chamar_agente_hydra, "DEFENSOR", agente_2_sys, comando, contexto_final, groq_k, gemini_k, False)
-            resultados["risco"], m1 = f_risco.result()
-            resultados["legal"], m2 = f_legal.result()
-            motores_usados.add(m1)
-            motores_usados.add(m2)
-            
-        contexto_sintese = f"--- ACUSAÇÃO DE RISCO ---\n{resultados['risco']}\n\n--- TESES DE DEFESA ---\n{resultados['legal']}"
-        dossie_final, m3 = chamar_agente_hydra("JUIZ REVISOR THANOS", agente_3_sys, "Gere o Dossiê Executivo Thanos com a Minuta de Defesa Pronta.", contexto_sintese, groq_k, gemini_k)
-        motores_usados.add(m3)
+    resultados = {}
+    motores_usados = set()
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+        f_risco = executor.submit(chamar_agente_hydra, "PROMOTOR", agente_1_sys, comando, contexto_final, groq_k, gemini_k, True)
+        f_legal = executor.submit(chamar_agente_hydra, "DEFENSOR", agente_2_sys, comando, contexto_final, groq_k, gemini_k, False)
+        resultados["risco"], m1 = f_risco.result()
+        resultados["legal"], m2 = f_legal.result()
+        motores_usados.add(m1)
+        motores_usados.add(m2)
         
-        if num_processo_cnj: dossie_final += gerar_jurimetria(num_processo_cnj)
+    contexto_sintese = f"--- ACUSAÇÃO / TRIAGEM ---\n{resultados['risco']}\n\n--- DEFESA ---\n{resultados['legal']}"
+    dossie_final, m3 = chamar_agente_hydra("JUIZ REVISOR THANOS", agente_3_sys, "Gere o Dossiê Executivo Thanos.", contexto_sintese, groq_k, gemini_k)
+    motores_usados.add(m3)
+    
+    if num_processo_cnj: dossie_final += gerar_jurimetria(num_processo_cnj)
 
-        data_inicio_str = data_intimacao.strftime('%d/%m/%Y')
-        prazo_fatal_str = calcular_prazo_cpc(15, data_intimacao)
-        dossie_final += f"\n---\n### ALERTA DE PRAZO (Motor Chronos - CPC)\n* **Data de Início:** {data_inicio_str}\n* **Regra Aplicada:** 15 dias úteis\n* **DATA FATAL:** **{prazo_fatal_str}**\n"
-        dossie_final += f"\n---\n### Fatura Pro-Forma (Timesheet)\n* **Tempo Poupado:** {horas_humanas_estimadas:.1f} horas\n* **Hora Técnica:** R$ {valor_hora:.2f}\n* **Total Sugerido:** **R$ {faturamento_total:.2f}**\n"
-        
-        return dossie_final, " | ".join(list(motores_usados))
+    data_inicio_str = data_intimacao.strftime('%d/%m/%Y')
+    prazo_fatal_str = calcular_prazo_cpc(15, data_intimacao)
+    dossie_final += f"\n---\n### ALERTA DE PRAZO (Motor Chronos - CPC)\n* **Data de Início:** {data_inicio_str}\n* **Regra Aplicada:** 15 dias úteis\n* **DATA FATAL:** **{prazo_fatal_str}**\n"
+    dossie_final += f"\n---\n### Fatura Pro-Forma (Timesheet)\n* **Tempo Poupado:** {horas_humanas_estimadas:.1f} horas\n* **Hora Técnica:** R$ {valor_hora:.2f}\n* **Total Sugerido:** **R$ {faturamento_total:.2f}**\n"
+    
+    return dossie_final, " | ".join(list(motores_usados))
 
 # --- 📄 EXPORTAÇÕES OMNI PARSER ---
 def gerar_docx_aether(texto_markdown):
@@ -362,7 +391,7 @@ def gerar_docx_aether(texto_markdown):
             if re.match(r'^\|[-\s\|]+\|$', linha_limpa): continue 
             cols = [c.strip() for c in linha_limpa.split('|')[1:-1]]
             is_table_line = True
-        elif ('Nível de Risco' in linha_limpa or 'Tribunal' in linha_limpa or 'Polo Ativo' in linha_limpa) and (',' in linha_limpa or '\t' in linha_limpa):
+        elif ('Nível de Risco' in linha_limpa or 'Tribunal' in linha_limpa or 'Polo Ativo' in linha_limpa or 'Documento/Assunto' in linha_limpa) and (',' in linha_limpa or '\t' in linha_limpa):
             linha_limpa_csv = linha_limpa.replace('"', '')
             separador = '\t' if '\t' in linha_limpa_csv else ','
             cols = [c.strip() for c in linha_limpa_csv.split(separador)]
@@ -487,7 +516,7 @@ def gerar_pdf_aether(texto_markdown):
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V359 (O FIM DA SIDEBAR E DA ROLAGEM)
+# 🎨 CSS APEX V360 (TELA ÚNICA PERFEITA)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -499,14 +528,13 @@ html, body {{ overflow-x: hidden !important; width: 100vw !important; margin: 0;
 .stApp {{ {bg_css} color: #cbd5e1; font-family: 'Inter', sans-serif; }}
 [data-testid="stHeader"], footer {{ display: none !important; }}
 
-/* ⚠️ V359: ANIQUILAÇÃO TOTAL DO ST.SIDEBAR ⚠️ */
+/* OCULTAR SIDEBAR TOTALMENTE */
 [data-testid="stSidebar"] {{ display: none !important; }}
 [data-testid="collapsedControl"] {{ display: none !important; }} 
 
-/* EXPANDE O CONTAINER PRINCIPAL PARA OCUPAR TUDO */
 [data-testid="block-container"] {{ padding-top: 1rem !important; padding-bottom: 0rem !important; max-width: 98% !important; }}
 
-/* CAIXA DO COCKPIT SUPERIOR */
+/* COCKPIT V360 */
 .cockpit-panel {{ background: rgba(30, 41, 59, 0.6); border-radius: 12px; padding: 15px; border: 1px solid rgba(212, 175, 55, 0.2); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); margin-bottom: 15px; backdrop-filter: blur(10px); }}
 .omni-brand {{ display: flex; flex-direction: column; align-items: flex-start; justify-content: center; height: 100%; }}
 .omni-brand h1 {{ margin: 0; font-family: 'Inter', sans-serif; font-size: 1.4rem; color: #f8fafc; font-weight: 800; letter-spacing: 1px; }}
@@ -533,7 +561,6 @@ html, body {{ overflow-x: hidden !important; width: 100vw !important; margin: 0;
 [data-testid="stTabs"] button {{ padding: 6px 15px !important; font-size: 0.85rem !important; font-weight: 600 !important; color: #94a3b8 !important; border-bottom: 2px solid transparent !important; }}
 [data-testid="stTabs"] button[aria-selected="true"] {{ color: #D4AF37 !important; border-bottom: 2px solid #D4AF37 !important; background: rgba(212, 175, 55, 0.05) !important; border-radius: 6px 6px 0 0; }}
 
-/* KANBAN BOARD STYLES */
 .kanban-board {{ display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; }}
 .kanban-col {{ background: rgba(30, 41, 59, 0.6); border-radius: 8px; padding: 15px; min-width: 280px; flex: 1; border: 1px solid rgba(255,255,255,0.05); }}
 .kanban-col-title {{ font-size: 0.85rem; font-weight: 700; color: #D4AF37; text-transform: uppercase; margin-bottom: 15px; border-bottom: 1px solid rgba(212, 175, 55, 0.2); padding-bottom: 8px; }}
@@ -556,7 +583,7 @@ if not st.session_state.logged_in:
     with col_m:
         with st.form("login_form"):
             st.markdown('<div class="login-title">AETHER KARV</div>', unsafe_allow_html=True)
-            st.markdown('<div class="login-subtitle">V359 APEX UNIFIED</div>', unsafe_allow_html=True)
+            st.markdown('<div class="login-subtitle">V360 APEX JUGGERNAUT</div>', unsafe_allow_html=True)
             login_user = st.text_input("Usuário", placeholder="Ex: henrique...")
             login_pass = st.text_input("Senha", type="password", placeholder="A sua senha secreta...")
             submit_log = st.form_submit_button("🔐 LOGIN OU CRIAR CONTA", use_container_width=True)
@@ -590,13 +617,11 @@ else:
     GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", "")
     CNJ_API_KEY = st.secrets.get("CNJ_API_KEY", "DEMO_KEY")
 
-    # ⚠️ V359: O COCKPIT DE CONTROLE NO TOPO DA TELA (FIM DO SIDEBAR) ⚠️
     st.markdown('<div class="cockpit-panel">', unsafe_allow_html=True)
-    
     col_brand, col_inputs, col_params = st.columns([1.2, 2.5, 1.5], gap="large")
     
     with col_brand:
-        st.markdown(f'<div class="omni-brand"><h1>AETHER KARV</h1><span>V359 UNIFIED | {st.session_state.username.upper()}</span></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="omni-brand"><h1>AETHER KARV</h1><span>V360 JUGGERNAUT | {st.session_state.username.upper()}</span></div>', unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
         c_clean, c_log = st.columns(2)
         with c_clean:
@@ -613,10 +638,10 @@ else:
                 st.rerun()
 
     with col_inputs:
-        up = st.file_uploader("Upload de Documentos", accept_multiple_files=True, label_visibility="collapsed", key=f"up_{st.session_state.uploader_id}")
+        up = st.file_uploader("Upload Seguros (LGPD Ativo)", accept_multiple_files=True, label_visibility="collapsed", key=f"up_{st.session_state.uploader_id}")
         c_jud, c_cmd = st.columns(2)
         with c_jud:
-            num_processo_input = st.text_input("OAB / DataJud", placeholder="Nº Processo ou OAB...")
+            num_processo_input = st.text_input("OAB / DataJud", placeholder="Nº Processo ou OAB/SP...")
         with c_cmd:
             cmd = st.text_input("Instruções Especiais", placeholder="Comando Rápido...")
 
@@ -630,7 +655,7 @@ else:
         if st.button("🚀 INICIAR TRIBUNAL DE I.A.", type="primary"):
             if cmd or up or num_processo_input:
                 st.toast("Iniciando Córtex...", icon="🔥")
-                progress_bar = st.progress(5, text="A Processar a Lógica...")
+                progress_bar = st.progress(5, text="Extraindo dados e mascarando CPFs (LGPD)...")
                 
                 try:
                     texto_arquivos, num_arquivos, usou_ocr = extrator_nexus_v3(up, GEMINI_KEY) if up else ("", 0, False)
@@ -639,7 +664,7 @@ else:
                 
                 progress_bar.progress(40, text="Tribunal Multi-Agente em curso...")
                 try:
-                    resposta, motor_usado = orquestrador_omni(cmd, texto_arquivos, num_processo_input, valor_hora, data_intimacao, GROQ_KEY, GEMINI_KEY, CNJ_API_KEY)
+                    resposta, motor_usado = orquestrador_omni(cmd, texto_arquivos, num_processo_input, num_arquivos, valor_hora, data_intimacao, GROQ_KEY, GEMINI_KEY, CNJ_API_KEY)
                 except Exception as e:
                     resposta, motor_usado = f"Erro no motor cognitivo: {str(e)}", "FALHA"
                 
@@ -663,7 +688,7 @@ else:
             else:
                 st.warning("Insira um documento, OAB ou comando.")
 
-    st.markdown('</div>', unsafe_allow_html=True) # Fim do Cockpit
+    st.markdown('</div>', unsafe_allow_html=True) 
 
     # --- 📊 AETHER B.I. ENGINE ---
     historico = load_history(st.session_state.username)
@@ -687,7 +712,7 @@ else:
             st.markdown(st.session_state.res_aether)
             st.markdown('</div>', unsafe_allow_html=True)
         else:
-            st.markdown('<div class="standby-container"><div class="welcome-title" style="font-size: 1.4rem;">Workspace Thanos Unified.</div><div class="welcome-subtitle" style="font-size: 0.9rem;">A barra lateral foi desativada. Use o Cockpit superior para comandar a IA.</div></div>', unsafe_allow_html=True)
+            st.markdown('<div class="standby-container"><div class="welcome-title" style="font-size: 1.4rem;">Workspace V360 Juggernaut.</div><div class="welcome-subtitle" style="font-size: 0.9rem;">Pronto para Triagem Massiva e Mascaramento LGPD.</div></div>', unsafe_allow_html=True)
 
     with tab2:
         st.markdown("<br>", unsafe_allow_html=True)
@@ -698,12 +723,11 @@ else:
             <div class="kanban-board">
                 <div class="kanban-col">
                     <div class="kanban-col-title">📥 Triage (Recentes)</div>
-                    <div class="kanban-card">Auditoria: Proc. """ + str(random.randint(1000, 9999)) + """<br><small style="color:#94a3b8">Prazo: 5 dias úteis</small></div>
-                    <div class="kanban-card">Análise Defesa Tributária<br><small style="color:#94a3b8">Status: IA Thanos Revisando</small></div>
+                    <div class="kanban-card">Triagem em Lote """ + str(random.randint(1000, 9999)) + """<br><small style="color:#94a3b8">Prazo: 5 dias úteis</small></div>
                 </div>
                 <div class="kanban-col">
                     <div class="kanban-col-title">⚙️ Em Execução</div>
-                    <div class="kanban-card">Redação de Kit Contratual<br><small style="color:#94a3b8">Módulo: Drafter Ativo</small></div>
+                    <div class="kanban-card">Análise Defesa Tributária<br><small style="color:#94a3b8">Status: IA Thanos Revisando</small></div>
                 </div>
                 <div class="kanban-col">
                     <div class="kanban-col-title">✅ Concluído (Faturado)</div>
