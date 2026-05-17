@@ -1,7 +1,7 @@
 import streamlit as st
 
-# ⚠️ V360 APEX JUGGERNAUT: ESCUDO LGPD, RAG SEMÂNTICO E TRIAGEM MASSIVA ⚠️
-st.set_page_config(page_title="AETHER KARV V360", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
+# ⚠️ V361 APEX OMNI-HERO: DESIGN DE ELITE (MINIMALISMO E FLUXO DE AÇÃO) ⚠️
+st.set_page_config(page_title="AETHER KARV V361", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
 
 import pandas as pd
 import os, time, base64, io, re
@@ -17,14 +17,12 @@ from datetime import datetime, timedelta, date
 from PIL import Image
 
 # ==========================================
-# 🛡️ MÓDULO DE SEGURANÇA (LGPD ANONYMIZER) V360
+# 🛡️ MÓDULO DE SEGURANÇA (LGPD ANONYMIZER)
 # ==========================================
 def lgpd_anonymizer(texto):
-    """Varre o texto e mascara dados sensíveis antes de enviar para as APIs LLM."""
+    """Varre o texto e mascara dados sensíveis (LGPD) antes de enviar para as APIs LLM."""
     if not texto: return texto
-    # Mascara CPF (ex: 123.456.789-00 ou 12345678900)
     texto_seguro = re.sub(r'\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b', '[CPF PROTEGIDO LGPD]', texto)
-    # Mascara CNPJ (ex: 12.345.678/0001-90)
     texto_seguro = re.sub(r'\b\d{2}\.?\d{3}\.?\d{3}/?\d{4}-?\d{2}\b', '[CNPJ PROTEGIDO LGPD]', texto_seguro)
     return texto_seguro
 
@@ -50,7 +48,6 @@ def save_dossier(username, titulo, conteudo):
             requests.post(f"{supa_url}/rest/v1/history", headers=headers, json=payload, timeout=5)
             return
         except: pass
-        
     conn = sqlite3.connect('aether_fortknox.db')
     c = conn.cursor()
     c.execute("INSERT INTO history (username, data_hora, titulo, conteudo) VALUES (?, ?, ?, ?)", (username, get_data_hora_br(), titulo, conteudo))
@@ -67,7 +64,6 @@ def load_history(username):
             if res.status_code == 200:
                 return [(item['data_hora'], item['titulo'], item['conteudo']) for item in res.json()]
         except: pass
-
     conn = sqlite3.connect('aether_fortknox.db')
     c = conn.cursor()
     c.execute("SELECT data_hora, titulo, conteudo FROM history WHERE username = ? ORDER BY id DESC", (username,))
@@ -131,10 +127,7 @@ try:
     MODULO_RAG = True
 except ImportError: MODULO_RAG = False
 
-def get_data_hora_br():
-    fuso_br = datetime.utcnow() - timedelta(hours=3)
-    return fuso_br.strftime('%d/%m/%Y às %H:%M:%S')
-
+def get_data_hora_br(): return (datetime.utcnow() - timedelta(hours=3)).strftime('%d/%m/%Y às %H:%M:%S')
 def get_base64_image(file):
     if os.path.exists(file):
         with open(file, "rb") as f: return base64.b64encode(f.read()).decode()
@@ -143,39 +136,25 @@ def get_base64_image(file):
 def gerar_botao_primario(buffer, filename, label, mime):
     b64 = base64.b64encode(buffer).decode()
     css = "background: linear-gradient(135deg, #B8860B, #D4AF37); color: #020617; border-radius: 6px; padding: 10px; text-align: center; text-decoration: none; display: block; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-bottom: 5px; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2); transition: 0.3s;"
-    hover_css = "this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 15px rgba(212,175,55,0.4)';"
-    out_css = "this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 10px rgba(212,175,55,0.2)';"
-    return f'<a href="data:{mime};base64,{b64}" download="{filename}" style="{css}" onmouseover="{hover_css}" onmouseout="{out_css}">{label}</a>'
+    return f'<a href="data:{mime};base64,{b64}" download="{filename}" style="{css}">{label}</a>'
 
 def gerar_botao_secundario(buffer, filename, label, mime):
     b64 = base64.b64encode(buffer).decode()
     css = "background: rgba(255,255,255,0.05); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 10px; text-align: center; text-decoration: none; display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; transition: 0.3s;"
-    hover_css = "this.style.background='rgba(212,175,55,0.1)'; this.style.borderColor='#D4AF37'; this.style.color='#fff';"
-    out_css = "this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='rgba(255,255,255,0.15)'; this.style.color='#cbd5e1';"
-    return f'<a href="data:{mime};base64,{b64}" download="{filename}" style="{css}" onmouseover="{hover_css}" onmouseout="{out_css}">{label}</a>'
+    return f'<a href="data:{mime};base64,{b64}" download="{filename}" style="{css}">{label}</a>'
 
 def calcular_prazo_cpc(dias_uteis, data_inicial):
     data_atual = datetime(data_inicial.year, data_inicial.month, data_inicial.day)
     dias_adicionados = 0
     while dias_adicionados < dias_uteis:
         data_atual += timedelta(days=1)
-        if data_atual.weekday() < 5:
-            dias_adicionados += 1
+        if data_atual.weekday() < 5: dias_adicionados += 1
     return data_atual.strftime('%d/%m/%Y (%A)')
 
 def gerar_jurimetria(numero_processo):
     if not numero_processo: return ""
-    taxa_sucesso = random.randint(45, 85)
-    tempo_meses = random.randint(8, 36)
-    return f"""
----
-### ⚖️ JURIMETRIA PREDITIVA ADVERSÁRIA (AETHER ANALYTICS)
-* **Alvo de Análise:** {numero_processo}
-* **Magistrado Analisado:** Perfil Jurisprudencial Médio Local
-* **Taxa Histórica de Procedência:** {taxa_sucesso}% de sentenças favoráveis
-* **Tempo Médio Estimado para Sentença:** {tempo_meses} meses
-* **Risco Jurisprudencial:** {'Alto' if taxa_sucesso < 55 else 'Moderado' if taxa_sucesso < 70 else 'Baixo (Favorável)'}
-"""
+    taxa_sucesso, tempo_meses = random.randint(45, 85), random.randint(8, 36)
+    return f"\n---\n### ⚖️ JURIMETRIA PREDITIVA ADVERSÁRIA\n* **Alvo de Análise:** {numero_processo}\n* **Magistrado Analisado:** Perfil Médio Local\n* **Taxa Histórica:** {taxa_sucesso}% de sentenças favoráveis\n* **Tempo Médio:** {tempo_meses} meses\n* **Risco Jurisprudencial:** {'Alto' if taxa_sucesso < 55 else 'Moderado' if taxa_sucesso < 70 else 'Baixo (Favorável)'}\n"
 
 def consultar_datajud(numero_processo, api_key):
     if not numero_processo: return ""
@@ -192,16 +171,13 @@ def consultar_datajud(numero_processo, api_key):
     except Exception as e: return f"\n[ALERTA DATAJUD]: Falha ({str(e)})"
 
 def extrator_nexus_v3(arquivos_upados, gemini_key):
-    texto_extraido = ""
-    sucesso = 0
-    usou_ocr = False
+    texto_extraido, sucesso, usou_ocr = "", 0, False
     if not arquivos_upados: return texto_extraido, sucesso, usou_ocr
     
     for arquivo in arquivos_upados:
         try:
             file_bytes = arquivo.getvalue()
             filename = arquivo.name.lower()
-            
             if filename.endswith('.csv'):
                 df = pd.read_csv(io.BytesIO(file_bytes))
                 texto_extraido += f"\n\n--- CSV: {arquivo.name} ---\n{df.to_string(index=False)}"
@@ -243,22 +219,14 @@ def extrator_nexus_v3(arquivos_upados, gemini_key):
                     texto_extraido += f"\n\n--- IMAGEM LIDA: {arquivo.name} ---\n{texto_ocr}"
                     usou_ocr = True
             sucesso += 1
-        except Exception:
-            continue
+        except Exception: continue
             
-    # Aplica Proteção LGPD antes de sair do extrator
     return lgpd_anonymizer(texto_extraido), sucesso, usou_ocr
 
-# ⚠️ V360: RAG SEMÂNTICO JURÍDICO (Fim da Fragmentação de Contexto) ⚠️
 def processar_com_rag(texto, comando, gemini_api_key):
     if not MODULO_RAG or not gemini_api_key: return texto[:90000]
     try:
-        # Usa separadores jurídicos inteligentes para não cortar cláusulas ao meio
-        text_splitter = RecursiveCharacterTextSplitter(
-            separators=["\n\n", "\n", "Art.", "Cláusula", "."],
-            chunk_size=4000, 
-            chunk_overlap=400
-        )
+        text_splitter = RecursiveCharacterTextSplitter(separators=["\n\n", "\n", "Art.", "Cláusula", "."], chunk_size=4000, chunk_overlap=400)
         chunks = text_splitter.split_text(texto)
         embeddings = GoogleGenerativeAIEmbeddings(google_api_key=gemini_api_key, model="models/embedding-001")
         vector_store = FAISS.from_texts(chunks, embeddings)
@@ -311,27 +279,23 @@ def orquestrador_omni(comando, contexto_arquivos, num_processo_cnj, num_arquivos
     if len(contexto_final) > 60000: contexto_final = processar_com_rag(contexto_final, comando, gemini_k)
     
     modo_criacao = len(contexto_arquivos.strip()) < 50 and ("cri" in comando.lower() or "redij" in comando.lower() or "elabore" in comando.lower())
-    
-    # ⚠️ V360: MODO TRIAGEM MASSIVA (DUE DILIGENCE) ⚠️
     modo_lote = num_arquivos > 1
 
     if modo_criacao:
         agente_3_sys = """Você é o AETHER SUPREME, Sócio Sênior de um escritório de Elite.
-        MISSÃO: CRIAR UM KIT DE DOCUMENTOS DO ZERO. 
-        Formate com clareza, usando linguagem técnica e blindando o cliente com leis e jurisprudência."""
-        
+        MISSÃO: CRIAR UM KIT DE DOCUMENTOS DO ZERO. Formate com clareza, usando linguagem técnica e blindando o cliente com leis e jurisprudência."""
         dossie_final, motor = chamar_agente_hydra("AETHER DRAFTER", agente_3_sys, comando, contexto_final, groq_k, gemini_k)
         bloco_fatura = f"\n---\n### Fatura Pro-Forma (Drafting)\n* **Tempo Poupado:** {horas_humanas_estimadas:.1f} horas\n* **Hora Técnica:** R$ {valor_hora:.2f}\n* **Total Sugerido:** **R$ {faturamento_total:.2f}**\n"
         return dossie_final + bloco_fatura, motor
 
     elif modo_lote:
-        agente_1_sys = "Auditor de Triagem. O usuário enviou MÚLTIPLOS documentos. Mapeie o objetivo principal e as ameaças de CADA um separadamente."
-        agente_2_sys = "Defensor de Triagem. Para cada ameaça mapeada nos múltiplos documentos, aponte uma defesa imediata (Prazo, Contestação, Acordo)."
-        agente_3_sys = """Você é o AETHER SUPREME THANOS. O usuário submeteu uma TRIAGEM EM LOTE (Vários arquivos).
+        agente_1_sys = "Auditor de Triagem. O usuário enviou MÚLTIPLOS documentos. Mapeie o objetivo principal e ameaças de CADA um separadamente."
+        agente_2_sys = "Defensor de Triagem. Para cada ameaça mapeada, aponte uma defesa imediata."
+        agente_3_sys = """Você é o AETHER SUPREME THANOS. TRIAGEM EM LOTE (Vários arquivos).
         ESTRUTURA OBRIGATÓRIA:
-        1. RESUMO EXECUTIVO DO LOTE (Quantos documentos, qual a urgência geral).
-        2. MATRIZ DE AÇÃO MASSIVA (Tabela Markdown: Documento/Assunto | Risco | Prazo Fatal/Urgência | Ação Imediata).
-        3. REDLINING GERAL: Esboços rápidos das teses para os documentos mais críticos."""
+        1. RESUMO EXECUTIVO DO LOTE.
+        2. MATRIZ DE AÇÃO MASSIVA (Tabela Markdown: Documento | Risco | Prazo Fatal | Ação Imediata).
+        3. REDLINING GERAL: Esboços das teses para os documentos mais críticos."""
     else:
         agente_1_sys = "Promotor / Auditor Técnico Executivo. Mapeie vulnerabilidades, fraudes, prazos e nulidades absolutas."
         agente_2_sys = "Defensor / Sócio Contencioso. Reúna teses defensivas fortes baseadas no STJ/STF."
@@ -357,7 +321,6 @@ def orquestrador_omni(comando, contexto_arquivos, num_processo_cnj, num_arquivos
     motores_usados.add(m3)
     
     if num_processo_cnj: dossie_final += gerar_jurimetria(num_processo_cnj)
-
     data_inicio_str = data_intimacao.strftime('%d/%m/%Y')
     prazo_fatal_str = calcular_prazo_cpc(15, data_intimacao)
     dossie_final += f"\n---\n### ALERTA DE PRAZO (Motor Chronos - CPC)\n* **Data de Início:** {data_inicio_str}\n* **Regra Aplicada:** 15 dias úteis\n* **DATA FATAL:** **{prazo_fatal_str}**\n"
@@ -365,12 +328,10 @@ def orquestrador_omni(comando, contexto_arquivos, num_processo_cnj, num_arquivos
     
     return dossie_final, " | ".join(list(motores_usados))
 
-# --- 📄 EXPORTAÇÕES OMNI PARSER ---
 def gerar_docx_aether(texto_markdown):
     doc = Document()
     font = doc.styles['Normal'].font
     font.name = 'Arial'; font.size = Pt(10)
-    
     header = doc.add_heading('AETHER KARV - PARECER SUPREME', 0)
     header.runs[0].font.color.rgb = RGBColor(212, 175, 55) 
     doc.add_paragraph(f"Documento Finalizado em: {get_data_hora_br()}")
@@ -516,7 +477,7 @@ def gerar_pdf_aether(texto_markdown):
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V360 (TELA ÚNICA PERFEITA)
+# 🎨 CSS APEX V361 (DESIGN DE ELITE HARVEY-LIKE)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -531,44 +492,48 @@ html, body {{ overflow-x: hidden !important; width: 100vw !important; margin: 0;
 /* OCULTAR SIDEBAR TOTALMENTE */
 [data-testid="stSidebar"] {{ display: none !important; }}
 [data-testid="collapsedControl"] {{ display: none !important; }} 
+[data-testid="block-container"] {{ padding-top: 1.5rem !important; padding-bottom: 2rem !important; max-width: 95% !important; }}
 
-[data-testid="block-container"] {{ padding-top: 1rem !important; padding-bottom: 0rem !important; max-width: 98% !important; }}
+/* ⚠️ V361: NOVA ESTRUTURA DO HEADER E OMNI-BAR ⚠️ */
+.top-nav {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(212, 175, 55, 0.15); }}
+.nav-brand {{ display: flex; align-items: center; gap: 10px; }}
+.nav-brand h1 {{ margin: 0; font-family: 'Inter', sans-serif; font-size: 1.5rem; color: #f8fafc; font-weight: 800; letter-spacing: 1px; }}
+.nav-brand span {{ color: #D4AF37; font-size: 0.65rem; font-weight: 700; letter-spacing: 1px; border: 1px solid rgba(212, 175, 55, 0.4); padding: 2px 6px; border-radius: 6px; background: rgba(212, 175, 55, 0.05); text-transform: uppercase; }}
 
-/* COCKPIT V360 */
-.cockpit-panel {{ background: rgba(30, 41, 59, 0.6); border-radius: 12px; padding: 15px; border: 1px solid rgba(212, 175, 55, 0.2); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); margin-bottom: 15px; backdrop-filter: blur(10px); }}
-.omni-brand {{ display: flex; flex-direction: column; align-items: flex-start; justify-content: center; height: 100%; }}
-.omni-brand h1 {{ margin: 0; font-family: 'Inter', sans-serif; font-size: 1.4rem; color: #f8fafc; font-weight: 800; letter-spacing: 1px; }}
-.omni-brand span {{ color: #D4AF37; font-size: 0.65rem; font-weight: 700; letter-spacing: 1px; border: 1px solid rgba(212, 175, 55, 0.4); padding: 2px 6px; border-radius: 6px; background: rgba(212, 175, 55, 0.05); text-transform: uppercase; margin-top: 5px; }}
+.omni-bar-container {{ background: rgba(30, 41, 59, 0.7); border-radius: 12px; padding: 20px; border: 1px solid rgba(212, 175, 55, 0.3); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); margin-bottom: 25px; backdrop-filter: blur(12px); }}
+.omni-title {{ color: #f8fafc; font-size: 1.1rem; font-weight: 700; margin-bottom: 15px; }}
 
-.stTextInput label, .stDateInput label, .stNumberInput label {{ font-size: 0.65rem !important; color: #D4AF37 !important; font-weight: 700 !important; margin-bottom: 2px !important; text-transform: uppercase; }}
-.stTextInput input, .stDateInput input, .stNumberInput input, input[type="password"] {{ background-color: rgba(15, 23, 42, 0.8) !important; border: 1px solid rgba(255,255,255,0.1) !important; color: #f8fafc !important; font-size: 0.75rem !important; border-radius: 6px !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); padding: 6px !important; margin-bottom: 4px !important; }}
+.stTextInput label, .stDateInput label, .stNumberInput label {{ font-size: 0.70rem !important; color: #D4AF37 !important; font-weight: 700 !important; margin-bottom: 4px !important; text-transform: uppercase; }}
+.stTextInput input, .stDateInput input, .stNumberInput input, input[type="password"] {{ background-color: rgba(15, 23, 42, 0.9) !important; border: 1px solid rgba(255,255,255,0.15) !important; color: #f8fafc !important; font-size: 0.85rem !important; border-radius: 8px !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.3); padding: 8px !important; margin-bottom: 10px !important; }}
 
-[data-testid="stFileUploaderDropzone"] {{ padding: 5px !important; min-height: 40px !important; margin-bottom: 8px !important; border: 1px dashed rgba(212, 175, 55, 0.4) !important; background: rgba(15, 23, 42, 0.8) !important; border-radius: 6px !important; }}
-[data-testid="stFileUploaderDropzone"] > div > span {{ font-size: 0.75rem !important; color: #94a3b8 !important; }}
-[data-testid="stUploadedFile"] {{ background: rgba(0,0,0,0.4) !important; border-radius: 4px; padding: 2px; margin-top: 2px; }}
+[data-testid="stFileUploaderDropzone"] {{ padding: 10px !important; min-height: 50px !important; margin-bottom: 10px !important; border: 1px dashed rgba(212, 175, 55, 0.5) !important; background: rgba(15, 23, 42, 0.9) !important; border-radius: 8px !important; transition: 0.3s; }}
+[data-testid="stFileUploaderDropzone"]:hover {{ border-color: #D4AF37 !important; background: rgba(212, 175, 55, 0.05) !important; }}
+[data-testid="stFileUploaderDropzone"] > div > span {{ font-size: 0.80rem !important; color: #cbd5e1 !important; font-weight: 600; }}
+[data-testid="stUploadedFile"] {{ background: rgba(0,0,0,0.5) !important; border-radius: 4px; padding: 4px; margin-top: 4px; }}
 
-.stButton > button[kind="primary"] {{ background: linear-gradient(135deg, #B8860B, #D4AF37) !important; border-radius: 6px !important; font-weight: 800 !important; color: #020617 !important; text-transform: uppercase !important; letter-spacing: 1px !important; padding: 10px !important; border: none !important; width: 100% !important; transition: 0.3s; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.3); margin-top: 15px; font-size: 0.9rem !important; height: 100%; }}
-.stButton > button[kind="primary"]:hover {{ transform: translateY(-2px); box-shadow: 0 6px 15px rgba(212, 175, 55, 0.5); }}
+.stButton > button[kind="primary"] {{ background: linear-gradient(135deg, #B8860B, #D4AF37) !important; border-radius: 8px !important; font-weight: 800 !important; color: #020617 !important; text-transform: uppercase !important; letter-spacing: 1px !important; padding: 12px !important; border: none !important; width: 100% !important; transition: 0.3s; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4); margin-top: 18px; font-size: 0.95rem !important; height: calc(100% - 18px); }}
+.stButton > button[kind="primary"]:hover {{ transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212, 175, 55, 0.6); }}
 
-.stButton > button[kind="secondary"] {{ background: rgba(255,255,255,0.05) !important; color: #cbd5e1 !important; border: 1px solid rgba(255,255,255,0.15) !important; border-radius: 6px !important; font-weight: 600 !important; transition: 0.3s; padding: 8px !important; font-size: 0.70rem !important; width: 100% !important; margin-top: 5px; text-transform: uppercase; }}
-.stButton > button[kind="secondary"]:hover {{ background: rgba(212,175,55,0.1) !important; color: #fff !important; border-color: #D4AF37 !important; }}
+.stButton > button[kind="secondary"] {{ background: rgba(255,255,255,0.05) !important; color: #cbd5e1 !important; border: 1px solid rgba(255,255,255,0.15) !important; border-radius: 8px !important; font-weight: 600 !important; transition: 0.3s; padding: 8px !important; font-size: 0.75rem !important; width: 100% !important; margin-top: 0px; text-transform: uppercase; }}
+.stButton > button[kind="secondary"]:hover {{ background: rgba(212,175,55,0.15) !important; color: #fff !important; border-color: #D4AF37 !important; }}
 
-.custom-kpi-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; }}
-.kpi-box {{ background: rgba(30, 41, 59, 0.6); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); border-left: 3px solid #D4AF37; padding: 10px 15px; backdrop-filter: blur(10px); }}
-.kpi-title {{ color: #94a3b8; font-size: 0.60rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; display:block; margin-bottom: 4px; }}
-.kpi-value {{ color: #f8fafc; font-size: 1.1rem; font-weight: 700; line-height: 1.1; display:block; }}
+.custom-kpi-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }}
+.kpi-box {{ background: rgba(30, 41, 59, 0.5); border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); border-left: 4px solid #D4AF37; padding: 12px 18px; backdrop-filter: blur(10px); transition: 0.3s; }}
+.kpi-box:hover {{ background: rgba(30, 41, 59, 0.8); border-color: rgba(212, 175, 55, 0.3); transform: translateY(-2px); }}
+.kpi-title {{ color: #94a3b8; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; display:block; margin-bottom: 4px; }}
+.kpi-value {{ color: #f8fafc; font-size: 1.2rem; font-weight: 800; line-height: 1.1; display:block; }}
 
-[data-testid="stTabs"] button {{ padding: 6px 15px !important; font-size: 0.85rem !important; font-weight: 600 !important; color: #94a3b8 !important; border-bottom: 2px solid transparent !important; }}
-[data-testid="stTabs"] button[aria-selected="true"] {{ color: #D4AF37 !important; border-bottom: 2px solid #D4AF37 !important; background: rgba(212, 175, 55, 0.05) !important; border-radius: 6px 6px 0 0; }}
+[data-testid="stTabs"] button {{ padding: 8px 18px !important; font-size: 0.90rem !important; font-weight: 600 !important; color: #94a3b8 !important; border-bottom: 2px solid transparent !important; }}
+[data-testid="stTabs"] button[aria-selected="true"] {{ color: #D4AF37 !important; border-bottom: 2px solid #D4AF37 !important; background: rgba(212, 175, 55, 0.05) !important; border-radius: 8px 8px 0 0; }}
 
 .kanban-board {{ display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; }}
 .kanban-col {{ background: rgba(30, 41, 59, 0.6); border-radius: 8px; padding: 15px; min-width: 280px; flex: 1; border: 1px solid rgba(255,255,255,0.05); }}
 .kanban-col-title {{ font-size: 0.85rem; font-weight: 700; color: #D4AF37; text-transform: uppercase; margin-bottom: 15px; border-bottom: 1px solid rgba(212, 175, 55, 0.2); padding-bottom: 8px; }}
 .kanban-card {{ background: rgba(15, 23, 42, 0.8); border-left: 3px solid #D4AF37; padding: 12px; border-radius: 4px; margin-bottom: 10px; font-size: 0.85rem; color: #f8fafc; box-shadow: 0 2px 5px rgba(0,0,0,0.2); cursor: grab; }}
 
-[data-testid="stForm"] {{ background: rgba(30, 41, 59, 0.6) !important; padding: 30px !important; border-radius: 12px !important; border: 1px solid rgba(212, 175, 55, 0.3) !important; box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important; max-width: 400px !important; margin: 80px auto !important; text-align: center !important; backdrop-filter: blur(10px) !important; }}
-.login-title {{ color: #f8fafc; font-size: 1.6rem; font-weight: 800; margin-bottom: 0px; line-height: 1.2; letter-spacing: 1px; text-align: center; }}
-.login-subtitle {{ color: #D4AF37; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; text-align: center; }}
+[data-testid="stForm"] {{ background: rgba(30, 41, 59, 0.8) !important; padding: 40px !important; border-radius: 16px !important; border: 1px solid rgba(212, 175, 55, 0.4) !important; box-shadow: 0 15px 40px rgba(0,0,0,0.6) !important; max-width: 420px !important; margin: 10vh auto !important; text-align: center !important; backdrop-filter: blur(15px) !important; }}
+.login-title {{ color: #f8fafc; font-size: 1.8rem; font-weight: 800; margin-bottom: 0px; line-height: 1.2; letter-spacing: 1px; text-align: center; }}
+.login-subtitle {{ color: #D4AF37; font-size: 0.80rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px; text-align: center; font-weight: 600; }}
 .stProgress > div > div > div > div {{ background-color: #D4AF37 !important; }}
 </style>
 """
@@ -578,15 +543,14 @@ st.markdown(css_code, unsafe_allow_html=True)
 # 🔐 MURALHA DE GELO (LOGIN)
 # ==========================================
 if not st.session_state.logged_in:
-    st.markdown("<br>", unsafe_allow_html=True)
     col_l, col_m, col_r = st.columns([1, 1.2, 1])
     with col_m:
         with st.form("login_form"):
             st.markdown('<div class="login-title">AETHER KARV</div>', unsafe_allow_html=True)
-            st.markdown('<div class="login-subtitle">V360 APEX JUGGERNAUT</div>', unsafe_allow_html=True)
+            st.markdown('<div class="login-subtitle">V361 APEX OMNI-HERO</div>', unsafe_allow_html=True)
             login_user = st.text_input("Usuário", placeholder="Ex: henrique...")
             login_pass = st.text_input("Senha", type="password", placeholder="A sua senha secreta...")
-            submit_log = st.form_submit_button("🔐 LOGIN OU CRIAR CONTA", use_container_width=True)
+            submit_log = st.form_submit_button("🔐 LOGIN / REGISTRO", use_container_width=True)
             
             if submit_log:
                 conn = sqlite3.connect('aether_fortknox.db')
@@ -610,91 +574,99 @@ if not st.session_state.logged_in:
                 conn.close()
 
 # ==========================================
-# INTERFACE PRINCIPAL (TELA ÚNICA SEM BARRA LATERAL)
+# INTERFACE PRINCIPAL (HERO DESIGN)
 # ==========================================
 else:
     GROQ_KEY = st.secrets.get("GROQ_API_KEY", "")
     GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", "")
     CNJ_API_KEY = st.secrets.get("CNJ_API_KEY", "DEMO_KEY")
 
-    st.markdown('<div class="cockpit-panel">', unsafe_allow_html=True)
-    col_brand, col_inputs, col_params = st.columns([1.2, 2.5, 1.5], gap="large")
+    # ⚠️ V361: HEADER SUPERIOR LIMPO (Separa Identidade de Ação) ⚠️
+    st.markdown("""
+        <div class="top-nav">
+            <div class="nav-brand">
+                <h1>AETHER KARV</h1><span>V361 OMNI-HERO</span>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # Botões de Ação de Sessão movidos para um local não intrusivo
+    c_space_top, c_clean_top, c_log_top = st.columns([8, 1.5, 1.5])
+    with c_clean_top:
+        if st.button("🧹 LIMPAR MEMÓRIA", key="btn_clean_top"):
+            st.session_state.uploader_id += 1
+            st.session_state.chat_history = []
+            st.rerun()
+    with c_log_top:
+        if st.button("🚪 SAIR", key="btn_out_top", type="secondary"):
+            st.session_state.logged_in = False
+            st.session_state.username = ""
+            st.session_state.res_aether = None
+            st.session_state.chat_history = []
+            st.rerun()
+
+    # ⚠️ V361: OMNI-BAR (CENTRO DE COMANDO UNIFICADO E ESPAÇOSO) ⚠️
+    st.markdown('<div class="omni-bar-container"><div class="omni-title">Centro de Operações Táticas</div>', unsafe_allow_html=True)
     
-    with col_brand:
-        st.markdown(f'<div class="omni-brand"><h1>AETHER KARV</h1><span>V360 JUGGERNAUT | {st.session_state.username.upper()}</span></div>', unsafe_allow_html=True)
-        st.markdown("<br>", unsafe_allow_html=True)
-        c_clean, c_log = st.columns(2)
-        with c_clean:
-            if st.button("🧹 LIMPAR"):
-                st.session_state.uploader_id += 1
-                st.session_state.chat_history = []
-                st.rerun()
-        with c_log:
-            if st.button("🚪 SAIR"):
-                st.session_state.logged_in = False
-                st.session_state.username = ""
-                st.session_state.res_aether = None
-                st.session_state.chat_history = []
-                st.rerun()
-
-    with col_inputs:
-        up = st.file_uploader("Upload Seguros (LGPD Ativo)", accept_multiple_files=True, label_visibility="collapsed", key=f"up_{st.session_state.uploader_id}")
-        c_jud, c_cmd = st.columns(2)
-        with c_jud:
-            num_processo_input = st.text_input("OAB / DataJud", placeholder="Nº Processo ou OAB/SP...")
-        with c_cmd:
-            cmd = st.text_input("Instruções Especiais", placeholder="Comando Rápido...")
-
-    with col_params:
-        c_date, c_val = st.columns(2)
-        with c_date:
-            data_intimacao = st.date_input("Data Intimação", value=date.today(), format="DD/MM/YYYY")
-        with c_val:
-            valor_hora = st.number_input("Valor Hora (R$)", min_value=50.0, max_value=5000.0, value=350.0, step=50.0)
+    col_up, col_txt, col_exec = st.columns([1.2, 1.5, 1], gap="medium")
+    
+    with col_up:
+        up = st.file_uploader("Documentos (Proteção LGPD Ativa)", accept_multiple_files=True, label_visibility="visible", key=f"up_{st.session_state.uploader_id}")
+    
+    with col_txt:
+        cmd = st.text_input("Comandos / Instruções", placeholder="Ex: Analise os riscos ou Crie um contrato...")
+        num_processo_input = st.text_input("OAB / DataJud", placeholder="Nº Processo ou OAB/SP...")
         
-        if st.button("🚀 INICIAR TRIBUNAL DE I.A.", type="primary"):
-            if cmd or up or num_processo_input:
-                st.toast("Iniciando Córtex...", icon="🔥")
-                progress_bar = st.progress(5, text="Extraindo dados e mascarando CPFs (LGPD)...")
-                
-                try:
-                    texto_arquivos, num_arquivos, usou_ocr = extrator_nexus_v3(up, GEMINI_KEY) if up else ("", 0, False)
-                except Exception:
-                    texto_arquivos, num_arquivos, usou_ocr = "", 0, False
-                
-                progress_bar.progress(40, text="Tribunal Multi-Agente em curso...")
-                try:
-                    resposta, motor_usado = orquestrador_omni(cmd, texto_arquivos, num_processo_input, num_arquivos, valor_hora, data_intimacao, GROQ_KEY, GEMINI_KEY, CNJ_API_KEY)
-                except Exception as e:
-                    resposta, motor_usado = f"Erro no motor cognitivo: {str(e)}", "FALHA"
-                
-                progress_bar.progress(75, text="A emitir Dossiê para a Nuvem...")
-                titulo_doc = up[0].name if up else (cmd[:30] + "..." if cmd else f"Alvo: {num_processo_input}")
-                save_dossier(st.session_state.username, titulo_doc, resposta)
-                
-                docx_buffer = gerar_docx_aether(resposta)
-                pdf_data = gerar_pdf_aether(resposta)
-                
-                progress_bar.progress(100, text="Concluído!")
-                st.toast("Dossiê Salvo com Sucesso!", icon="✅")
-                progress_bar.empty()
-                
-                st.session_state.res_aether = resposta
-                st.session_state.res_docx = docx_buffer.getvalue()
-                st.session_state.res_pdf = pdf_data
-                st.session_state.chat_history = [] 
-                st.session_state.telemetria = {"arquivos": str(num_arquivos), "volume": f"{len(texto_arquivos)/1024:.1f} KB", "tempo": get_data_hora_br().split("às ")[1], "risco": "Nuvem Sincronizada", "ocr": "Online" if usou_ocr else "Standby", "motor": motor_usado}
-                st.rerun()
-            else:
-                st.warning("Insira um documento, OAB ou comando.")
+    with col_exec:
+        c_date, c_val = st.columns(2)
+        with c_date: data_intimacao = st.date_input("Data Intimação", value=date.today(), format="DD/MM/YYYY")
+        with c_val: valor_hora = st.number_input("Valor/Hora (R$)", min_value=50.0, max_value=5000.0, value=350.0, step=50.0)
+        
+        btn_iniciar = st.button("🚀 INICIAR TRIBUNAL", type="primary")
+        
+    st.markdown('</div>', unsafe_allow_html=True) # Fim do Omni-Bar
 
-    st.markdown('</div>', unsafe_allow_html=True) 
+    if btn_iniciar:
+        if cmd or up or num_processo_input:
+            st.toast("Iniciando Córtex...", icon="🔥")
+            progress_bar = st.progress(5, text="Extraindo dados e mascarando dados sensíveis (LGPD)...")
+            
+            try:
+                texto_arquivos, num_arquivos, usou_ocr = extrator_nexus_v3(up, GEMINI_KEY) if up else ("", 0, False)
+            except Exception:
+                texto_arquivos, num_arquivos, usou_ocr = "", 0, False
+            
+            progress_bar.progress(40, text="Tribunal Multi-Agente em curso...")
+            try:
+                resposta, motor_usado = orquestrador_omni(cmd, texto_arquivos, num_processo_input, num_arquivos, valor_hora, data_intimacao, GROQ_KEY, GEMINI_KEY, CNJ_API_KEY)
+            except Exception as e:
+                resposta, motor_usado = f"Erro no motor cognitivo: {str(e)}", "FALHA"
+            
+            progress_bar.progress(75, text="A emitir Dossiê para a Nuvem...")
+            titulo_doc = up[0].name if up else (cmd[:30] + "..." if cmd else f"Alvo: {num_processo_input}")
+            save_dossier(st.session_state.username, titulo_doc, resposta)
+            
+            docx_buffer = gerar_docx_aether(resposta)
+            pdf_data = gerar_pdf_aether(resposta)
+            
+            progress_bar.progress(100, text="Concluído!")
+            st.toast("Dossiê Salvo com Sucesso!", icon="✅")
+            progress_bar.empty()
+            
+            st.session_state.res_aether = resposta
+            st.session_state.res_docx = docx_buffer.getvalue()
+            st.session_state.res_pdf = pdf_data
+            st.session_state.chat_history = [] 
+            st.session_state.telemetria = {"arquivos": str(num_arquivos), "volume": f"{len(texto_arquivos)/1024:.1f} KB", "tempo": get_data_hora_br().split("às ")[1], "risco": "Nuvem Sincronizada", "ocr": "Online" if usou_ocr else "Standby", "motor": motor_usado}
+            st.rerun()
+        else:
+            st.warning("Insira um documento, OAB ou comando no Centro de Operações.")
 
     # --- 📊 AETHER B.I. ENGINE ---
     historico = load_history(st.session_state.username)
     total_docs_historico = len(historico)
-
     t = st.session_state.telemetria
+
     st.markdown(f"""
     <div class="custom-kpi-grid">
         <div class="kpi-box"><span class="kpi-title">Módulo Visão (OCR)</span><span class="kpi-value">{t['ocr']}</span></div>
@@ -708,11 +680,11 @@ else:
     
     with tab1:
         if st.session_state.res_aether:
-            st.markdown('<div style="background: rgba(15,23,42,0.5); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin-top: 5px;">', unsafe_allow_html=True)
+            st.markdown('<div style="background: rgba(15,23,42,0.5); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); margin-top: 10px; font-size: 0.95rem; line-height: 1.6;">', unsafe_allow_html=True)
             st.markdown(st.session_state.res_aether)
             st.markdown('</div>', unsafe_allow_html=True)
         else:
-            st.markdown('<div class="standby-container"><div class="welcome-title" style="font-size: 1.4rem;">Workspace V360 Juggernaut.</div><div class="welcome-subtitle" style="font-size: 0.9rem;">Pronto para Triagem Massiva e Mascaramento LGPD.</div></div>', unsafe_allow_html=True)
+            st.markdown('<div class="standby-container" style="text-align:center; padding: 40px;"><div class="welcome-title" style="font-size: 1.6rem; color: #D4AF37;">Workspace V361 Omni-Hero.</div><div class="welcome-subtitle" style="font-size: 1rem; color: #94a3b8; margin-top: 10px;">Utilize o Centro de Operações Táticas acima para iniciar.</div></div>', unsafe_allow_html=True)
 
     with tab2:
         st.markdown("<br>", unsafe_allow_html=True)
@@ -751,7 +723,6 @@ else:
             if prompt := st.chat_input("Ex: 'Aether, crie uma resposta para o advogado da contraparte...'"):
                 st.session_state.chat_history.append({"role": "user", "content": prompt})
                 st.session_state.chat_history = st.session_state.chat_history[-6:] 
-
                 with st.chat_message("user"): st.markdown(prompt)
                 
                 with st.chat_message("assistant"):
