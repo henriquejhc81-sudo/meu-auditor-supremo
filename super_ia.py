@@ -1,7 +1,7 @@
 import streamlit as st
 
-# ⚠️ V356 APEX OMNIVERSAL: A MÁQUINA SUPREMA (BLOCO ÚNICO E OMNI-CHAT BLINDADO) ⚠️
-st.set_page_config(page_title="AETHER KARV V356", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
+# ⚠️ V357 APEX THANOS: PAINEL ÚNICO (ZERO BORDAS) E ESTADO BLINDADO ⚠️
+st.set_page_config(page_title="AETHER KARV V357", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
 
 import pandas as pd
 import os, time, base64, io, re
@@ -77,10 +77,15 @@ def create_new_user(username, password):
 
 init_db()
 
-# --- CONTROLO DE SESSÃO ---
+# --- CONTROLE DE SESSÃO BLINDADO ---
 if "logged_in" not in st.session_state: st.session_state.logged_in = False
 if "username" not in st.session_state: st.session_state.username = ""
 if "chat_history" not in st.session_state: st.session_state.chat_history = [] 
+if "res_aether" not in st.session_state: st.session_state.res_aether = None
+if "res_docx" not in st.session_state: st.session_state.res_docx = None
+if "res_pdf" not in st.session_state: st.session_state.res_pdf = None
+if "telemetria" not in st.session_state or st.session_state.telemetria is None: 
+    st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--", "risco": "Aguardando", "ocr": "Inativo", "motor": "Standby"}
 
 # --- BIBLIOTECAS TÁTICAS ---
 try: from groq import Groq
@@ -193,7 +198,7 @@ def extrator_nexus_v3(arquivos_upados, gemini_key):
             elif filename.endswith('.docx'):
                 texto_extraido += f"\n\n--- DOCX: {arquivo.name} ---\n{docx2txt.process(io.BytesIO(file_bytes))}"
             elif filename.endswith('.txt'):
-                texto_extraido += f"\n\n--- TXT: {arquivo.name} ---\n{file_bytes.decode('utf-8')}"
+                texto_extraido += f"\n\n--- TXT: {arquivo.name} ---\n{file_bytes.decode('utf-8', errors='ignore')}"
             elif filename.endswith('.pdf'):
                 texto_pdf_nativo = ""
                 try:
@@ -225,7 +230,7 @@ def extrator_nexus_v3(arquivos_upados, gemini_key):
                     texto_extraido += f"\n\n--- IMAGEM LIDA: {arquivo.name} ---\n{texto_ocr}"
                     usou_ocr = True
             sucesso += 1
-        except Exception as e:
+        except Exception:
             continue
             
     return texto_extraido, sucesso, usou_ocr
@@ -272,10 +277,9 @@ def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, groq_key,
         except: pass
     return f"[{nome_agente}] Falha de API.", "OFFLINE"
 
-# ⚠️ V356: ROTEADOR COGNITIVO COM KITS MÚLTIPLOS ⚠️
 def orquestrador_omni(comando, contexto_arquivos, num_processo_cnj, valor_hora, data_intimacao, groq_k, gemini_k, cnj_k):
     if not comando.strip() and not contexto_arquivos.strip() and not num_processo_cnj.strip():
-        return "ERRO FATAL: O Aether precisa de uma instrução em texto ou de um ficheiro.", "FALHA"
+        return "ERRO FATAL: O Aether precisa de uma instrução em texto ou de um ficheiro válido.", "FALHA"
 
     dados_tribunal = consultar_datajud(num_processo_cnj, cnj_k) if num_processo_cnj else ""
     contexto_final = contexto_arquivos + "\n" + dados_tribunal
@@ -292,9 +296,9 @@ def orquestrador_omni(comando, contexto_arquivos, num_processo_cnj, valor_hora, 
         agente_3_sys = """Você é o AETHER SUPREME, o mais temido Sócio Sênior de um escritório de Elite.
         A SUA MISSÃO É CRIAR UM KIT DE DOCUMENTOS DO ZERO. 
         NÃO FAÇA MATRIZ DE RISCO. NÃO FAÇA TABELAS.
-        Sempre que for pedido para criar um contrato ou petição principal, GERE TAMBÉM os ANEXOS essenciais associados a ele (Ex: Procuração Ad Judicia, Termo de Confidencialidade - NDA, ou Recibo).
+        Sempre que for pedido para criar um contrato ou petição principal, GERE TAMBÉM os ANEXOS essenciais associados a ele.
         Formate cada documento com clareza, separando-os com uma linha ---.
-        Use linguagem técnica, formate de forma impecável, blinde o seu cliente com cláusulas de multa pesada, foro de eleição e cite as leis aplicáveis."""
+        Use linguagem técnica e blinde o seu cliente com leis brasileiras."""
         
         dossie_final, motor = chamar_agente_hydra("AETHER DRAFTER", agente_3_sys, comando, contexto_final, groq_k, gemini_k)
         
@@ -306,12 +310,12 @@ def orquestrador_omni(comando, contexto_arquivos, num_processo_cnj, valor_hora, 
         agente_2_sys = "Defensor / Sócio Contencioso. Reúna teses defensivas fortes e pesadas baseadas no STJ/STF."
         
         agente_3_sys = """Você é o AETHER SUPREME THANOS. A maior inteligência jurídica contenciosa do planeta.
-        Você não emite relatórios consultivos. Você entrega estratégia de guerra.
+        Você não emite relatórios consultivos. Você entrega estratégia de guerra contenciosa para advogados experientes.
         
         ESTRUTURA OBRIGATÓRIA:
         1. MATRIZ DE RISCO (Tabela Markdown: Nível de Risco | Ponto Crítico | Base Legal | Ação Bélica Imediata)
         2. RADIOGRAFIA DOS FATOS.
-        3. MINUTA PRONTA DA DEFESA (REDLINING): Redija o trecho literal da petição judicial pronta para uso.
+        3. MINUTA PRONTA DA DEFESA (REDLINING): Redija o trecho literal da petição judicial pronta para uso com fundamentação agressiva.
            Prefixo obrigatório: [REDLINING - CLAUSULA SUGERIDA]:
         4. CONCLUSÃO DA ESTRATÉGIA."""
 
@@ -337,12 +341,6 @@ def orquestrador_omni(comando, contexto_arquivos, num_processo_cnj, valor_hora, 
         dossie_final += f"\n---\n### Fatura Pro-Forma (Timesheet)\n* **Tempo Poupado:** {horas_humanas_estimadas:.1f} horas\n* **Hora Técnica:** R$ {valor_hora:.2f}\n* **Total Sugerido:** **R$ {faturamento_total:.2f}**\n"
         
         return dossie_final, " | ".join(list(motores_usados))
-
-if "res_aether" not in st.session_state: st.session_state.res_aether = None
-if "res_docx" not in st.session_state: st.session_state.res_docx = None
-if "res_pdf" not in st.session_state: st.session_state.res_pdf = None
-if "telemetria" not in st.session_state or st.session_state.telemetria is None: 
-    st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--", "risco": "Aguardando", "ocr": "Inativo", "motor": "Standby"}
 
 # --- 📄 EXPORTAÇÕES OMNI PARSER ---
 def gerar_docx_aether(texto_markdown):
@@ -495,7 +493,7 @@ def gerar_pdf_aether(texto_markdown):
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V356 (BLOCO ÚNICO ZERO-SCROLL)
+# 🎨 CSS APEX V357 (FUSÃO TOTAL: ZERO BORDAS LATERAIS)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -507,25 +505,27 @@ html, body {{ overflow-x: hidden !important; width: 100vw !important; margin: 0;
 .stApp {{ {bg_css} color: #cbd5e1; font-family: 'Inter', sans-serif; }}
 [data-testid="stHeader"], footer {{ display: none !important; }}
 
-/* ⚠️ V356: BARRA LATERAL MACIÇA E SEM ROLAGEM ⚠️ */
+/* ⚠️ V357: FIM DA "COLUNA SEPARANDO A FRENTE". BARRA LATERAL TRANSPARENTE SEM BORDA ⚠️ */
+[data-testid="stSidebar"] {{ background: transparent !important; border-right: none !important; padding-top: 0rem !important; }}
 [data-testid="stSidebar"] ::-webkit-scrollbar {{ display: none !important; }}
-[data-testid="stSidebar"] {{ -ms-overflow-style: none; scrollbar-width: none; background: rgba(15, 23, 42, 0.95) !important; border-right: 1px solid rgba(212, 175, 55, 0.2) !important; padding-top: 0rem !important; }}
+[data-testid="stSidebar"] {{ -ms-overflow-style: none; scrollbar-width: none; }}
 [data-testid="stSidebarUserContent"] {{ padding-top: 0rem !important; }}
-[data-testid="stSidebarContent"] {{ padding: 0 10px; }}
-[data-testid="block-container"] {{ padding-top: 1rem !important; padding-bottom: 0rem !important; max-width: 95% !important; }}
+[data-testid="stSidebarContent"] {{ padding: 0 15px; }}
+
+[data-testid="block-container"] {{ padding-top: 1rem !important; padding-bottom: 0rem !important; max-width: 98% !important; }}
 
 .omni-topbar {{ display: flex; justify-content: space-between; align-items: center; background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(212, 175, 55, 0.15); padding: 5px 15px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); }}
 .omni-brand {{ display: flex; align-items: center; gap: 8px; margin-top: 10px; margin-bottom: 15px; }}
 .omni-brand h1 {{ margin: 0; font-family: 'Inter', sans-serif; font-size: 1.1rem; color: #f8fafc; font-weight: 700; letter-spacing: 0.5px; }}
 
 .stTextInput label, .stDateInput label, .stNumberInput label {{ font-size: 0.60rem !important; color: #D4AF37 !important; font-weight: 700 !important; margin-bottom: 2px !important; text-transform: uppercase; }}
-.stTextInput input, .stDateInput input, .stNumberInput input, input[type="password"] {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.70rem !important; border-radius: 6px !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); padding: 4px !important; min-height: 25px !important; margin-bottom: 6px !important; }}
+.stTextInput input, .stDateInput input, .stNumberInput input, input[type="password"] {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.70rem !important; border-radius: 6px !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); padding: 4px !important; min-height: 25px !important; margin-bottom: 4px !important; }}
 
-[data-testid="stFileUploaderDropzone"] {{ padding: 2px !important; min-height: 30px !important; margin-bottom: 6px !important; border: 1px dashed rgba(212, 175, 55, 0.3) !important; background: rgba(15, 23, 42, 0.6) !important; border-radius: 6px !important; }}
+[data-testid="stFileUploaderDropzone"] {{ padding: 2px !important; min-height: 30px !important; margin-bottom: 8px !important; border: 1px dashed rgba(212, 175, 55, 0.3) !important; background: rgba(15, 23, 42, 0.6) !important; border-radius: 6px !important; }}
 [data-testid="stFileUploaderDropzone"] > div > span {{ font-size: 0.65rem !important; color: #94a3b8 !important; }}
 [data-testid="stUploadedFile"] {{ background: rgba(0,0,0,0.2) !important; border-radius: 4px; padding: 2px; margin-top: 2px; }}
 
-.stButton > button[kind="primary"] {{ background: linear-gradient(135deg, #B8860B, #D4AF37) !important; border-radius: 6px !important; font-weight: 800 !important; color: #020617 !important; text-transform: uppercase !important; letter-spacing: 1px !important; padding: 8px !important; border: none !important; width: 100% !important; transition: 0.3s; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.3); margin-top: 5px; font-size: 0.85rem !important; }}
+.stButton > button[kind="primary"] {{ background: linear-gradient(135deg, #B8860B, #D4AF37) !important; border-radius: 6px !important; font-weight: 800 !important; color: #020617 !important; text-transform: uppercase !important; letter-spacing: 1px !important; padding: 8px !important; border: none !important; width: 100% !important; transition: 0.3s; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.3); margin-top: 10px; font-size: 0.85rem !important; }}
 .stButton > button[kind="primary"]:hover {{ transform: translateY(-2px); box-shadow: 0 6px 15px rgba(212, 175, 55, 0.5); }}
 
 .stButton > button[kind="secondary"] {{ background: rgba(255,255,255,0.05) !important; color: #cbd5e1 !important; border: 1px solid rgba(255,255,255,0.15) !important; border-radius: 6px !important; font-weight: 600 !important; transition: 0.3s; padding: 6px !important; font-size: 0.65rem !important; width: 100% !important; margin-top: 5px; text-transform: uppercase; }}
@@ -556,8 +556,8 @@ if not st.session_state.logged_in:
     with col_m:
         with st.form("login_form"):
             st.markdown('<div class="login-title">AETHER KARV</div>', unsafe_allow_html=True)
-            st.markdown('<div class="login-subtitle">V356 APEX OMNIVERSAL</div>', unsafe_allow_html=True)
-            login_user = st.text_input("Utilizador", placeholder="Ex: henrique...")
+            st.markdown('<div class="login-subtitle">V357 APEX THANOS</div>', unsafe_allow_html=True)
+            login_user = st.text_input("Usuário", placeholder="Ex: henrique...")
             login_pass = st.text_input("Senha", type="password", placeholder="A sua senha secreta...")
             submit_log = st.form_submit_button("🔐 LOGIN OU CRIAR CONTA", use_container_width=True)
             
@@ -583,7 +583,7 @@ if not st.session_state.logged_in:
                 conn.close()
 
 # ==========================================
-# INTERFACE PRINCIPAL (BLOCO ÚNICO ZERO-SCROLL)
+# INTERFACE PRINCIPAL (A LÂMINA ÚNICA)
 # ==========================================
 else:
     GROQ_KEY = st.secrets.get("GROQ_API_KEY", "")
@@ -591,10 +591,9 @@ else:
     CNJ_API_KEY = st.secrets.get("CNJ_API_KEY", "DEMO_KEY")
 
     with st.sidebar:
-        st.markdown(f'<div class="omni-brand"><h1>AETHER KARV</h1><span>V356 | {st.session_state.username.upper()}</span></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="omni-brand"><h1>AETHER KARV</h1><span>V357 | {st.session_state.username.upper()}</span></div>', unsafe_allow_html=True)
 
-        # ⚠️ V356: BARRA LATERAL ACHATADA EM BLOCO ÚNICO (FIM DO EXPANDER) ⚠️
-        up = st.file_uploader("Documentos (X para apagar)", accept_multiple_files=True, label_visibility="visible")
+        up = st.file_uploader("Documentos", accept_multiple_files=True, label_visibility="collapsed")
         num_processo_input = st.text_input("DataJud", placeholder="Nº Processo/CNPJ...", label_visibility="collapsed")
         cmd = st.text_input("Comandos", placeholder="Comando Rápido...", label_visibility="collapsed")
         
@@ -616,7 +615,10 @@ else:
                 
                 progress_bar.progress(40, text="Processando Lógica Cognitiva...")
                 
-                resposta, motor_usado = orquestrador_omni(cmd, texto_arquivos, num_processo_input, valor_hora, data_intimacao, GROQ_KEY, GEMINI_KEY, CNJ_API_KEY)
+                try:
+                    resposta, motor_usado = orquestrador_omni(cmd, texto_arquivos, num_processo_input, valor_hora, data_intimacao, GROQ_KEY, GEMINI_KEY, CNJ_API_KEY)
+                except Exception as e:
+                    resposta, motor_usado = f"Erro no motor cognitivo: {str(e)}", "FALHA"
                 
                 progress_bar.progress(75, text="Juiz Revisor a emitir Documento para a Nuvem...")
                 titulo_doc = up[0].name if up else (cmd[:30] + "..." if cmd else f"Proc: {num_processo_input}")
@@ -632,11 +634,10 @@ else:
                 st.session_state.res_aether = resposta
                 st.session_state.res_docx = docx_buffer.getvalue()
                 st.session_state.res_pdf = pdf_data
-                st.session_state.chat_history = [] # Reset limpo do chat
+                st.session_state.chat_history = [] 
                 st.session_state.telemetria = {"arquivos": str(num_arquivos), "volume": f"{len(texto_arquivos)/1024:.1f} KB", "tempo": get_data_hora_br().split("às ")[1], "risco": "Nuvem Sincronizada", "ocr": "Online" if usou_ocr else "Standby", "motor": motor_usado}
                 st.rerun()
 
-        # ⚠️ V356: REMOVIDO BOTÃO "LIMPAR" DE ACORDO COM PRINT 3. APENAS LOGOUT. ⚠️
         if st.button("🚪 SAIR", type="secondary", use_container_width=True):
             st.session_state.logged_in = False
             st.session_state.username = ""
@@ -673,7 +674,7 @@ else:
             st.markdown(st.session_state.res_aether)
             st.markdown('</div>', unsafe_allow_html=True)
         else:
-            st.markdown('<div class="standby-container"><div class="welcome-title" style="font-size: 1.2rem;">Workspace Thanos Online.</div><div class="welcome-subtitle" style="font-size: 0.8rem;">O sistema Audita, Redige Kits Documentais e interage no Omni-Chat.</div></div>', unsafe_allow_html=True)
+            st.markdown('<div class="standby-container"><div class="welcome-title" style="font-size: 1.2rem;">Workspace Thanos Online.</div><div class="welcome-subtitle" style="font-size: 0.8rem;">Tela unificada. A barra lateral agora é invisível.</div></div>', unsafe_allow_html=True)
             
     with tab2:
         if st.session_state.res_aether:
@@ -697,7 +698,7 @@ else:
                     else: st.warning("Insira o número.")
 
             st.markdown("<br>", unsafe_allow_html=True)
-            if st.button("⟳ Limpar Ecrã Central", use_container_width=True):
+            if st.button("⟳ Limpar Tela Central", use_container_width=True):
                 st.session_state.res_aether = None
                 st.session_state.chat_history = []
                 st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--", "risco": "Aguardando", "ocr": "Inativo", "motor": "Standby"}
@@ -716,25 +717,31 @@ else:
                     st.markdown(conteudo)
                     st.markdown(gerar_botao_secundario(conteudo.encode('utf-8'), f"Backup_{idx}.txt", "Baixar TXT", "application/octet-stream"), unsafe_allow_html=True)
                     
-    # ⚠️ V356: OMNI-CHAT PROTEGIDO CONTRA KEYERROR 'ROLE' ⚠️
+    # ⚠️ V357: OMNI-CHAT COM BLINDAGEM DE MEMÓRIA CONTRA KEYERROR ⚠️
     with tab5:
         if not st.session_state.res_aether:
             st.info("Gere um Dossiê primeiro para poder conversar com a IA sobre o documento.")
         else:
             st.write("💬 **Aether Omni-Chat:** Interrogue a máquina sobre o Dossiê atual.")
             
-            for msg in st.session_state.chat_history:
-                if isinstance(msg, dict) and "role" in msg and "content" in msg:
-                    with st.chat_message(msg["role"]): st.markdown(msg["content"])
+            try:
+                for msg in st.session_state.chat_history:
+                    if isinstance(msg, dict) and "role" in msg and "content" in msg:
+                        with st.chat_message(msg["role"]): st.markdown(msg["content"])
+            except Exception:
+                st.session_state.chat_history = [] # Limpa se houver corrupção de estado
                 
-            if prompt := st.chat_input("Ex: 'Aether, reescreva a cláusula 2 de forma mais agressiva...'"):
+            if prompt := st.chat_input("Ex: 'Aether, crie uma resposta para este email...'"):
                 st.session_state.chat_history.append({"role": "user", "content": prompt})
                 with st.chat_message("user"): st.markdown(prompt)
                 
                 with st.chat_message("assistant"):
                     with st.spinner("A processar a sua ordem..."):
-                        contexto_chat = f"DOSSIÊ GERADO ANTERIORMENTE:\n{st.session_state.res_aether}"
-                        sys_chat = "Você é o assistente Omni-Chat de um advogado. Responda de forma agressiva, técnica e baseada nas leis brasileiras."
-                        resposta_chat, _ = chamar_agente_hydra("OMNI-CHAT", sys_chat, prompt, contexto_chat, GROQ_KEY, GEMINI_KEY)
-                        st.markdown(resposta_chat)
-                        st.session_state.chat_history.append({"role": "assistant", "content": resposta_chat})
+                        try:
+                            contexto_chat = f"DOSSIÊ GERADO ANTERIORMENTE:\n{st.session_state.res_aether}"
+                            sys_chat = "Você é o assistente Omni-Chat de um advogado. Responda de forma agressiva, técnica e baseada nas leis aplicáveis."
+                            resposta_chat, _ = chamar_agente_hydra("OMNI-CHAT", sys_chat, prompt, contexto_chat, GROQ_KEY, GEMINI_KEY)
+                            st.markdown(resposta_chat)
+                            st.session_state.chat_history.append({"role": "assistant", "content": resposta_chat})
+                        except Exception as e:
+                            st.error("Erro ao processar o chat. O sistema blindou a falha.")
