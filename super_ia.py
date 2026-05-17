@@ -1,7 +1,7 @@
 import streamlit as st
 
-# ⚠️ V342 APEX: SEQUÊNCIA DE IGNIÇÃO BLINDADA ⚠️
-st.set_page_config(page_title="AETHER KARV V342 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
+# ⚠️ V343 APEX: SEQUÊNCIA DE IGNIÇÃO BLINDADA ⚠️
+st.set_page_config(page_title="AETHER KARV V343 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
 
 import pandas as pd
 import os, time, base64, io, re
@@ -112,7 +112,7 @@ def gerar_botao_secundario(buffer, filename, label, mime):
     out_css = "this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='rgba(255,255,255,0.15)'; this.style.color='#cbd5e1';"
     return f'<a href="data:{mime};base64,{b64}" download="{filename}" style="{css}" onmouseover="{hover_css}" onmouseout="{out_css}">{label}</a>'
 
-# ⚠️ V342 APEX: CHRONOS ENGINE AJUSTÁVEL ⚠️
+# ⚠️ CHRONOS ENGINE AJUSTÁVEL ⚠️
 def calcular_prazo_cpc(dias_uteis, data_inicial):
     data_atual = datetime(data_inicial.year, data_inicial.month, data_inicial.day)
     dias_adicionados = 0
@@ -313,7 +313,6 @@ def orquestrador_omni(comando, contexto_arquivos, num_processo_cnj, agente_foco,
     dossie_final, m3 = chamar_agente_hydra("AETHER OMNI", agente_3_sys, "Crie o Dossiê Final. Use Tabela Markdown com barras verticais (|).", contexto_sintese, groq_k, gemini_k)
     motores_usados.add(m3)
     
-    # Injeção Automática de Prazos baseada na entrada dinâmica
     data_inicio_str = data_intimacao.strftime('%d/%m/%Y')
     prazo_fatal_str = calcular_prazo_cpc(15, data_intimacao)
     bloco_prazos = f"""
@@ -327,7 +326,6 @@ def orquestrador_omni(comando, contexto_arquivos, num_processo_cnj, agente_foco,
 """
     dossie_final += bloco_prazos
 
-    # Fatura Automática baseada no valor estipulado para o caso
     bloco_fatura = f"""
 ---
 ### Fatura Pro-Forma (Timesheet Audit)
@@ -412,6 +410,9 @@ def gerar_docx_aether(texto_markdown, data_intimacao):
     buffer.seek(0)
     return buffer
 
+def sanitize_for_pdf(texto):
+    return unicodedata.normalize('NFKD', texto).encode('ascii', 'ignore').decode('ascii')
+
 def gerar_pdf_aether(texto_markdown, data_intimacao):
     try:
         pdf = FPDF()
@@ -448,7 +449,7 @@ def gerar_pdf_aether(texto_markdown, data_intimacao):
             elif ('Nivel de Risco' in linha_filtrada or 'Tribunal' in linha_filtrada or 'Polo Ativo' in linha_filtrada) and (',' in linha_filtrada or '\t' in linha_filtrada):
                 linha_limpa_csv = linha_filtrada.replace('"', '')
                 sep = '\t' if '\t' in linha_limpa_csv else ','
-                cols = [c.strip() for c in App.split(sep)]
+                cols = [c.strip() for c in linha_limpa_csv.split(sep)]
                 if len(cols) >= 3: is_table_line = True
                 
             if is_table_line:
@@ -499,11 +500,12 @@ def gerar_pdf_aether(texto_markdown, data_intimacao):
         emergencia = FPDF()
         emergencia.add_page()
         emergencia.set_font("helvetica", size=10)
-        emergencia.cell(0, 6, txt="ERRO PDF: Modo Grafico Falhou. Utilize exportacao DOCX.", ln=1)
+        emergencia.cell(0, 6, txt="ERRO PDF: Utilize exportacao DOCX.", ln=1)
+        emergencia.cell(0, 6, txt=f"Log: {str(e)[:50]}", ln=1)
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V342 (UI COMPACTA)
+# 🎨 CSS APEX V343 (UI COMPACTA & CORRIGIDA)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -546,7 +548,7 @@ st.markdown(css_code, unsafe_allow_html=True)
 if not st.session_state.logged_in:
     st.markdown('<div class="login-box">', unsafe_allow_html=True)
     st.markdown('<div class="login-title">AETHER KARV</div>', unsafe_allow_html=True)
-    st.markdown('<div class="login-subtitle">ENTERPRISE EDITION V342</div>', unsafe_allow_html=True)
+    st.markdown('<div class="login-subtitle">ENTERPRISE EDITION V343</div>', unsafe_allow_html=True)
     
     login_user = st.text_input("Usuário", placeholder="Ex: henrique...")
     login_pass = st.text_input("Senha", type="password", placeholder="Sua senha secreta...")
@@ -565,7 +567,7 @@ if not st.session_state.logged_in:
                 st.toast(f"Bem-vindo, {login_user.upper()}!", icon="✅")
                 time.sleep(0.5)
                 st.rerun()
-            else: st.error("Credenciales Inválidas.")
+            else: st.error("Credenciais Inválidas.")
     with col2:
         if st.button("📝 CRIAR CONTA", type="secondary", use_container_width=True):
             if login_user and login_pass:
@@ -579,17 +581,16 @@ else:
     CNJ_API_KEY = st.secrets.get("CNJ_API_KEY", "DEMO_KEY")
 
     with st.sidebar:
-        st.markdown(f'<div class="omni-brand" style="margin-bottom: 15px;"><h1>AETHER KARV</h1><span>V342 CHRONOS | {st.session_state.username.upper()}</span></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="omni-brand" style="margin-bottom: 15px;"><h1>AETHER KARV</h1><span>V343 APEX | {st.session_state.username.upper()}</span></div>', unsafe_allow_html=True)
 
         with st.expander("📁 Base de Conhecimento", expanded=True):
             up = st.file_uploader("Documentos base...", accept_multiple_files=True, label_visibility="collapsed")
             num_processo_input = st.text_input("Nº do Processo / CNPJ", placeholder="Extração DataJud (Ex: 0001234-56...)")
             cmd = st.text_area("", key="cmd_input", placeholder="Instruções ou cole o texto aqui...", label_visibility="collapsed")
 
-        # ⚠️ PARAMETRIZAÇÃO ADAPTATIVA REINVENTADA EM MÓDULO EXPANSÍVEL ⚠️
         with st.expander("⚙️ Parâmetros do Caso", expanded=False):
-            data_intimacao = st.date_input("Data Real da Intimação/Citação", value=date.today(), help="Defina a data em que o prazo realmente começou a fluir para sanar atrasos do cliente.")
-            valor_hora = st.number_input("Sua Hora Técnica para este Caso (R$)", min_value=50.0, max_value=5000.0, value=350.0, step=50.0, help="Ajuste o valor dos honorários com base na complexidade desta pasta específica.")
+            data_intimacao = st.date_input("Data da Intimação/Citação", value=date.today())
+            valor_hora = st.number_input("Sua Hora Técnica (R$)", min_value=50.0, max_value=5000.0, value=350.0, step=50.0)
             agente_foco = st.selectbox("Especialidade do Córtex", ["Análise de Contratos", "Due Diligence Societária", "Compliance e Risco", "Auditoria Trabalhista", "Direito Público"])
             ativar_redlining = st.checkbox("Ativar Redlining (Reescrita Ativa)", value=True)
 
@@ -659,7 +660,7 @@ else:
         else:
             st.markdown('<div class="standby-container"><div class="welcome-title">Workspace Online.</div></div>', unsafe_allow_html=True)
             
-    with tab tab2:
+    with tab2: # ⚠️ V343: Bug do "with tab tab2:" corrigido.
         if st.session_state.res_aether:
             st.write("Bypass de Extensão Ativo:")
             c1, c2 = st.columns(2)
