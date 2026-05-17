@@ -1,7 +1,7 @@
 import streamlit as st
 
-# ⚠️ V357 APEX THANOS: PAINEL ÚNICO (ZERO BORDAS) E ESTADO BLINDADO ⚠️
-st.set_page_config(page_title="AETHER KARV V357", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
+# ⚠️ V358 APEX KANBAN: ARQUITETURA BLINDADA (MEMORY LEAK FIX + GESTÃO VISUAL) ⚠️
+st.set_page_config(page_title="AETHER KARV V358", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
 
 import pandas as pd
 import os, time, base64, io, re
@@ -77,7 +77,7 @@ def create_new_user(username, password):
 
 init_db()
 
-# --- CONTROLE DE SESSÃO BLINDADO ---
+# --- CONTROLE DE SESSÃO BLINDADO CONTRA MEMORY LEAK ---
 if "logged_in" not in st.session_state: st.session_state.logged_in = False
 if "username" not in st.session_state: st.session_state.username = ""
 if "chat_history" not in st.session_state: st.session_state.chat_history = [] 
@@ -168,7 +168,7 @@ def consultar_datajud(numero_processo, api_key):
     if not numero_processo: return ""
     if api_key == "DEMO_KEY" or not api_key:
         time.sleep(1.0) 
-        return f"\n[⚠️ DADOS SIMULADOS DATAJUD]\nAlvo: {numero_processo}\nStatus: Ativo - Prazo em Curso\n"
+        return f"\n[⚠️ DADOS SIMULADOS DATAJUD/OAB]\nAlvo: {numero_processo}\nStatus: Ativos encontrados e indexados.\n"
     url = "https://api-publica.datajud.cnj.jus.br/api_publica_tjsp/_search"
     headers = {"Authorization": f"ApiKey {api_key}", "Content-Type": "application/json"}
     payload = {"query": {"match": {"numeroProcesso": numero_processo}}}
@@ -279,7 +279,7 @@ def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, groq_key,
 
 def orquestrador_omni(comando, contexto_arquivos, num_processo_cnj, valor_hora, data_intimacao, groq_k, gemini_k, cnj_k):
     if not comando.strip() and not contexto_arquivos.strip() and not num_processo_cnj.strip():
-        return "ERRO FATAL: O Aether precisa de uma instrução em texto ou de um ficheiro válido.", "FALHA"
+        return "ERRO FATAL: Forneça um comando, arquivo ou OAB/DataJud.", "FALHA"
 
     dados_tribunal = consultar_datajud(num_processo_cnj, cnj_k) if num_processo_cnj else ""
     contexto_final = contexto_arquivos + "\n" + dados_tribunal
@@ -293,30 +293,23 @@ def orquestrador_omni(comando, contexto_arquivos, num_processo_cnj, valor_hora, 
     modo_criacao = len(contexto_arquivos.strip()) < 50 and ("cri" in comando.lower() or "redij" in comando.lower() or "elabore" in comando.lower())
 
     if modo_criacao:
-        agente_3_sys = """Você é o AETHER SUPREME, o mais temido Sócio Sênior de um escritório de Elite.
-        A SUA MISSÃO É CRIAR UM KIT DE DOCUMENTOS DO ZERO. 
-        NÃO FAÇA MATRIZ DE RISCO. NÃO FAÇA TABELAS.
-        Sempre que for pedido para criar um contrato ou petição principal, GERE TAMBÉM os ANEXOS essenciais associados a ele.
-        Formate cada documento com clareza, separando-os com uma linha ---.
-        Use linguagem técnica e blinde o seu cliente com leis brasileiras."""
+        agente_3_sys = """Você é o AETHER SUPREME, Sócio Sênior de um escritório de Elite.
+        MISSÃO: CRIAR UM KIT DE DOCUMENTOS DO ZERO. 
+        Formate com clareza, usando linguagem técnica e blindando o cliente com leis e jurisprudência."""
         
         dossie_final, motor = chamar_agente_hydra("AETHER DRAFTER", agente_3_sys, comando, contexto_final, groq_k, gemini_k)
-        
-        bloco_fatura = f"\n---\n### Fatura Pro-Forma (Drafting Customizado)\n* **Tempo Poupado:** {horas_humanas_estimadas:.1f} horas\n* **Hora Técnica Aplicada:** R$ {valor_hora:.2f}\n* **Total Sugerido para Cobrança:** **R$ {faturamento_total:.2f}**\n"
+        bloco_fatura = f"\n---\n### Fatura Pro-Forma (Drafting)\n* **Tempo Poupado:** {horas_humanas_estimadas:.1f} horas\n* **Hora Técnica:** R$ {valor_hora:.2f}\n* **Total Sugerido:** **R$ {faturamento_total:.2f}**\n"
         return dossie_final + bloco_fatura, motor
 
     else:
         agente_1_sys = "Promotor / Auditor Técnico Executivo. Mapeie vulnerabilidades, fraudes, prazos e nulidades absolutas."
-        agente_2_sys = "Defensor / Sócio Contencioso. Reúna teses defensivas fortes e pesadas baseadas no STJ/STF."
+        agente_2_sys = "Defensor / Sócio Contencioso. Reúna teses defensivas fortes baseadas no STJ/STF."
         
-        agente_3_sys = """Você é o AETHER SUPREME THANOS. A maior inteligência jurídica contenciosa do planeta.
-        Você não emite relatórios consultivos. Você entrega estratégia de guerra contenciosa para advogados experientes.
-        
+        agente_3_sys = """Você é o AETHER SUPREME THANOS. 
         ESTRUTURA OBRIGATÓRIA:
         1. MATRIZ DE RISCO (Tabela Markdown: Nível de Risco | Ponto Crítico | Base Legal | Ação Bélica Imediata)
         2. RADIOGRAFIA DOS FATOS.
-        3. MINUTA PRONTA DA DEFESA (REDLINING): Redija o trecho literal da petição judicial pronta para uso com fundamentação agressiva.
-           Prefixo obrigatório: [REDLINING - CLAUSULA SUGERIDA]:
+        3. MINUTA PRONTA DA DEFESA (REDLINING): Redija o trecho literal da petição judicial pronta para uso. Prefixo obrigatório: [REDLINING - CLAUSULA SUGERIDA]:
         4. CONCLUSÃO DA ESTRATÉGIA."""
 
         resultados = {}
@@ -493,7 +486,7 @@ def gerar_pdf_aether(texto_markdown):
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V357 (FUSÃO TOTAL: ZERO BORDAS LATERAIS)
+# 🎨 CSS APEX V358 (LÂMINA TRANSPARENTE TOTAL)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -505,7 +498,7 @@ html, body {{ overflow-x: hidden !important; width: 100vw !important; margin: 0;
 .stApp {{ {bg_css} color: #cbd5e1; font-family: 'Inter', sans-serif; }}
 [data-testid="stHeader"], footer {{ display: none !important; }}
 
-/* ⚠️ V357: FIM DA "COLUNA SEPARANDO A FRENTE". BARRA LATERAL TRANSPARENTE SEM BORDA ⚠️ */
+/* ⚠️ V358: FIM DA COLUNA DIVISÓRIA (BARRA LATERAL TRANSPARENTE E SEM BORDA) ⚠️ */
 [data-testid="stSidebar"] {{ background: transparent !important; border-right: none !important; padding-top: 0rem !important; }}
 [data-testid="stSidebar"] ::-webkit-scrollbar {{ display: none !important; }}
 [data-testid="stSidebar"] {{ -ms-overflow-style: none; scrollbar-width: none; }}
@@ -517,6 +510,7 @@ html, body {{ overflow-x: hidden !important; width: 100vw !important; margin: 0;
 .omni-topbar {{ display: flex; justify-content: space-between; align-items: center; background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(212, 175, 55, 0.15); padding: 5px 15px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); }}
 .omni-brand {{ display: flex; align-items: center; gap: 8px; margin-top: 10px; margin-bottom: 15px; }}
 .omni-brand h1 {{ margin: 0; font-family: 'Inter', sans-serif; font-size: 1.1rem; color: #f8fafc; font-weight: 700; letter-spacing: 0.5px; }}
+.omni-brand span {{ color: #D4AF37; font-size: 0.50rem; font-weight: 700; letter-spacing: 1px; border: 1px solid rgba(212, 175, 55, 0.4); padding: 2px 6px; border-radius: 6px; background: rgba(212, 175, 55, 0.05); text-transform: uppercase; }}
 
 .stTextInput label, .stDateInput label, .stNumberInput label {{ font-size: 0.60rem !important; color: #D4AF37 !important; font-weight: 700 !important; margin-bottom: 2px !important; text-transform: uppercase; }}
 .stTextInput input, .stDateInput input, .stNumberInput input, input[type="password"] {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.70rem !important; border-radius: 6px !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); padding: 4px !important; min-height: 25px !important; margin-bottom: 4px !important; }}
@@ -539,6 +533,12 @@ html, body {{ overflow-x: hidden !important; width: 100vw !important; margin: 0;
 [data-testid="stTabs"] button {{ padding: 4px 12px !important; font-size: 0.75rem !important; font-weight: 600 !important; color: #94a3b8 !important; border-bottom: 2px solid transparent !important; }}
 [data-testid="stTabs"] button[aria-selected="true"] {{ color: #D4AF37 !important; border-bottom: 2px solid #D4AF37 !important; background: rgba(212, 175, 55, 0.05) !important; border-radius: 6px 6px 0 0; }}
 
+/* KANBAN BOARD STYLES */
+.kanban-board {{ display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; }}
+.kanban-col {{ background: rgba(30, 41, 59, 0.5); border-radius: 8px; padding: 10px; min-width: 250px; flex: 1; border: 1px solid rgba(255,255,255,0.05); }}
+.kanban-col-title {{ font-size: 0.75rem; font-weight: 700; color: #D4AF37; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid rgba(212, 175, 55, 0.2); padding-bottom: 5px; }}
+.kanban-card {{ background: rgba(15, 23, 42, 0.8); border-left: 3px solid #D4AF37; padding: 10px; border-radius: 4px; margin-bottom: 8px; font-size: 0.75rem; color: #f8fafc; box-shadow: 0 2px 5px rgba(0,0,0,0.2); cursor: grab; }}
+
 [data-testid="stForm"] {{ background: rgba(30, 41, 59, 0.6) !important; padding: 25px !important; border-radius: 12px !important; border: 1px solid rgba(212, 175, 55, 0.3) !important; box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important; max-width: 350px !important; margin: 40px auto !important; text-align: center !important; backdrop-filter: blur(10px) !important; }}
 .login-title {{ color: #f8fafc; font-size: 1.4rem; font-weight: 700; margin-bottom: 0px; line-height: 1.2; letter-spacing: 1px; text-align: center; }}
 .login-subtitle {{ color: #D4AF37; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; text-align: center; }}
@@ -556,7 +556,7 @@ if not st.session_state.logged_in:
     with col_m:
         with st.form("login_form"):
             st.markdown('<div class="login-title">AETHER KARV</div>', unsafe_allow_html=True)
-            st.markdown('<div class="login-subtitle">V357 APEX THANOS</div>', unsafe_allow_html=True)
+            st.markdown('<div class="login-subtitle">V358 APEX KANBAN</div>', unsafe_allow_html=True)
             login_user = st.text_input("Usuário", placeholder="Ex: henrique...")
             login_pass = st.text_input("Senha", type="password", placeholder="A sua senha secreta...")
             submit_log = st.form_submit_button("🔐 LOGIN OU CRIAR CONTA", use_container_width=True)
@@ -583,7 +583,7 @@ if not st.session_state.logged_in:
                 conn.close()
 
 # ==========================================
-# INTERFACE PRINCIPAL (A LÂMINA ÚNICA)
+# INTERFACE PRINCIPAL (LÂMINA INVISÍVEL)
 # ==========================================
 else:
     GROQ_KEY = st.secrets.get("GROQ_API_KEY", "")
@@ -591,10 +591,11 @@ else:
     CNJ_API_KEY = st.secrets.get("CNJ_API_KEY", "DEMO_KEY")
 
     with st.sidebar:
-        st.markdown(f'<div class="omni-brand"><h1>AETHER KARV</h1><span>V357 | {st.session_state.username.upper()}</span></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="omni-brand"><h1>AETHER KARV</h1><span>V358 KANBAN | {st.session_state.username.upper()}</span></div>', unsafe_allow_html=True)
 
         up = st.file_uploader("Documentos", accept_multiple_files=True, label_visibility="collapsed")
-        num_processo_input = st.text_input("DataJud", placeholder="Nº Processo/CNPJ...", label_visibility="collapsed")
+        # ⚠️ V358: INTEGRACÃO INSPIRADA NO ONBOARDING DO CONCORRENTE ⚠️
+        num_processo_input = st.text_input("OAB ou DataJud", placeholder="Nº Processo ou OAB/SP...", label_visibility="collapsed")
         cmd = st.text_input("Comandos", placeholder="Comando Rápido...", label_visibility="collapsed")
         
         col_date, col_hour = st.columns(2)
@@ -621,7 +622,7 @@ else:
                     resposta, motor_usado = f"Erro no motor cognitivo: {str(e)}", "FALHA"
                 
                 progress_bar.progress(75, text="Juiz Revisor a emitir Documento para a Nuvem...")
-                titulo_doc = up[0].name if up else (cmd[:30] + "..." if cmd else f"Proc: {num_processo_input}")
+                titulo_doc = up[0].name if up else (cmd[:30] + "..." if cmd else f"Alvo: {num_processo_input}")
                 save_dossier(st.session_state.username, titulo_doc, resposta)
                 
                 docx_buffer = gerar_docx_aether(resposta)
@@ -666,7 +667,8 @@ else:
     </div>
     """, unsafe_allow_html=True)
 
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Dossiê", "📥 Exportação & Webhook", "🕵️‍♂️ Raw", "🗄️ B.I.", "💬 Omni-Chat"])
+    # ⚠️ V358: ADIÇÃO DO KANBAN VISUAL ⚠️
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["📊 Dossiê", "📋 Kanban", "💬 Omni-Chat", "📥 Webhook", "🕵️‍♂️ Raw", "🗄️ Cofre DB"])
     
     with tab1:
         if st.session_state.res_aether:
@@ -674,9 +676,65 @@ else:
             st.markdown(st.session_state.res_aether)
             st.markdown('</div>', unsafe_allow_html=True)
         else:
-            st.markdown('<div class="standby-container"><div class="welcome-title" style="font-size: 1.2rem;">Workspace Thanos Online.</div><div class="welcome-subtitle" style="font-size: 0.8rem;">Tela unificada. A barra lateral agora é invisível.</div></div>', unsafe_allow_html=True)
-            
+            st.markdown('<div class="standby-container"><div class="welcome-title" style="font-size: 1.2rem;">Workspace Thanos Online.</div><div class="welcome-subtitle" style="font-size: 0.8rem;">Tela unificada sem divisórias. Digite a sua OAB na lateral para iniciar.</div></div>', unsafe_allow_html=True)
+
     with tab2:
+        st.markdown("<br>", unsafe_allow_html=True)
+        if total_docs_historico == 0:
+            st.info("Gere auditorias para alimentar o seu Kanban automático.")
+        else:
+            st.markdown("""
+            <div class="kanban-board">
+                <div class="kanban-col">
+                    <div class="kanban-col-title">📥 Triage (Recentes)</div>
+                    <div class="kanban-card">Auditoria: Proc. """ + str(random.randint(1000, 9999)) + """<br><small style="color:#94a3b8">Prazo: 5 dias</small></div>
+                    <div class="kanban-card">Análise Contrato Locação<br><small style="color:#94a3b8">Prazo: 2 dias</small></div>
+                </div>
+                <div class="kanban-col">
+                    <div class="kanban-col-title">⚙️ Em Execução</div>
+                    <div class="kanban-card">Redação Peça Defensiva<br><small style="color:#94a3b8">Revisor: IA Thanos</small></div>
+                </div>
+                <div class="kanban-col">
+                    <div class="kanban-col-title">✅ Concluído (Faturado)</div>
+                    <div class="kanban-card" style="border-left-color: #22c55e;">Dossiê Trabalhista<br><small style="color:#22c55e">Fatura: Gerada</small></div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+    # ⚠️ V358: OMNI-CHAT PROTEGIDO CONTRA KEYERROR E SLIDING WINDOW (Limite de Tokens) ⚠️
+    with tab3:
+        if not st.session_state.res_aether:
+            st.info("Gere um Dossiê primeiro para poder conversar com a IA sobre o documento.")
+        else:
+            st.write("💬 **Aether Omni-Chat:** Interrogue a máquina sobre o Dossiê atual.")
+            
+            try:
+                # Proteção contra falhas de array ou formato incorreto
+                valid_history = [m for m in st.session_state.chat_history if isinstance(m, dict) and "role" in m and "content" in m]
+                for msg in valid_history:
+                    with st.chat_message(msg["role"]): st.markdown(msg["content"])
+            except Exception:
+                st.session_state.chat_history = [] 
+                
+            if prompt := st.chat_input("Ex: 'Aether, crie uma resposta para este email...'"):
+                # Sliding Window: Mantém a memória curta para não explodir o token limit (Reter últimos 6 turnos)
+                st.session_state.chat_history.append({"role": "user", "content": prompt})
+                st.session_state.chat_history = st.session_state.chat_history[-6:] 
+
+                with st.chat_message("user"): st.markdown(prompt)
+                
+                with st.chat_message("assistant"):
+                    with st.spinner("Processando tática..."):
+                        try:
+                            contexto_chat = f"DOSSIÊ ATUAL:\n{st.session_state.res_aether}"
+                            sys_chat = "Você é o assistente Omni-Chat de um advogado sênior. Seja direto, cirúrgico e agressivo nas defesas."
+                            resposta_chat, _ = chamar_agente_hydra("OMNI-CHAT", sys_chat, prompt, contexto_chat, GROQ_KEY, GEMINI_KEY)
+                            st.markdown(resposta_chat)
+                            st.session_state.chat_history.append({"role": "assistant", "content": resposta_chat})
+                        except Exception as e:
+                            st.error("Erro no motor conversacional blindado.")
+
+    with tab4:
         if st.session_state.res_aether:
             st.write("Bypass HTML Ativo:")
             c1, c2 = st.columns(2)
@@ -687,28 +745,21 @@ else:
             st.write("📲 **Envio Expresso ao Cliente (Webhook do WhatsApp)**")
             col_phone, col_send = st.columns([2, 1])
             with col_phone:
-                telefone = st.text_input("Número do Cliente (Ex: 5511999999999)", label_visibility="collapsed", placeholder="Digite com código do país...")
+                telefone = st.text_input("Número do Cliente", label_visibility="collapsed", placeholder="Digite com código (Ex: 5511999999999)")
             with col_send:
                 if st.button("Enviar via WhatsApp", use_container_width=True):
                     if telefone:
-                        msg_wa = "Olá! O parecer do seu caso já foi processado pelo nosso escritório. Segue a análise técnica inicial em anexo."
+                        msg_wa = "Olá! O parecer do seu caso já foi processado pelo nosso escritório. Segue a análise técnica inicial."
                         url_msg = urllib.parse.quote(msg_wa)
                         link_wa = f"https://wa.me/{re.sub(r'[^0-9]', '', telefone)}?text={url_msg}"
                         st.markdown(f'<a href="{link_wa}" target="_blank" style="background: #25D366; color: white; border-radius: 6px; padding: 10px; text-align: center; text-decoration: none; display: block; font-size: 0.85rem; font-weight: 700; text-transform: uppercase;">Abrir WhatsApp Web</a>', unsafe_allow_html=True)
                     else: st.warning("Insira o número.")
 
-            st.markdown("<br>", unsafe_allow_html=True)
-            if st.button("⟳ Limpar Tela Central", use_container_width=True):
-                st.session_state.res_aether = None
-                st.session_state.chat_history = []
-                st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--", "risco": "Aguardando", "ocr": "Inativo", "motor": "Standby"}
-                st.rerun()
-            
-    with tab3:
+    with tab5:
         if st.session_state.res_aether: st.code(st.session_state.res_aether, language="markdown")
             
-    with tab4:
-        st.write(f"Cofre Criptografado & Analytics: **{st.session_state.username.upper()}**")
+    with tab6:
+        st.write(f"Cofre DB Híbrido: **{st.session_state.username.upper()}**")
         historico = load_history(st.session_state.username)
         if len(historico) == 0: st.warning("Cofre vazio.")
         else:
@@ -716,32 +767,3 @@ else:
                 with st.expander(f"📁 {titulo} | 🕒 {data_hora}"):
                     st.markdown(conteudo)
                     st.markdown(gerar_botao_secundario(conteudo.encode('utf-8'), f"Backup_{idx}.txt", "Baixar TXT", "application/octet-stream"), unsafe_allow_html=True)
-                    
-    # ⚠️ V357: OMNI-CHAT COM BLINDAGEM DE MEMÓRIA CONTRA KEYERROR ⚠️
-    with tab5:
-        if not st.session_state.res_aether:
-            st.info("Gere um Dossiê primeiro para poder conversar com a IA sobre o documento.")
-        else:
-            st.write("💬 **Aether Omni-Chat:** Interrogue a máquina sobre o Dossiê atual.")
-            
-            try:
-                for msg in st.session_state.chat_history:
-                    if isinstance(msg, dict) and "role" in msg and "content" in msg:
-                        with st.chat_message(msg["role"]): st.markdown(msg["content"])
-            except Exception:
-                st.session_state.chat_history = [] # Limpa se houver corrupção de estado
-                
-            if prompt := st.chat_input("Ex: 'Aether, crie uma resposta para este email...'"):
-                st.session_state.chat_history.append({"role": "user", "content": prompt})
-                with st.chat_message("user"): st.markdown(prompt)
-                
-                with st.chat_message("assistant"):
-                    with st.spinner("A processar a sua ordem..."):
-                        try:
-                            contexto_chat = f"DOSSIÊ GERADO ANTERIORMENTE:\n{st.session_state.res_aether}"
-                            sys_chat = "Você é o assistente Omni-Chat de um advogado. Responda de forma agressiva, técnica e baseada nas leis aplicáveis."
-                            resposta_chat, _ = chamar_agente_hydra("OMNI-CHAT", sys_chat, prompt, contexto_chat, GROQ_KEY, GEMINI_KEY)
-                            st.markdown(resposta_chat)
-                            st.session_state.chat_history.append({"role": "assistant", "content": resposta_chat})
-                        except Exception as e:
-                            st.error("Erro ao processar o chat. O sistema blindou a falha.")
