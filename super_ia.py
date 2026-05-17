@@ -1,7 +1,7 @@
 import streamlit as st
 
-# ⚠️ V337 APEX: SEQUÊNCIA DE IGNIÇÃO BLINDADA ⚠️
-st.set_page_config(page_title="AETHER KARV V337 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
+# ⚠️ V338 APEX: SEQUÊNCIA DE IGNIÇÃO BLINDADA ⚠️
+st.set_page_config(page_title="AETHER KARV V338 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
 
 import pandas as pd
 import os, time, base64, io, re
@@ -15,14 +15,13 @@ from datetime import datetime, timedelta
 from PIL import Image
 
 # ==========================================
-# 🗄️ MÓDULO ENTERPRISE DE BANCO DE DADOS (V337)
+# 🗄️ MÓDULO ENTERPRISE DE BANCO DE DADOS
 # ==========================================
 def init_db():
     conn = sqlite3.connect('aether_fortknox.db')
     c = conn.cursor()
     c.execute('CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY, password TEXT)')
     c.execute('CREATE TABLE IF NOT EXISTS history (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, data_hora TEXT, titulo TEXT, conteudo TEXT)')
-    c.execute('CREATE TABLE IF NOT EXISTS api_keys (username TEXT PRIMARY KEY, groq_key TEXT, gemini_key TEXT, cnj_key TEXT)')
     c.execute("INSERT OR IGNORE INTO users (username, password) VALUES ('admin', 'admin123')")
     conn.commit()
     conn.close()
@@ -41,21 +40,6 @@ def load_history(username):
     data = c.fetchall()
     conn.close()
     return data
-
-def get_api_keys(username):
-    conn = sqlite3.connect('aether_fortknox.db')
-    c = conn.cursor()
-    c.execute("SELECT groq_key, gemini_key, cnj_key FROM api_keys WHERE username = ?", (username,))
-    keys = c.fetchone()
-    conn.close()
-    return keys
-
-def save_api_keys(username, groq, gemini, cnj):
-    conn = sqlite3.connect('aether_fortknox.db')
-    c = conn.cursor()
-    c.execute("INSERT OR REPLACE INTO api_keys (username, groq_key, gemini_key, cnj_key) VALUES (?, ?, ?, ?)", (username, groq, gemini, cnj))
-    conn.commit()
-    conn.close()
 
 def create_new_user(username, password):
     conn = sqlite3.connect('aether_fortknox.db')
@@ -252,13 +236,9 @@ def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, groq_key,
         except Exception as e:
             return f"[{nome_agente}] Hydra Engine Falhou: {str(e)}", "OFFLINE"
 
-    return f"[{nome_agente}] Erro Crítico: Sem chaves API configuradas no Perfil.", "OFFLINE"
+    return f"[{nome_agente}] Erro Crítico: Sistema sem Chaves API Oficiais.", "OFFLINE"
 
-def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cnj, agente_foco, ativar_redlining, valor_hora, user_keys):
-    groq_k = user_keys[0] if user_keys and user_keys[0] else GROQ_KEY
-    gemini_k = user_keys[1] if user_keys and user_keys[1] else GEMINI_KEY
-    cnj_k = user_keys[2] if user_keys and user_keys[2] else CNJ_API_KEY
-
+def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cnj, agente_foco, ativar_redlining, valor_hora, groq_k, gemini_k, cnj_k):
     dados_tribunal = consultar_datajud(num_processo_cnj, cnj_k) if num_processo_cnj else ""
     contexto_final = contexto_arquivos + "\n" + dados_tribunal
     
@@ -485,12 +465,12 @@ def gerar_pdf_aether(texto_markdown):
         emergencia = FPDF()
         emergencia.add_page()
         emergencia.set_font("helvetica", size=10)
-        emergencia.cell(0, 6, txt="ERRO PDF: Utilize exportacao DOCX.", ln=1)
+        emergencia.cell(0, 6, txt="ERRO PDF: Modo Grafico Falhou. Utilize exportacao DOCX.", ln=1)
         emergencia.cell(0, 6, txt=f"Log: {str(e)[:50]}", ln=1)
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V337 (COMPACTION UI)
+# 🎨 CSS APEX V338 (COMPACTAÇÃO MÁXIMA & ANTI-ROLL)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -502,58 +482,50 @@ html, body {{ overflow-x: hidden !important; width: 100vw !important; margin: 0;
 .stApp {{ {bg_css} color: #cbd5e1; font-family: 'Inter', sans-serif; }}
 [data-testid="stHeader"], footer {{ display: none !important; }}
 
-[data-testid="stSidebar"] {{ background: rgba(15, 23, 42, 0.95) !important; border-right: 1px solid rgba(212, 175, 55, 0.2) !important; padding-top: 20px; }}
-[data-testid="stSidebarContent"] {{ padding: 0 15px; }}
+/* ⚠️ V338: COMPACTAÇÃO DA BARRA LATERAL E IMAGEM ⚠️ */
+[data-testid="stSidebar"] {{ background: rgba(15, 23, 42, 0.95) !important; border-right: 1px solid rgba(212, 175, 55, 0.2) !important; padding-top: 10px; }}
+[data-testid="stSidebarContent"] {{ padding: 0 10px; }}
+[data-testid="stSidebar"] img {{ max-width: 140px; margin: 0 auto 5px auto; display: block; filter: grayscale(100%) brightness(150%); }} /* Hack de cor para logo */
 
-.omni-topbar {{ display: flex; justify-content: space-between; align-items: center; background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(212, 175, 55, 0.15); padding: 8px 15px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); }}
-.omni-brand {{ display: flex; align-items: center; gap: 12px; }}
-.omni-brand h1 {{ margin: 0; font-family: 'Inter', sans-serif; font-size: 1.1rem; color: #f8fafc; font-weight: 700; letter-spacing: 0.5px; }}
-.omni-brand span {{ color: #D4AF37; font-size: 0.60rem; font-weight: 700; letter-spacing: 1px; border: 1px solid rgba(212, 175, 55, 0.4); padding: 2px 6px; border-radius: 6px; background: rgba(212, 175, 55, 0.05); text-transform: uppercase; }}
+.omni-topbar {{ display: flex; justify-content: space-between; align-items: center; background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(212, 175, 55, 0.15); padding: 5px 15px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); }}
+.omni-brand {{ display: flex; align-items: center; gap: 10px; }}
+.omni-brand h1 {{ margin: 0; font-family: 'Inter', sans-serif; font-size: 1.0rem; color: #f8fafc; font-weight: 700; letter-spacing: 0.5px; }}
+.omni-brand span {{ color: #D4AF37; font-size: 0.55rem; font-weight: 700; letter-spacing: 1px; border: 1px solid rgba(212, 175, 55, 0.4); padding: 2px 6px; border-radius: 6px; background: rgba(212, 175, 55, 0.05); text-transform: uppercase; }}
 
-div[data-testid="stExpander"] {{ background: rgba(15, 23, 42, 0.3) !important; border: 1px solid rgba(255,255,255,0.05) !important; border-radius: 6px !important; margin-bottom: 5px !important; }}
-div[data-testid="stExpander"] p {{ font-size: 0.75rem !important; font-weight: 600 !important; color: #D4AF37 !important; text-transform: uppercase; }}
+div[data-testid="stExpander"] {{ background: rgba(15, 23, 42, 0.3) !important; border: 1px solid rgba(255,255,255,0.05) !important; border-radius: 6px !important; margin-bottom: 0px !important; padding: 0 !important; }}
+div[data-testid="stExpander"] p {{ font-size: 0.70rem !important; font-weight: 600 !important; color: #D4AF37 !important; text-transform: uppercase; margin: 0 !important; }}
 
-div[data-baseweb="select"] > div {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.75rem !important; border-radius: 6px !important; min-height: 32px !important; }}
-.stTextArea label, .stCheckbox label span, .stTextInput label, .stNumberInput label {{ font-size: 0.7rem !important; color: #cbd5e1 !important; font-weight: 600 !important; }}
-.stTextArea textarea, .stTextInput input, .stNumberInput input, input[type="password"] {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.8rem !important; border-radius: 6px !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); }}
+div[data-baseweb="select"] > div {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.75rem !important; border-radius: 6px !important; min-height: 28px !important; }}
+.stTextArea label, .stCheckbox label span, .stTextInput label, .stNumberInput label {{ font-size: 0.65rem !important; color: #cbd5e1 !important; font-weight: 600 !important; margin-bottom: 0px !important; }}
+.stTextArea textarea, .stTextInput input, .stNumberInput input, input[type="password"] {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.75rem !important; border-radius: 6px !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); padding: 5px !important; }}
 .stTextArea textarea:focus, .stTextInput input:focus, .stNumberInput input:focus, input[type="password"]:focus {{ border-color: #D4AF37 !important; box-shadow: 0 0 8px rgba(212, 175, 55, 0.1) !important; }}
+.stTextArea textarea {{ height: 60px !important; min-height: 60px !important; }}
 
-.stButton > button[kind="primary"] {{ background: linear-gradient(135deg, #B8860B, #D4AF37) !important; border-radius: 6px !important; font-weight: 700 !important; color: #020617 !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; padding: 6px !important; border: none !important; width: 100% !important; transition: 0.3s; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2); margin-top: 5px; }}
+.stButton > button[kind="primary"] {{ background: linear-gradient(135deg, #B8860B, #D4AF37) !important; border-radius: 6px !important; font-weight: 700 !important; color: #020617 !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; padding: 6px !important; border: none !important; width: 100% !important; transition: 0.3s; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2); margin-top: 5px; font-size: 0.75rem !important; }}
 .stButton > button[kind="primary"]:hover {{ transform: translateY(-2px); box-shadow: 0 6px 15px rgba(212, 175, 55, 0.4); }}
 
-/* V337 APEX: BOTÕES NATIVOS PARA BYPASS DA EXTENSÃO ADOBE */
 [data-testid="stDownloadButton"] button {{
-    background: rgba(255,255,255,0.05) !important;
-    color: #cbd5e1 !important;
-    border: 1px solid rgba(255,255,255,0.15) !important;
-    border-radius: 6px !important;
-    font-size: 0.75rem !important;
-    font-weight: 600 !important;
-    padding: 6px !important;
-    width: 100% !important;
-    transition: 0.3s !important;
+    background: rgba(255,255,255,0.05) !important; color: #cbd5e1 !important; border: 1px solid rgba(255,255,255,0.15) !important; border-radius: 6px !important; font-size: 0.70rem !important; font-weight: 600 !important; padding: 4px !important; width: 100% !important; transition: 0.3s !important;
 }}
-[data-testid="stDownloadButton"] button:hover {{
-    background: rgba(212,175,55,0.1) !important;
-    color: #fff !important;
-    border-color: #D4AF37 !important;
-}}
+[data-testid="stDownloadButton"] button:hover {{ background: rgba(212,175,55,0.1) !important; color: #fff !important; border-color: #D4AF37 !important; }}
 
-.stButton > button[kind="secondary"] {{ background: rgba(255,255,255,0.05) !important; color: #cbd5e1 !important; border: 1px solid rgba(255,255,255,0.15) !important; border-radius: 6px !important; font-weight: 600 !important; transition: 0.3s; padding: 6px !important; }}
+.stButton > button[kind="secondary"] {{ background: rgba(255,255,255,0.05) !important; color: #cbd5e1 !important; border: 1px solid rgba(255,255,255,0.15) !important; border-radius: 6px !important; font-weight: 600 !important; transition: 0.3s; padding: 4px !important; font-size: 0.70rem !important; }}
 .stButton > button[kind="secondary"]:hover {{ background: rgba(212,175,55,0.1) !important; color: #fff !important; border-color: #D4AF37 !important; }}
 
-.custom-kpi-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 10px; }}
-.kpi-box {{ background: rgba(30, 41, 59, 0.4); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); border-left: 3px solid #D4AF37; padding: 10px; backdrop-filter: blur(10px); }}
+.custom-kpi-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; }}
+.kpi-box {{ background: rgba(30, 41, 59, 0.4); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); border-left: 3px solid #D4AF37; padding: 8px 12px; backdrop-filter: blur(10px); }}
 .kpi-title {{ color: #94a3b8; font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; display:block; margin-bottom: 2px; }}
 .kpi-value {{ color: #f8fafc; font-size: 1.0rem; font-weight: 600; line-height: 1.2; display:block; }}
 .kpi-value.highlight {{ color: #D4AF37; font-weight: 700; }}
 
-[data-testid="stTabs"] button {{ padding: 8px 15px !important; font-weight: 600 !important; color: #94a3b8 !important; border-bottom: 2px solid transparent !important; }}
+[data-testid="stTabs"] button {{ padding: 6px 15px !important; font-size: 0.8rem !important; font-weight: 600 !important; color: #94a3b8 !important; border-bottom: 2px solid transparent !important; }}
 [data-testid="stTabs"] button[aria-selected="true"] {{ color: #D4AF37 !important; border-bottom: 2px solid #D4AF37 !important; background: rgba(212, 175, 55, 0.05) !important; border-radius: 6px 6px 0 0; }}
 
-.login-box {{ background: rgba(30, 41, 59, 0.6); padding: 40px; border-radius: 12px; border: 1px solid rgba(212, 175, 55, 0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-width: 400px; margin: 100px auto; text-align: center; backdrop-filter: blur(10px); }}
-.login-title {{ color: #f8fafc; font-size: 1.8rem; font-weight: 700; margin-bottom: 5px; }}
-.login-subtitle {{ color: #D4AF37; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; }}
+/* ⚠️ V338: LOGIN SCREEN COMPACTADA ⚠️ */
+.login-box {{ background: rgba(30, 41, 59, 0.6); padding: 30px; border-radius: 12px; border: 1px solid rgba(212, 175, 55, 0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-width: 380px; margin: 60px auto; text-align: center; backdrop-filter: blur(10px); }}
+.login-box img {{ max-width: 160px; margin-bottom: 10px; filter: grayscale(100%) brightness(150%); }}
+.login-title {{ color: #f8fafc; font-size: 1.6rem; font-weight: 700; margin-bottom: 0px; line-height: 1.2; }}
+.login-subtitle {{ color: #D4AF37; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; }}
 
 .stProgress > div > div > div > div {{ background-color: #D4AF37 !important; }}
 </style>
@@ -565,13 +537,15 @@ st.markdown(css_code, unsafe_allow_html=True)
 # ==========================================
 if not st.session_state.logged_in:
     st.markdown('<div class="login-box">', unsafe_allow_html=True)
+    if os.path.exists("logo.png"):
+        st.image("logo.png", use_container_width=False)
     st.markdown('<div class="login-title">AETHER KARV</div>', unsafe_allow_html=True)
-    st.markdown('<div class="login-subtitle">ENTERPRISE EDITION V337</div>', unsafe_allow_html=True)
+    st.markdown('<div class="login-subtitle">ENTERPRISE EDITION V338</div>', unsafe_allow_html=True)
     
-    st.markdown("<p style='color: #94a3b8; font-size: 0.85rem; margin-bottom: 20px;'>Acesso Restrito ao Cofre de Dados</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #94a3b8; font-size: 0.75rem; margin-bottom: 15px;'>Acesso Restrito ao Cofre de Dados</p>", unsafe_allow_html=True)
     
-    login_user = st.text_input("Usuário", placeholder="Digite seu usuário...")
-    login_pass = st.text_input("Senha", type="password", placeholder="Digite sua senha...")
+    login_user = st.text_input("Usuário", placeholder="Ex: henrique...")
+    login_pass = st.text_input("Senha", type="password", placeholder="Sua senha secreta...")
     
     col1, col2 = st.columns(2)
     with col1:
@@ -606,43 +580,30 @@ if not st.session_state.logged_in:
 # INTERFACE PRINCIPAL (SÓ APARECE SE LOGADO)
 # ==========================================
 else:
-    # ⚠️ V337: INTEGRAÇÃO DA LOGO DO ESCRITÓRIO E COMPACTAÇÃO DA BARRA LATERAL ⚠️
-    with st.sidebar:
-        # Se existir o arquivo logo.png na mesma pasta, ele usa. Senão, fica o título.
-        if os.path.exists("logo.png"):
-            st.image("logo.png", use_container_width=True)
-        else:
-            st.markdown(f'<div class="omni-brand" style="margin-bottom: 10px;"><h1>AETHER KARV</h1><span>V337 DB | {st.session_state.username.upper()}</span></div>', unsafe_allow_html=True)
-        
-        # OBTÉM AS CHAVES DO USUÁRIO DO BANCO
-        user_keys = get_api_keys(st.session_state.username)
-        has_keys = user_keys and (user_keys[0] or user_keys[1])
-        
-        with st.expander("🔑 Chaves de Integração (APIs)", expanded=not has_keys):
-            st.write("Configure as chaves do seu escritório:")
-            k_groq = st.text_input("Groq API Key", type="password", value=user_keys[0] if user_keys else "")
-            k_gem = st.text_input("Gemini API Key", type="password", value=user_keys[1] if user_keys else "")
-            k_cnj = st.text_input("DataJud API Key (Opcional)", type="password", value=user_keys[2] if user_keys else "")
-            if st.button("Salvar Chaves", type="secondary"):
-                save_api_keys(st.session_state.username, k_groq, k_gem, k_cnj)
-                st.toast("Chaves vinculadas à sua conta!", icon="🔐")
-                st.rerun()
+    # ⚠️ V338: OBTÉM AS CHAVES GLOBAIS DO SERVIDOR (O Advogado Não Precisa Mais Ver Isso) ⚠️
+    GROQ_KEY = st.secrets.get("GROQ_API_KEY", "")
+    GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", "")
+    CNJ_API_KEY = st.secrets.get("CNJ_API_KEY", "DEMO_KEY")
 
-        with st.expander("📁 Upload e Contexto", expanded=True):
+    with st.sidebar:
+        if os.path.exists("logo.png"):
+            st.image("logo.png")
+        else:
+            st.markdown(f'<div class="omni-brand" style="margin-bottom: 10px;"><h1>AETHER KARV</h1><span>V338 DB | {st.session_state.username.upper()}</span></div>', unsafe_allow_html=True)
+
+        with st.expander("📁 Base de Conhecimento", expanded=True):
             up = st.file_uploader("Documentos base...", accept_multiple_files=True, label_visibility="collapsed")
             num_processo_input = st.text_input("Nº do Processo / CNPJ (DataJud)", placeholder="Insira para extração...")
-            cmd = st.text_area("", key="cmd_input", placeholder="Instruções ou cole o contrato aqui...", label_visibility="collapsed", height=80)
+            cmd = st.text_area("", key="cmd_input", placeholder="Instruções ou cole o contrato aqui...", label_visibility="collapsed", height=60)
 
-        with st.expander("⚙️ Motor Jurídico e Faturamento", expanded=False):
+        with st.expander("⚙️ Motor e Faturamento", expanded=False):
             agente_foco = st.selectbox("Especialidade", ["Análise de Contratos", "Due Diligence Societária", "Compliance e Risco", "Auditoria Trabalhista", "Direito Público"])
             ativar_redlining = st.checkbox("Ativar Redlining (Reescrita Ativa)", value=False)
-            ativar_lindb = st.checkbox("Filtro de Proteção (Art. 22 LINDB)", value=True)
             valor_hora = st.number_input("Sua Hora Técnica (R$)", min_value=50.0, max_value=5000.0, value=350.0, step=50.0)
 
-        if st.button("🚀 INICIAR AUDITORIA OMNI", type="primary"):
-            user_keys = get_api_keys(st.session_state.username)
-            if not user_keys or (not user_keys[0] and not user_keys[1]):
-                st.error("⚠️ Configure suas chaves API no painel acima.")
+        if st.button("🚀 INICIAR AUDITORIA", type="primary"):
+            if not GROQ_KEY and not GEMINI_KEY:
+                st.error("⚠️ ERRO CRÍTICO: O Administrador não configurou as chaves no Servidor (st.secrets).")
             elif cmd or up or num_processo_input:
                 st.toast("Iniciando Motor Hydra...", icon="🔥")
                 progress_bar = st.progress(5, text="Iniciando Córtex de Ingestão...")
@@ -652,13 +613,13 @@ else:
                 texto_arquivos, num_arquivos, usou_ocr = extrator_nexus_v3(up) if up else ("", 0, False)
                 
                 progress_bar.progress(40, text="Consultando bases e estruturando RAG...")
-                resposta, motor_usado = orquestrador_omni(cmd, texto_arquivos, ativar_lindb, num_processo_input, agente_foco, ativar_redlining, valor_hora, user_keys)
+                # Repassamos as chaves globais ocultas para a IA trabalhar
+                resposta, motor_usado = orquestrador_omni(cmd, texto_arquivos, True, num_processo_input, agente_foco, ativar_redlining, valor_hora, GROQ_KEY, GEMINI_KEY, CNJ_API_KEY)
                 
                 progress_bar.progress(75, text="Gravando no Banco de Dados (Fort Knox)...")
                 
-                # ⚠️ V337: NOME DINÂMICO PARA O HISTÓRICO DA NUVEM ⚠️
                 if up: titulo_doc = up[0].name
-                elif cmd: titulo_doc = cmd[:35] + "..."
+                elif cmd: titulo_doc = cmd[:30] + "..."
                 elif num_processo_input: titulo_doc = f"Proc: {num_processo_input}"
                 else: titulo_doc = "Auditoria Genérica"
                 
@@ -696,22 +657,22 @@ else:
     # --- ÁREA PRINCIPAL (WORKSPACE) ---
     st.markdown(f"""
     <div class="omni-topbar">
-        <div style="font-weight: 600; color: #f8fafc; font-size: 0.9rem;">DASHBOARD ANALÍTICO</div>
-        <div style="font-size: 0.75rem; color: #94a3b8;">Sessão Ativa: <span style="color: #22c55e;">{st.session_state.username.upper()}</span></div>
+        <div style="font-weight: 600; color: #f8fafc; font-size: 0.8rem;">DASHBOARD ANALÍTICO</div>
+        <div style="font-size: 0.70rem; color: #94a3b8;">Sessão Ativa: <span style="color: #22c55e;">{st.session_state.username.upper()}</span></div>
     </div>
     """, unsafe_allow_html=True)
 
     t = st.session_state.telemetria
     st.markdown(f"""
     <div class="custom-kpi-grid">
-        <div class="kpi-box" title="Volume de contratos e peças inseridos no sistema."><span class="kpi-title">Documentos Digeridos</span><span class="kpi-value">{t['arquivos']}</span></div>
-        <div class="kpi-box" title="Modelo de IA de Elite que processou os dados."><span class="kpi-title">Nó de Processamento</span><span class="kpi-value highlight">{t['motor']}</span></div>
-        <div class="kpi-box" title="Status do sistema de leitura visual para PDFs escaneados."><span class="kpi-title">Módulo de Visão</span><span class="kpi-value">{t['ocr']}</span></div>
-        <div class="kpi-box" title="Andamento atual do orquestrador Omni."><span class="kpi-title">Status da Operação</span><span class="kpi-value highlight">{t['risco']}</span></div>
+        <div class="kpi-box"><span class="kpi-title">Documentos Lidos</span><span class="kpi-value">{t['arquivos']}</span></div>
+        <div class="kpi-box"><span class="kpi-title">Nó de Processamento</span><span class="kpi-value highlight">{t['motor']}</span></div>
+        <div class="kpi-box"><span class="kpi-title">Módulo de Visão</span><span class="kpi-value">{t['ocr']}</span></div>
+        <div class="kpi-box"><span class="kpi-title">Status da Operação</span><span class="kpi-value highlight">{t['risco']}</span></div>
     </div>
     """, unsafe_allow_html=True)
 
-    tab1, tab2, tab3, tab4 = st.tabs(["📊 Dossiê Executivo", "📥 Central de Exportação", "🕵️‍♂️ Código Raw", "🗄️ Histórico Salvo (Nuvem)"])
+    tab1, tab2, tab3, tab4 = st.tabs(["📊 Dossiê", "📥 Exportação", "🕵️‍♂️ Raw", "🗄️ Cofre Nuvem"])
     
     with tab1:
         if st.session_state.res_aether:
@@ -720,29 +681,28 @@ else:
             st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.markdown('<div class="standby-container">', unsafe_allow_html=True)
-            st.markdown('<div class="welcome-title">O Workspace do Aether Karv está Online.</div>', unsafe_allow_html=True)
-            st.markdown('<div class="welcome-subtitle">Injete documentos ou verifique o seu Histórico Salvo na aba ao lado.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="welcome-title">Workspace Online.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="welcome-subtitle">Injete documentos no painel lateral.</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
             
     with tab2:
         if st.session_state.res_aether:
-            st.write("Baixe o relatório nos botões oficias abaixo (Bypass de Extensão Ativo):")
+            st.write("Baixe o relatório:")
             c1, c2, c3, c4 = st.columns(4)
-            # ⚠️ V337: BOTÕES NATIVOS (FIM DA ABA FANTASMA DO ADOBE) ⚠️
-            with c1: st.download_button("📄 Download WORD", data=st.session_state.res_docx, file_name="AETHER_Parecer.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", use_container_width=True)
-            with c2: st.download_button("📕 Download PDF", data=st.session_state.res_pdf, file_name="AETHER_Parecer.pdf", mime="application/octet-stream", use_container_width=True)
-            with c3: st.download_button("📝 Download TXT", data=st.session_state.res_aether.encode('utf-8'), file_name="AETHER_Parecer.txt", mime="text/plain", use_container_width=True)
-            with c4: st.download_button("📊 Download MD", data=st.session_state.res_aether.encode('utf-8'), file_name="AETHER_Parecer.md", mime="text/markdown", use_container_width=True)
+            with c1: st.download_button("📄 WORD", data=st.session_state.res_docx, file_name="AETHER_Parecer.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", use_container_width=True)
+            with c2: st.download_button("📕 PDF", data=st.session_state.res_pdf, file_name="AETHER_Parecer.pdf", mime="application/octet-stream", use_container_width=True)
+            with c3: st.download_button("📝 TXT", data=st.session_state.res_aether.encode('utf-8'), file_name="AETHER_Parecer.txt", mime="text/plain", use_container_width=True)
+            with c4: st.download_button("📊 MD", data=st.session_state.res_aether.encode('utf-8'), file_name="AETHER_Parecer.md", mime="text/markdown", use_container_width=True)
             
             st.markdown("<br>", unsafe_allow_html=True)
-            if st.button("⟳ Limpar Workspace (Nova Análise)", use_container_width=True):
+            if st.button("⟳ Limpar Tela", use_container_width=True):
                 st.session_state.res_aether = None
                 st.session_state.res_docx = None
                 st.session_state.res_pdf = None
                 st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--:--", "risco": "Aguardando", "ocr": "Inativo", "motor": "Standby"}
                 st.rerun()
         else:
-            st.info("Gere uma análise para habilitar a exportação.")
+            st.info("Gere uma análise primeiro.")
             
     with tab3:
         if st.session_state.res_aether:
@@ -751,11 +711,11 @@ else:
             st.info("Nenhum código raw na memória.")
             
     with tab4:
-        st.write(f"Bem-vindo ao Cofre, **{st.session_state.username.upper()}**. (Suas chaves API estão encriptadas na sua conta).")
+        st.write(f"Cofre Criptografado: **{st.session_state.username.upper()}**")
         historico = load_history(st.session_state.username)
         
         if len(historico) == 0:
-            st.warning("O seu cofre de dados está vazio. Inicie uma nova auditoria para salvá-la.")
+            st.warning("O seu cofre de dados está vazio.")
         else:
             for idx, (data_hora, titulo, conteudo) in enumerate(historico):
                 with st.expander(f"📁 {titulo} | 🕒 {data_hora}"):
