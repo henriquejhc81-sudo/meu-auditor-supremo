@@ -1,7 +1,7 @@
 import streamlit as st
 
-# ⚠️ V351 APEX THANOS: SEQUÊNCIA DE IGNIÇÃO BLINDADA ⚠️
-st.set_page_config(page_title="AETHER KARV V351 THANOS", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
+# ⚠️ V352 APEX THANOS CORE: SEQUÊNCIA DE IGNIÇÃO BLINDADA ⚠️
+st.set_page_config(page_title="AETHER KARV V352 THANOS", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
 
 import pandas as pd
 import os, time, base64, io, re
@@ -16,7 +16,7 @@ from datetime import datetime, timedelta, date
 from PIL import Image
 
 # ==========================================
-# ☁️ MÓDULO OMNI-CLOUD DB (Híbrido)
+# 🗄️ MÓDULO ENTERPRISE DE BANCO DE DADOS
 # ==========================================
 def init_db():
     conn = sqlite3.connect('aether_fortknox.db')
@@ -78,6 +78,8 @@ init_db()
 
 if "logged_in" not in st.session_state: st.session_state.logged_in = False
 if "username" not in st.session_state: st.session_state.username = ""
+# ⚠️ CONTROLE DINDÂMICO DO UPLOADER DE ARQUIVOS V352 ⚠️
+if "uploader_id" not in st.session_state: st.session_state.uploader_id = 0
 
 # --- LIBS TÁTICAS ---
 try: from groq import Groq
@@ -119,12 +121,11 @@ def get_base64_image(file):
         with open(file, "rb") as f: return base64.b64encode(f.read()).decode()
     return ""
 
-# ⚠️ V351: BOTÕES HTML (ARMA ANTI-ADOBE ACROBAT) ⚠️
 def gerar_botao_primario(buffer, filename, label, mime):
     b64 = base64.b64encode(buffer).decode()
     css = "background: linear-gradient(135deg, #B8860B, #D4AF37); color: #020617; border-radius: 6px; padding: 10px; text-align: center; text-decoration: none; display: block; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-bottom: 5px; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2); transition: 0.3s;"
     hover_css = "this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 15px rgba(212,175,55,0.4)';"
-    out_css = "this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 10px rgba(212,175,55,0.2)';"
+    out_css = "this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 10px rgba(212, 175, 55, 0.2)';"
     return f'<a href="data:{mime};base64,{b64}" download="{filename}" style="{css}" onmouseover="{hover_css}" onmouseout="{out_css}">{label}</a>'
 
 def gerar_botao_secundario(buffer, filename, label, mime):
@@ -157,23 +158,6 @@ def gerar_jurimetria(numero_processo):
 * **Risco Jurisprudencial:** {'Alto' if taxa_sucesso < 55 else 'Moderado' if taxa_sucesso < 70 else 'Baixo (Favorável)'}
 """
 
-if "res_aether" not in st.session_state: st.session_state.res_aether = None
-if "res_docx" not in st.session_state: st.session_state.res_docx = None
-if "res_pdf" not in st.session_state: st.session_state.res_pdf = None
-if "telemetria" not in st.session_state or st.session_state.telemetria is None: 
-    st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--", "risco": "Aguardando", "ocr": "Inativo", "motor": "Standby"}
-
-# --- 🌐 MÓDULO INTERNET & CNJ DATAJUD ---
-def buscar_na_internet(query):
-    if not MODULO_INTERNET: return ""
-    try:
-        ddgs = DDGS()
-        resultados = list(ddgs.text(query, max_results=3))
-        res_str = "\n[AETHER WEB SEARCH INJETADO]:\n"
-        for r in resultados: res_str += f"- {r['body']}\n"
-        return res_str
-    except: return ""
-
 def consultar_datajud(numero_processo, api_key):
     if not numero_processo: return ""
     if api_key == "DEMO_KEY" or not api_key:
@@ -181,8 +165,8 @@ def consultar_datajud(numero_processo, api_key):
         return f"""
         [⚠️ DADOS PROCESSUAIS SIMULADOS - DATAJUD]
         Alvo da Busca: {numero_processo}
-        Tribunal: TJ Local
-        Status: Ativo - Conclusos para Despacho
+        Tribunal: Tribunal Regional Federal / TJ
+        Status: Ativo - Prazo em Curso
         """
     url = "https://api-publica.datajud.cnj.jus.br/api_publica_tjsp/_search"
     headers = {"Authorization": f"ApiKey {api_key}", "Content-Type": "application/json"}
@@ -193,7 +177,6 @@ def consultar_datajud(numero_processo, api_key):
         else: return f"\n[ALERTA DATAJUD]: Status {response.status_code}"
     except Exception as e: return f"\n[ALERTA DATAJUD]: Falha ({str(e)})"
 
-# --- 👁️ MOTOR DE INGESTÃO (VISION BYPASS) ---
 def extrator_nexus_v3(arquivos_upados, gemini_key):
     texto_extraido = ""
     sucesso = 0
@@ -235,8 +218,7 @@ def extrator_nexus_v3(arquivos_upados, gemini_key):
                     try:
                         genai.configure(api_key=gemini_key)
                         model = genai.GenerativeModel('gemini-1.5-flash')
-                        # ⚠️ V351: ORDEM EXPRESSA DE TRANSCRIÇÃO TOTAL PARA VISÃO ⚠️
-                        response = model.generate_content(["Transcreva todo o texto legal, nomes, valores e dados desta imagem com precisão cirúrgica.", imagem_pil])
+                        response = model.generate_content(["Transcreva com precisão absoluta cada palavra e valor deste documento jurídico.", imagem_pil])
                         texto_ocr = response.text
                     except: pass
                 if texto_ocr.strip():
@@ -288,10 +270,10 @@ def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, groq_key,
         except: pass
     return f"[{nome_agente}] Falha de API.", "OFFLINE"
 
-# ⚠️ V351 APEX THANOS: O MEGA-PROMPT COGNITIVO ⚠️
+# ⚠️ V352 APEX THANOS COGNITIVE CORE (O Cérebro de Juiz Suprema) ⚠️
 def orquestrador_omni(comando, contexto_arquivos, num_processo_cnj, valor_hora, data_intimacao, groq_k, gemini_k, cnj_k):
     if not comando.strip() and not contexto_arquivos.strip() and not num_processo_cnj.strip():
-        return "ERRO FATAL: O Aether não encontrou textos. Anexe um arquivo com resolução clara.", "FALHA"
+        return "ERRO FATAL: O Aether não encontrou dados para processar.", "FALHA"
 
     dados_tribunal = consultar_datajud(num_processo_cnj, cnj_k) if num_processo_cnj else ""
     contexto_final = contexto_arquivos + "\n" + dados_tribunal
@@ -302,19 +284,18 @@ def orquestrador_omni(comando, contexto_arquivos, num_processo_cnj, valor_hora, 
     
     if len(contexto_final) > 60000: contexto_final = processar_com_rag(contexto_final, comando, gemini_k)
     
-    # OS AGENTES SÃO AGORA TÉCNICOS E IMPLACÁVEIS
-    agente_1_sys = f"Auditor Acusador / Procurador. Examine o documento com agressividade. Ache dívidas, fraudes, prazos esgotados, violações contratuais e obrigações não cumpridas. Cite artigos de lei exatos."
-    agente_2_sys = f"Advogado Sócio de Defesa (Especialista STJ/STF). Você defende o cliente. Destrua a acusação apontando Nulidades Absolutas (ex: prescrição intercorrente, falta de citação pessoal), decadência, ou cláusulas abusivas (CDC, Código Civil, LINDB)."
+    agente_1_sys = "Promotor / Auditor Técnico Executivo. Identifique o tipo de peça. Mapeie todas as vulnerabilidades econômicas, multas abusivas, juros capitalizados ilegais e falhas formais da cobrança contra o cliente."
+    agente_2_sys = "Defensor / Sócio Contencioso Sênior. Reúna teses defensivas fortes e pesadas (Nulidade absoluta por vício de citação pessoal - art. 239 CPC, Prescrição e Decadência). Defina a tática tencionando a jurisprudência atualizada dos tribunais superiores (STJ/STF)."
     
-    agente_3_sys = f"""Você é o AETHER THANOS, a Inteligência Artificial Jurídica Suprema e Implacável.
-    Sua missão é esmagar a contraparte, aniquilar teses inimigas e blindar o seu cliente com precisão cirúrgica. Você é o Estrategista Chefe.
+    agente_3_sys = """Você é o AETHER SUPREME THANOS CORE. A maior inteligência jurídica contenciosa do planeta.
+    Você não emite relatórios consultivos ou acadêmicos vagos. Você entrega estratégia de guerra agressiva e fundamentação técnica de nível sênior.
     
-    ESTRUTURA OBRIGATÓRIA DO DOSSIÊ:
-    1. MATRIZ DE RISCO (Tabela Markdown: Nível de Risco | Ponto Crítico | Base Legal Exata | Ação Bélica Imediata)
-    2. RADIOGRAFIA DOS FATOS: Analise friamente o que está acontecendo no documento.
-    3. FUNDAMENTAÇÃO LEGAL E JURISPRUDENCIAL: Cite as Leis (Artigos exatos do CPC, CC, CTN, CLT) e invoque o entendimento do STJ/STF aplicável. Não seja genérico.
-    4. ARMAS DE DEFESA (Redlining): Para cada risco, gere o texto exato da tese ou cláusula substituta. 
-       Use EXATAMENTE o prefixo: [REDLINING - CLAUSULA SUGERIDA]:"""
+    ESTRUTURA COMPREENSÍVEL DO PARECER:
+    1. MATRIZ DE RISCO (Tabela Markdown: Nível de Risco | Ponto Crítico | Base Legal/Súmula Exata | Ação Bélica Imediata)
+    2. RADIOGRAFIA CIRÚRGICA DOS FATOS: Esmiúce quem está cobrando, o valor e a falha do documento.
+    3. MINUTA PRONTA DA DEFESA (REDLINING): Para cada risco apontado, você DEVE redigir o trecho literal da petição judicial pronta para ser copiada (ex: 'PRELIMINARMENTE - DA NULIDADE DA CITAÇÃO...'). Use linguagem extremamente formal, técnica e agressiva.
+       Use EXATAMENTE o prefixo para cada bloco: [REDLINING - CLAUSULA SUGERIDA]:
+    4. CONCLUSÃO DA ESTRATÉGIA: Qual a próxima peça a protocolar (Exceção de Pré-Executividade, Mandado de Segurança, etc) e o pedido de Efeito Suspensivo Urgente."""
 
     resultados = {}
     motores_usados = set()
@@ -326,21 +307,20 @@ def orquestrador_omni(comando, contexto_arquivos, num_processo_cnj, valor_hora, 
         motores_usados.add(m1)
         motores_usados.add(m2)
         
-    contexto_sintese = f"--- ACUSAÇÃO ---\n{resultados['risco']}\n\n--- DEFESA ---\n{resultados['legal']}"
-    dossie_final, m3 = chamar_agente_hydra("JUIZ REVISOR THANOS", agente_3_sys, "Crie o Dossiê Executivo Implacável usando a Tabela Markdown.", contexto_sintese, groq_k, gemini_k)
+    contexto_sintese = f"--- ACUSAÇÃO DE RISCO ---\n{resultados['risco']}\n\n--- TESES DE DEFESA ---\n{resultados['legal']}"
+    dossie_final, m3 = chamar_agente_hydra("JUIZ REVISOR THANOS", agente_3_sys, "Gere o Dossiê Executivo Thanos com a Minuta de Defesa Pronta.", contexto_sintese, groq_k, gemini_k)
     motores_usados.add(m3)
     
-    if num_processo_cnj: dossie_final += gerar_jurimetria(num_processo_cnj)
+    if num_processo_cnj: dossiers = dossie_final + gerar_jurimetria(num_processo_cnj)
+    else: dossiers = dossie_final
 
     data_inicio_str = data_intimacao.strftime('%d/%m/%Y')
     prazo_fatal_str = calcular_prazo_cpc(15, data_intimacao)
-    bloco_prazos = f"\n---\n### ALERTA DE PRAZO (Motor Chronos - CPC)\n* **Data de Início (Intimação):** {data_inicio_str}\n* **Regra Aplicada:** 15 dias úteis (Art. 219 CPC)\n* **DATA FATAL:** **{prazo_fatal_str}**\n*(Nota: O Motor Chronos excluiu sábados e domingos do cálculo).* \n"
-    dossie_final += bloco_prazos
-
-    bloco_fatura = f"\n---\n### Fatura Pro-Forma (Timesheet Audit)\n* **Tempo Poupado:** {horas_humanas_estimadas:.1f} horas\n* **Hora Técnica Aplicada:** R$ {valor_hora:.2f}\n* **Total Sugerido para Cobrança:** **R$ {faturamento_total:.2f}**\n"
-    dossie_final += bloco_fatura
     
-    return dossie_final, " | ".join(list(motores_usados))
+    dossiers += f"\n---\n### ALERTA DE PRAZO (Motor Chronos - CPC)\n* **Data de Início da Contagem:** {data_inicio_str}\n* **Regra Aplicada:** 15 dias úteis (Art. 219 CPC)\n* **DATA FATAL (Fim do Prazo):** **{prazo_fatal_str}**\n*(Cálculo determinístico computado via código).* \n"
+    dossiers += f"\n---\n### Fatura Pro-Forma (Timesheet Audit)\n* **Tempo Poupado:** {horas_humanas_estimadas:.1f} horas\n* **Hora Técnica Aplicada:** R$ {valor_hora:.2f}\n* **Total Sugerido para Cobrança:** **R$ {faturamento_total:.2f}**\n"
+    
+    return dossiers, " | ".join(list(motores_usados))
 
 # --- 📄 EXPORTAÇÕES OMNI PARSER ---
 def gerar_docx_aether(texto_markdown):
@@ -348,7 +328,7 @@ def gerar_docx_aether(texto_markdown):
     font = doc.styles['Normal'].font
     font.name = 'Arial'; font.size = Pt(10)
     
-    header = doc.add_heading('AETHER KARV - PARECER SUPREME', 0)
+    header = doc.add_heading('AETHER KARV - PARECER THANOS SUPREME', 0)
     header.runs[0].font.color.rgb = RGBColor(212, 175, 55) 
     doc.add_paragraph(f"Auditoria Finalizada em: {get_data_hora_br()}")
     doc.add_paragraph("Classificação: CONFIDENCIAL / PRIVILÉGIO ADVOGADO-CLIENTE")
@@ -364,7 +344,6 @@ def gerar_docx_aether(texto_markdown):
 
         is_table_line = False
         cols = []
-        
         if linha_limpa.startswith('|') and linha_limpa.endswith('|'):
             if re.match(r'^\|[-\s\|]+\|$', linha_limpa): continue 
             cols = [c.strip() for c in linha_limpa.split('|')[1:-1]]
@@ -392,7 +371,6 @@ def gerar_docx_aether(texto_markdown):
             continue
 
         in_table = False
-        
         if linha.startswith('#') or linha.startswith('---') or 'ALERTA' in linha.upper() or 'FATURA' in linha.upper() or 'CONCLUSÃO' in linha.upper() or 'JURIMETRIA' in linha.upper():
             is_redlining_mode = False 
 
@@ -416,18 +394,14 @@ def gerar_docx_aether(texto_markdown):
     buffer.seek(0)
     return buffer
 
-def sanitize_for_pdf(texto):
-    return unicodedata.normalize('NFKD', texto).encode('ascii', 'ignore').decode('ascii')
-
 def gerar_pdf_aether(texto_markdown):
     try:
         pdf = FPDF()
         pdf.add_page()
         pdf.set_auto_page_break(auto=True, margin=15)
-        
         pdf.set_font("helvetica", "B", 12)
         pdf.set_text_color(212, 175, 55)
-        pdf.cell(0, 8, txt="AETHER KARV - PARECER THANOS", ln=1, align='C')
+        pdf.cell(0, 8, txt="AETHER KARV - PARECER SUPREME", ln=1, align='C')
         pdf.set_font("helvetica", "", 9)
         pdf.set_text_color(150, 150, 150)
         pdf.cell(0, 6, txt=f"Auditoria Documental: {sanitize_for_pdf(get_data_hora_br())}", ln=1, align='C')
@@ -448,46 +422,34 @@ def gerar_pdf_aether(texto_markdown):
             
             is_table_line = False
             cols = []
-            
             if linha_filtrada.startswith('|') and linha_filtrada.endswith('|'):
                 cols = [c.strip() for c in linha_filtrada.split('|')[1:-1]]
                 is_table_line = True
-            elif ('Nivel de Risco' in linha_filtrada or 'Tribunal' in linha_filtrada or 'Polo Ativo' in linha_filtrada) and (',' in linha_filtrada or '\t' in linha_filtrada):
-                linha_limpa_csv = linha_filtrada.replace('"', '')
-                sep = '\t' if '\t' in linha_limpa_csv else ','
-                cols = [c.strip() for c in linha_limpa_csv.split(sep)]
-                if len(cols) >= 3: is_table_line = True
                 
             if is_table_line:
                 if not table_headers:
                     table_headers = cols
                     continue
-                
                 pdf.set_font("helvetica", "B", 10)
                 pdf.set_text_color(212, 175, 55) 
-                
                 titulo_card = f"[{table_headers[0] if table_headers else 'Item'}: {cols[0]}]"
                 pdf.cell(0, 6, txt=titulo_card, ln=1)
                 
                 pdf.set_font("helvetica", "", 10)
                 pdf.set_text_color(0, 0, 0)
-                
                 for i in range(1, len(cols)):
                     header_name = table_headers[i] if i < len(table_headers) else f"Coluna {i+1}"
                     texto_card = f"{header_name}: {cols[i]}"
                     pedacos = textwrap.wrap(texto_card, width=95, break_long_words=True)
-                    for pedaco in pedacos:
-                        pdf.cell(0, 6, txt=pedaco, ln=1)
+                    for pedaco in pedacos: pdf.cell(0, 6, txt=pedaco, ln=1)
                 pdf.ln(4)
                 continue
-            else:
-                table_headers = []
+            else: table_headers = []
 
             if linha_filtrada.startswith('#') or linha_filtrada.startswith('---') or 'ALERTA' in linha_filtrada.upper() or 'FATURA' in linha_filtrada.upper() or 'CONCLUSAO' in linha_filtrada.upper() or 'JURIMETRIA' in linha_filtrada.upper():
                 is_redlining_mode = False
 
-            if '[REDLINING' in linha_filtrada.upper():
-                is_redlining_mode = True
+            if '[REDLINING' in linha_filtrada.upper(): is_redlining_mode = True
                 
             if is_redlining_mode:
                 pdf.set_text_color(0, 102, 204)
@@ -497,12 +459,10 @@ def gerar_pdf_aether(texto_markdown):
                 pdf.set_font("helvetica", "", 10)
 
             pedacos = textwrap.wrap(linha_filtrada, width=95, break_long_words=True)
-            for pedaco in pedacos:
-                pdf.cell(0, 6, txt=pedaco, ln=1)
+            for pedaco in pedacos: pdf.cell(0, 6, txt=pedaco, ln=1)
                     
         return bytes(pdf.output())
-
-    except Exception as e:
+    except:
         emergencia = FPDF()
         emergencia.add_page()
         emergencia.set_font("helvetica", size=10)
@@ -510,7 +470,7 @@ def gerar_pdf_aether(texto_markdown):
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V351 (UNIFICAÇÃO TOTAL THANOS)
+# 🎨 CSS APEX V352 (ZERO SCROLL & CLEAN UI)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -522,7 +482,6 @@ html, body {{ overflow-x: hidden !important; width: 100vw !important; margin: 0;
 .stApp {{ {bg_css} color: #cbd5e1; font-family: 'Inter', sans-serif; }}
 [data-testid="stHeader"], footer {{ display: none !important; }}
 
-/* ⚠️ V351: MORTE AOS EXPANSORES. UI 100% UNIFICADA ⚠️ */
 [data-testid="stSidebar"] ::-webkit-scrollbar {{ display: none !important; }}
 [data-testid="stSidebar"] {{ -ms-overflow-style: none; scrollbar-width: none; background: rgba(15, 23, 42, 0.95) !important; border-right: 1px solid rgba(212, 175, 55, 0.2) !important; padding-top: 10px; }}
 [data-testid="stSidebarContent"] {{ padding: 0 10px; }}
@@ -533,15 +492,14 @@ html, body {{ overflow-x: hidden !important; width: 100vw !important; margin: 0;
 .omni-brand h1 {{ margin: 0; font-family: 'Inter', sans-serif; font-size: 1.0rem; color: #f8fafc; font-weight: 700; letter-spacing: 0.5px; }}
 .omni-brand span {{ color: #D4AF37; font-size: 0.50rem; font-weight: 700; letter-spacing: 1px; border: 1px solid rgba(212, 175, 55, 0.4); padding: 2px 6px; border-radius: 6px; background: rgba(212, 175, 55, 0.05); text-transform: uppercase; }}
 
-/* Compactando Inputs sem Expander */
 .stTextArea label, .stTextInput label, .stDateInput label, .stNumberInput label {{ font-size: 0.60rem !important; color: #D4AF37 !important; font-weight: 700 !important; margin-bottom: 2px !important; text-transform: uppercase; }}
-.stTextArea textarea, .stTextInput input, .stDateInput input, .stNumberInput input, input[type="password"] {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.70rem !important; border-radius: 6px !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); padding: 4px !important; min-height: 25px !important; margin-bottom: 8px !important; }}
+.stTextArea textarea, .stTextInput input, .stDateInput input, .stNumberInput input, input[type="password"] {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.70rem !important; border-radius: 6px !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); padding: 4px !important; min-height: 25px !important; margin-bottom: 6px !important; }}
 .stTextArea textarea {{ height: 50px !important; min-height: 50px !important; }} 
-[data-testid="stFileUploaderDropzone"] {{ padding: 2px !important; min-height: 35px !important; margin-bottom: 8px !important; }}
+[data-testid="stFileUploaderDropzone"] {{ padding: 2px !important; min-height: 35px !important; margin-bottom: 4px !important; }}
 [data-testid="stFileUploaderDropzone"] > div > span {{ font-size: 0.65rem !important; }}
 [data-testid="stFileUploaderDropzone"] small {{ display: none !important; }}
 
-.stButton > button[kind="primary"] {{ background: linear-gradient(135deg, #B8860B, #D4AF37) !important; border-radius: 6px !important; font-weight: 800 !important; color: #020617 !important; text-transform: uppercase !important; letter-spacing: 1px !important; padding: 8px !important; border: none !important; width: 100% !important; transition: 0.3s; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.3); margin-top: 10px; font-size: 0.85rem !important; }}
+.stButton > button[kind="primary"] {{ background: linear-gradient(135deg, #B8860B, #D4AF37) !important; border-radius: 6px !important; font-weight: 800 !important; color: #020617 !important; text-transform: uppercase !important; letter-spacing: 1px !important; padding: 8px !important; border: none !important; width: 100% !important; transition: 0.3s; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.3); margin-top: 5px; font-size: 0.85rem !important; }}
 .stButton > button[kind="primary"]:hover {{ transform: translateY(-2px); box-shadow: 0 6px 15px rgba(212, 175, 55, 0.5); }}
 
 .custom-kpi-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 8px; }}
@@ -561,20 +519,15 @@ html, body {{ overflow-x: hidden !important; width: 100vw !important; margin: 0;
 """
 st.markdown(css_code, unsafe_allow_html=True)
 
-# ==========================================
-# 🔐 MURALHA DE GELO NATIVA (ST.FORM)
-# ==========================================
 if not st.session_state.logged_in:
     st.markdown("<br>", unsafe_allow_html=True)
     col_l, col_m, col_r = st.columns([1, 1.2, 1])
     with col_m:
         with st.form("login_form"):
             st.markdown('<div class="login-title">AETHER KARV</div>', unsafe_allow_html=True)
-            st.markdown('<div class="login-subtitle">V351 APEX THANOS</div>', unsafe_allow_html=True)
-            
+            st.markdown('<div class="login-subtitle">V352 THANOS CORE</div>', unsafe_allow_html=True)
             login_user = st.text_input("Usuário", placeholder="Ex: henrique...")
             login_pass = st.text_input("Senha", type="password", placeholder="Sua senha secreta...")
-            
             submit_log = st.form_submit_button("🔐 LOGIN OU CRIAR CONTA", use_container_width=True)
             
             if submit_log:
@@ -582,7 +535,6 @@ if not st.session_state.logged_in:
                 c = conn.cursor()
                 c.execute("SELECT * FROM users WHERE username=? AND password=?", (login_user, login_pass))
                 user = c.fetchone()
-                
                 if user:
                     st.session_state.logged_in = True
                     st.session_state.username = login_user
@@ -591,29 +543,28 @@ if not st.session_state.logged_in:
                 else:
                     if login_user and login_pass:
                         c.execute("SELECT * FROM users WHERE username=?", (login_user,))
-                        if c.fetchone():
-                            st.error("Senha Incorreta.")
+                        if c.fetchone(): st.error("Senha Incorreta.")
                         else:
                             c.execute("INSERT INTO users (username, password) VALUES (?, ?)", (login_user, login_pass))
                             conn.commit()
-                            st.success("Conta criada! Clique novamente para entrar.")
-                    else:
-                        st.warning("Preencha usuário e senha.")
+                            st.success("Conta criada! Entre de novo.")
                 conn.close()
 
-# ==========================================
-# INTERFACE PRINCIPAL
-# ==========================================
 else:
     GROQ_KEY = st.secrets.get("GROQ_API_KEY", "")
     GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", "")
     CNJ_API_KEY = st.secrets.get("CNJ_API_KEY", "DEMO_KEY")
 
     with st.sidebar:
-        st.markdown(f'<div class="omni-brand" style="margin-bottom: 10px;"><h1>AETHER KARV</h1><span>V351 THANOS | {st.session_state.username.upper()}</span></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="omni-brand" style="margin-bottom: 10px;"><h1>AETHER KARV</h1><span>V352 THANOS | {st.session_state.username.upper()}</span></div>', unsafe_allow_html=True)
 
-        # ⚠️ V351: ZERO EXPANDERS. TELA 100% UNIFICADA E VISÍVEL ⚠️
-        up = st.file_uploader("Upload de Documentos", accept_multiple_files=True, label_visibility="visible")
+        # ⚠️ BASE DE ARQUIVOS COM RESET DE CHAVE EXPULSANDO MEMÓRIA MORTA (V352) ⚠️
+        up = st.file_uploader("Upload de Documentos", accept_multiple_files=True, key=f"uploader_{st.session_state.uploader_id}")
+        
+        if st.button("🧹 LIMPAR BASE DE ARQUIVOS", use_container_width=True):
+            st.session_state.uploader_id += 1  # Força a exclusão total imediata dos arquivos da tela
+            st.rerun()
+
         num_processo_input = st.text_input("DataJud / Jurimetria", placeholder="Ex: 0001234-56...")
         cmd = st.text_area("Comandos Específicos", key="cmd_input", placeholder="O que devo procurar?")
         
@@ -625,7 +576,7 @@ else:
 
         if st.button("🚀 INICIAR TRIBUNAL THANOS", type="primary"):
             if cmd or up or num_processo_input:
-                st.toast("Iniciando Motor Hydra...", icon="🔥")
+                st.toast("Iniciando Operação...", icon="🔥")
                 progress_bar = st.progress(5, text="Iniciando Córtex...")
                 
                 texto_arquivos, num_arquivos, usou_ocr = extrator_nexus_v3(up, GEMINI_KEY) if up else ("", 0, False)
@@ -642,7 +593,7 @@ else:
                 pdf_data = gerar_pdf_aether(resposta)
                 
                 progress_bar.progress(100, text="Concluído!")
-                st.toast("Dossiê Supreme Salvo!", icon="✅")
+                st.toast("Dossiê Thanos Salvo!", icon="✅")
                 progress_bar.empty()
                 
                 st.session_state.res_aether = resposta
@@ -690,15 +641,14 @@ else:
             st.markdown(st.session_state.res_aether)
             st.markdown('</div>', unsafe_allow_html=True)
         else:
-            st.markdown('<div class="standby-container"><div class="welcome-title" style="font-size: 1.2rem;">Workspace Thanos Online.</div><div class="welcome-subtitle" style="font-size: 0.8rem;">Injete documentos. A IA vai destruir a contraparte.</div></div>', unsafe_allow_html=True)
+            st.markdown('<div class="standby-container"><div class="welcome-title" style="font-size: 1.2rem;">Workspace Thanos Core Online.</div><div class="welcome-subtitle" style="font-size: 0.8rem;">Pronto para estraçalhar a concorrência. Envie as peças na lateral.</div></div>', unsafe_allow_html=True)
             
     with tab2:
         if st.session_state.res_aether:
-            st.write("Bypass HTML Ativo (O Adobe Acrobat não conseguirá ler o botão):")
+            st.write("Bypass HTML Ativo (O Adobe Acrobat não conseguirá sequestrar o link):")
             c1, c2 = st.columns(2)
-            # ⚠️ V351: BOTÕES BASE64 HTML REINSTAURADOS PARA DESTRUIR O ADOBE ⚠️
-            with c1: st.markdown(gerar_botao_primario(st.session_state.res_docx, "AETHER_Parecer_Supreme.docx", "📄 Word (DOCX)", "application/octet-stream"), unsafe_allow_html=True)
-            with c2: st.markdown(gerar_botao_primario(st.session_state.res_pdf, "AETHER_Parecer_Supreme.pdf", "📕 PDF Protegido", "application/octet-stream"), unsafe_allow_html=True)
+            with c1: st.markdown(gerar_botao_primario(st.session_state.res_docx, "AETHER_Parecer_Thanos.docx", "📄 Word (DOCX)", "application/octet-stream"), unsafe_allow_html=True)
+            with c2: st.markdown(gerar_botao_primario(st.session_state.res_pdf, "AETHER_Parecer_Thanos.pdf", "📕 PDF Protegido", "application/octet-stream"), unsafe_allow_html=True)
             
             st.markdown("<br>", unsafe_allow_html=True)
             if st.button("⟳ Limpar Tela", use_container_width=True):
@@ -711,7 +661,6 @@ else:
             
     with tab4:
         st.write(f"Cofre Criptografado & Analytics: **{st.session_state.username.upper()}**")
-        historico = load_history(st.session_state.username)
         if len(historico) == 0: st.warning("Cofre vazio.")
         else:
             for idx, (data_hora, titulo, conteudo) in enumerate(historico):
