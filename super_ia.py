@@ -1,7 +1,7 @@
 import streamlit as st
 
-# ⚠️ V339 APEX: SEQUÊNCIA DE IGNIÇÃO BLINDADA ⚠️
-st.set_page_config(page_title="AETHER KARV V339 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
+# ⚠️ V340 APEX: SEQUÊNCIA DE IGNIÇÃO BLINDADA ⚠️
+st.set_page_config(page_title="AETHER KARV V340 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
 
 import pandas as pd
 import os, time, base64, io, re
@@ -114,6 +114,20 @@ def get_base64_image(file):
     if os.path.exists(file):
         with open(file, "rb") as f: return base64.b64encode(f.read()).decode()
     return ""
+
+# ⚠️ V340 APEX: THE CHRONOS ENGINE (Cálculo Determinístico de Prazos do CPC) ⚠️
+def calcular_prazo_cpc(dias_uteis):
+    # Baseado no Art. 219 do CPC (Conta apenas dias úteis)
+    data_atual = datetime.utcnow() - timedelta(hours=3)
+    dias_adicionados = 0
+    
+    while dias_adicionados < dias_uteis:
+        data_atual += timedelta(days=1)
+        # 5 = Sábado, 6 = Domingo
+        if data_atual.weekday() < 5:
+            dias_adicionados += 1
+            
+    return data_atual.strftime('%d/%m/%Y (%A)')
 
 if "cmd_input" not in st.session_state: st.session_state.cmd_input = ""
 if "res_aether" not in st.session_state: st.session_state.res_aether = None
@@ -254,7 +268,7 @@ def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, groq_key,
 
     return f"[{nome_agente}] Erro Crítico: Sistema sem Chaves API Oficiais.", "OFFLINE"
 
-def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cnj, agente_foco, ativar_redlining, valor_hora, groq_k, gemini_k, cnj_k):
+def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cnj, agente_foco, ativar_redlining, valor_hora, ativar_prazos, groq_k, gemini_k, cnj_k):
     dados_tribunal = consultar_datajud(num_processo_cnj, cnj_k) if num_processo_cnj else ""
     contexto_final = contexto_arquivos + "\n" + dados_tribunal
     
@@ -307,10 +321,25 @@ def orquestrador_omni(comando, contexto_arquivos, lindb_ativada, num_processo_cn
     dossie_final, m3 = chamar_agente_hydra("AETHER OMNI", agente_3_sys, "Crie o Dossiê Final. Use Tabela Markdown com barras verticais (|).", contexto_sintese, groq_k, gemini_k)
     motores_usados.add(m3)
     
-    bloco_fatura = f"""
-    
+    # ⚠️ V340 APEX: INJEÇÃO DO ALERTA DE PRAZOS (CHRONOS ENGINE) ⚠️
+    if ativar_prazos:
+        data_inicio_str = (datetime.utcnow() - timedelta(hours=3)).strftime('%d/%m/%Y')
+        prazo_fatal_str = calcular_prazo_cpc(15)
+        bloco_prazos = f"""
+        
 ---
-### 💰 Fatura Pro-Forma (Timesheet Audit)
+### ALERTA DE PRAZO (Motor Chronos - CPC)
+* **Data de Início da Contagem (Hoje):** {data_inicio_str}
+* **Regra Aplicada:** 15 dias úteis (Art. 219 CPC)
+* **DATA FATAL (Fim do Prazo):** **{prazo_fatal_str}**
+*(Nota do Sistema: O Motor Chronos excluiu sábados e domingos do cálculo matemático. Feriados estaduais e municipais devem ser confirmados pelo usuário).*
+"""
+        dossie_final += bloco_prazos
+
+    # Fatura Automática
+    bloco_fatura = f"""
+---
+### Fatura Pro-Forma (Timesheet Audit)
 * **Tempo Humano Estimado Poupado:** {horas_humanas_estimadas:.1f} horas
 * **Valor da Hora Técnica (Informada):** R$ {valor_hora:.2f}
 * **Total Sugerido para Cobrança do Cliente:** **R$ {faturamento_total:.2f}**
@@ -486,7 +515,7 @@ def gerar_pdf_aether(texto_markdown):
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V339 (MINIMALIST UI)
+# 🎨 CSS APEX V340
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -500,13 +529,14 @@ html, body {{ overflow-x: hidden !important; width: 100vw !important; margin: 0;
 
 [data-testid="stSidebar"] {{ background: rgba(15, 23, 42, 0.95) !important; border-right: 1px solid rgba(212, 175, 55, 0.2) !important; padding-top: 10px; }}
 [data-testid="stSidebarContent"] {{ padding: 0 10px; }}
+[data-testid="stSidebar"] img {{ max-width: 140px; margin: 0 auto 5px auto; display: block; filter: grayscale(100%) brightness(150%); }}
 
-.omni-topbar {{ display: flex; justify-content: space-between; align-items: center; background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(212, 175, 55, 0.15); padding: 8px 15px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); }}
+.omni-topbar {{ display: flex; justify-content: space-between; align-items: center; background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(212, 175, 55, 0.15); padding: 5px 15px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); }}
 .omni-brand {{ display: flex; align-items: center; gap: 10px; }}
 .omni-brand h1 {{ margin: 0; font-family: 'Inter', sans-serif; font-size: 1.0rem; color: #f8fafc; font-weight: 700; letter-spacing: 0.5px; }}
 .omni-brand span {{ color: #D4AF37; font-size: 0.55rem; font-weight: 700; letter-spacing: 1px; border: 1px solid rgba(212, 175, 55, 0.4); padding: 2px 6px; border-radius: 6px; background: rgba(212, 175, 55, 0.05); text-transform: uppercase; }}
 
-div[data-testid="stExpander"] {{ background: rgba(15, 23, 42, 0.3) !important; border: 1px solid rgba(255,255,255,0.05) !important; border-radius: 6px !important; margin-bottom: 5px !important; padding: 0 !important; }}
+div[data-testid="stExpander"] {{ background: rgba(15, 23, 42, 0.3) !important; border: 1px solid rgba(255,255,255,0.05) !important; border-radius: 6px !important; margin-bottom: 0px !important; padding: 0 !important; }}
 div[data-testid="stExpander"] p {{ font-size: 0.70rem !important; font-weight: 600 !important; color: #D4AF37 !important; text-transform: uppercase; margin: 0 !important; }}
 
 div[data-baseweb="select"] > div {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.75rem !important; border-radius: 6px !important; min-height: 28px !important; }}
@@ -536,6 +566,7 @@ div[data-baseweb="select"] > div {{ background-color: rgba(15, 23, 42, 0.6) !imp
 [data-testid="stTabs"] button[aria-selected="true"] {{ color: #D4AF37 !important; border-bottom: 2px solid #D4AF37 !important; background: rgba(212, 175, 55, 0.05) !important; border-radius: 6px 6px 0 0; }}
 
 .login-box {{ background: rgba(30, 41, 59, 0.6); padding: 30px; border-radius: 12px; border: 1px solid rgba(212, 175, 55, 0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-width: 380px; margin: 60px auto; text-align: center; backdrop-filter: blur(10px); }}
+.login-box img {{ max-width: 160px; margin-bottom: 10px; filter: grayscale(100%) brightness(150%); }}
 .login-title {{ color: #f8fafc; font-size: 1.6rem; font-weight: 700; margin-bottom: 0px; line-height: 1.2; }}
 .login-subtitle {{ color: #D4AF37; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; }}
 
@@ -549,8 +580,10 @@ st.markdown(css_code, unsafe_allow_html=True)
 # ==========================================
 if not st.session_state.logged_in:
     st.markdown('<div class="login-box">', unsafe_allow_html=True)
+    if os.path.exists("logo.png"):
+        st.image("logo.png", use_container_width=False)
     st.markdown('<div class="login-title">AETHER KARV</div>', unsafe_allow_html=True)
-    st.markdown('<div class="login-subtitle">ENTERPRISE EDITION V339</div>', unsafe_allow_html=True)
+    st.markdown('<div class="login-subtitle">ENTERPRISE EDITION V340</div>', unsafe_allow_html=True)
     
     st.markdown("<p style='color: #94a3b8; font-size: 0.75rem; margin-bottom: 15px;'>Acesso Restrito ao Cofre de Dados</p>", unsafe_allow_html=True)
     
@@ -595,15 +628,22 @@ else:
     CNJ_API_KEY = st.secrets.get("CNJ_API_KEY", "DEMO_KEY")
 
     with st.sidebar:
-        st.markdown(f'<div class="omni-brand" style="margin-bottom: 10px;"><h1>AETHER KARV</h1><span>V339 DB | {st.session_state.username.upper()}</span></div>', unsafe_allow_html=True)
+        if os.path.exists("logo.png"):
+            st.image("logo.png")
+        else:
+            st.markdown(f'<div class="omni-brand" style="margin-bottom: 10px;"><h1>AETHER KARV</h1><span>V340 CHRONOS | {st.session_state.username.upper()}</span></div>', unsafe_allow_html=True)
 
         with st.expander("📁 Base de Conhecimento", expanded=True):
             up = st.file_uploader("Documentos base...", accept_multiple_files=True, label_visibility="collapsed")
             num_processo_input = st.text_input("Nº do Processo / CNPJ (DataJud)", placeholder="Insira para extração...")
             cmd = st.text_area("", key="cmd_input", placeholder="Instruções ou cole o contrato aqui...", label_visibility="collapsed", height=60)
 
-        with st.expander("⚙️ Motor e Faturamento", expanded=False):
+        with st.expander("⚙️ Motor de Configurações", expanded=False):
             agente_foco = st.selectbox("Especialidade", ["Análise de Contratos", "Due Diligence Societária", "Compliance e Risco", "Auditoria Trabalhista", "Direito Público"])
+            
+            # ⚠️ V340 APEX: ATIVAÇÃO DO MOTOR DE PRAZOS ⚠️
+            ativar_prazos = st.checkbox("Ativar Calculadora de Prazos (15 Dias Úteis CPC)", value=True, help="Se ativado, calcula a data fatal matemática ignorando sábados e domingos.")
+            
             ativar_redlining = st.checkbox("Ativar Redlining (Reescrita Ativa)", value=False)
             valor_hora = st.number_input("Sua Hora Técnica (R$)", min_value=50.0, max_value=5000.0, value=350.0, step=50.0)
 
@@ -619,7 +659,7 @@ else:
                 texto_arquivos, num_arquivos, usou_ocr = extrator_nexus_v3(up) if up else ("", 0, False)
                 
                 progress_bar.progress(40, text="Consultando bases e estruturando RAG...")
-                resposta, motor_usado = orquestrador_omni(cmd, texto_arquivos, True, num_processo_input, agente_foco, ativar_redlining, valor_hora, GROQ_KEY, GEMINI_KEY, CNJ_API_KEY)
+                resposta, motor_usado = orquestrador_omni(cmd, texto_arquivos, True, num_processo_input, agente_foco, ativar_redlining, valor_hora, ativar_prazos, GROQ_KEY, GEMINI_KEY, CNJ_API_KEY)
                 
                 progress_bar.progress(75, text="Gravando no Banco de Dados (Fort Knox)...")
                 
