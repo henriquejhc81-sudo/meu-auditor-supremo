@@ -1,7 +1,7 @@
 import streamlit as st
 
-# ⚠️ V345 APEX: SEQUÊNCIA DE IGNIÇÃO BLINDADA ⚠️
-st.set_page_config(page_title="AETHER KARV V345 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
+# ⚠️ V346 APEX: SEQUÊNCIA DE IGNIÇÃO BLINDADA ⚠️
+st.set_page_config(page_title="AETHER KARV V346 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
 
 import pandas as pd
 import os, time, base64, io, re
@@ -14,7 +14,7 @@ import sqlite3
 from datetime import datetime, timedelta, date
 
 # ==========================================
-# ☁️ MÓDULO OMNI-CLOUD DB (Híbrido: SQLite / Supabase REST)
+# ☁️ MÓDULO OMNI-CLOUD DB (Híbrido)
 # ==========================================
 def init_db():
     conn = sqlite3.connect('aether_fortknox.db')
@@ -26,19 +26,16 @@ def init_db():
     conn.close()
 
 def save_dossier(username, titulo, conteudo):
-    # Tenta salvar na Nuvem (Supabase) se as chaves existirem
     supa_url = st.secrets.get("SUPABASE_URL", "")
     supa_key = st.secrets.get("SUPABASE_KEY", "")
-    
     if supa_url and supa_key:
         try:
             headers = {"apikey": supa_key, "Authorization": f"Bearer {supa_key}", "Content-Type": "application/json", "Prefer": "return=minimal"}
             payload = {"username": username, "data_hora": get_data_hora_br(), "titulo": titulo, "conteudo": conteudo}
             requests.post(f"{supa_url}/rest/v1/history", headers=headers, json=payload, timeout=5)
             return
-        except: pass # Se a nuvem falhar, cai silenciosamente para o SQLite local
+        except: pass
         
-    # Fallback Local (SQLite)
     conn = sqlite3.connect('aether_fortknox.db')
     c = conn.cursor()
     c.execute("INSERT INTO history (username, data_hora, titulo, conteudo) VALUES (?, ?, ?, ?)", (username, get_data_hora_br(), titulo, conteudo))
@@ -46,10 +43,8 @@ def save_dossier(username, titulo, conteudo):
     conn.close()
 
 def load_history(username):
-    # Tenta carregar da Nuvem (Supabase)
     supa_url = st.secrets.get("SUPABASE_URL", "")
     supa_key = st.secrets.get("SUPABASE_KEY", "")
-    
     if supa_url and supa_key:
         try:
             headers = {"apikey": supa_key, "Authorization": f"Bearer {supa_key}"}
@@ -58,7 +53,6 @@ def load_history(username):
                 return [(item['data_hora'], item['titulo'], item['conteudo']) for item in res.json()]
         except: pass
 
-    # Fallback Local (SQLite)
     conn = sqlite3.connect('aether_fortknox.db')
     c = conn.cursor()
     c.execute("SELECT data_hora, titulo, conteudo FROM history WHERE username = ? ORDER BY id DESC", (username,))
@@ -282,7 +276,6 @@ def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, groq_key,
 
     return f"[{nome_agente}] Erro Crítico: Sistema sem Chaves API Oficiais.", "OFFLINE"
 
-# --- ORQUESTRADOR MULTI-AGENTE ---
 def orquestrador_omni(comando, contexto_arquivos, num_processo_cnj, agente_foco, valor_hora, data_intimacao, groq_k, gemini_k, cnj_k):
     dados_tribunal = consultar_datajud(num_processo_cnj, cnj_k) if num_processo_cnj else ""
     contexto_final = contexto_arquivos + "\n" + dados_tribunal
@@ -293,8 +286,9 @@ def orquestrador_omni(comando, contexto_arquivos, num_processo_cnj, agente_foco,
     
     if len(contexto_final) > 60000: contexto_final = processar_com_rag(contexto_final, comando, gemini_k)
     
+    blindagem = "Aplique a LINDB para invalidar responsabilizações injustas."
     diretriz_redlining = """
-    REGRA 3 (REDLINING E SOLUÇÕES): Para cada erro ou risco, você DEVE gerar a correção exata. Use EXATAMENTE o prefixo: [REDLINING - CLAUSULA SUGERIDA]:
+    REGRA 3 (REDLINING E SOLUÇÕES): Para cada erro, você DEVE gerar a correção exata. Use EXATAMENTE o prefixo: [REDLINING - CLAUSULA SUGERIDA]:
     """
     
     modo_contrato = len(contexto_arquivos.strip()) > 0 or len(comando) > 100
@@ -332,7 +326,7 @@ def orquestrador_omni(comando, contexto_arquivos, num_processo_cnj, agente_foco,
     
     data_inicio_str = data_intimacao.strftime('%d/%m/%Y')
     prazo_fatal_str = calcular_prazo_cpc(15, data_intimacao)
-    bloco_prazos = f"\n---\n### ALERTA DE PRAZO (Motor Chronos - CPC)\n* **Data de Início (Intimação):** {data_inicio_str}\n* **Regra Aplicada:** 15 dias úteis (Art. 219 CPC)\n* **DATA FATAL:** **{prazo_fatal_str}**\n*(Nota: O Motor Chronos excluiu sábados e domingos do cálculo).* \n"
+    bloco_prazos = f"\n---\n### ALERTA DE PRAZO (Motor Chronos - CPC)\n* **Data de Início (Intimação):** {data_inicio_str}\n* **Regra Aplicada:** 15 dias úteis (Art. 219 CPC)\n* **DATA FATAL:** **{prazo_fatal_str}**\n*(Nota: O Motor Chronos excluiu sábados e domingos).* \n"
     dossie_final += bloco_prazos
 
     bloco_fatura = f"\n---\n### Fatura Pro-Forma (Timesheet Audit)\n* **Tempo Poupado:** {horas_humanas_estimadas:.1f} horas\n* **Hora Técnica Aplicada:** R$ {valor_hora:.2f}\n* **Total Sugerido para Cobrança:** **R$ {faturamento_total:.2f}**\n"
@@ -507,7 +501,7 @@ def gerar_pdf_aether(texto_markdown, data_intimacao):
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V345 (COMPACTAÇÃO EXTREMA ZERO-UI)
+# 🎨 CSS APEX V346 (ZERO SCROLL & CLEAN UI)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -519,30 +513,31 @@ html, body {{ overflow-x: hidden !important; width: 100vw !important; margin: 0;
 .stApp {{ {bg_css} color: #cbd5e1; font-family: 'Inter', sans-serif; }}
 [data-testid="stHeader"], footer {{ display: none !important; }}
 
-/* ⚠️ V345: ENCOLHIMENTO MÁXIMO DA BARRA LATERAL E TOPO DA TELA ⚠️ */
+/* ⚠️ V346: ANIQUILAÇÃO DA BARRA DE ROLAGEM ⚠️ */
+[data-testid="stSidebar"] ::-webkit-scrollbar {{ display: none !important; }}
+[data-testid="stSidebar"] {{ -ms-overflow-style: none; scrollbar-width: none; background: rgba(15, 23, 42, 0.95) !important; border-right: 1px solid rgba(212, 175, 55, 0.2) !important; padding-top: 10px; }}
+[data-testid="stSidebarContent"] {{ padding: 0 10px; }}
 [data-testid="block-container"] {{ padding-top: 1rem !important; padding-bottom: 0rem !important; max-width: 95% !important; }}
-[data-testid="stSidebar"] {{ background: rgba(15, 23, 42, 0.95) !important; border-right: 1px solid rgba(212, 175, 55, 0.2) !important; padding-top: 1rem !important; }}
-[data-testid="stSidebarContent"] {{ padding: 0 10px !important; }}
 
 .omni-topbar {{ display: flex; justify-content: space-between; align-items: center; background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(212, 175, 55, 0.15); padding: 5px 15px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); }}
 .omni-brand {{ display: flex; align-items: center; gap: 8px; }}
 .omni-brand h1 {{ margin: 0; font-family: 'Inter', sans-serif; font-size: 1.0rem; color: #f8fafc; font-weight: 700; letter-spacing: 0.5px; }}
-.omni-brand span {{ color: #D4AF37; font-size: 0.55rem; font-weight: 700; letter-spacing: 1px; border: 1px solid rgba(212, 175, 55, 0.4); padding: 2px 6px; border-radius: 6px; background: rgba(212, 175, 55, 0.05); text-transform: uppercase; }}
+.omni-brand span {{ color: #D4AF37; font-size: 0.50rem; font-weight: 700; letter-spacing: 1px; border: 1px solid rgba(212, 175, 55, 0.4); padding: 2px 6px; border-radius: 6px; background: rgba(212, 175, 55, 0.05); text-transform: uppercase; }}
 
 div[data-testid="stExpander"] {{ background: rgba(15, 23, 42, 0.3) !important; border: 1px solid rgba(255,255,255,0.05) !important; border-radius: 6px !important; margin-bottom: 4px !important; padding: 0 !important; }}
 div[data-testid="stExpander"] p {{ font-size: 0.65rem !important; font-weight: 600 !important; color: #D4AF37 !important; text-transform: uppercase; margin: 0 !important; }}
-div[data-testid="stExpander"] > div {{ padding-bottom: 5px !important; padding-top: 5px !important; }}
 
 .stTextArea label, .stTextInput label, .stDateInput label, .stNumberInput label {{ font-size: 0.60rem !important; color: #cbd5e1 !important; font-weight: 600 !important; margin-bottom: 0px !important; }}
-.stTextArea textarea, .stTextInput input, .stDateInput input, .stNumberInput input, input[type="password"] {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.70rem !important; border-radius: 6px !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); padding: 4px !important; min-height: 30px !important; }}
-.stTextArea textarea {{ height: 65px !important; min-height: 65px !important; }}
-[data-testid="stFileUploaderDropzone"] {{ padding: 5px !important; min-height: 40px !important; }}
-[data-testid="stFileUploaderDropzone"] > div > span {{ font-size: 0.7rem !important; }}
+.stTextArea textarea, .stTextInput input, .stDateInput input, .stNumberInput input, input[type="password"] {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.70rem !important; border-radius: 6px !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); padding: 4px !important; min-height: 25px !important; }}
+.stTextArea textarea {{ height: 50px !important; min-height: 50px !important; }} /* Redução extrema para caber tudo */
+[data-testid="stFileUploaderDropzone"] {{ padding: 2px !important; min-height: 35px !important; }}
+[data-testid="stFileUploaderDropzone"] > div > span {{ font-size: 0.65rem !important; }}
 [data-testid="stFileUploaderDropzone"] small {{ display: none !important; }}
 
 .stButton > button[kind="primary"] {{ background: linear-gradient(135deg, #B8860B, #D4AF37) !important; border-radius: 6px !important; font-weight: 700 !important; color: #020617 !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; padding: 5px !important; border: none !important; width: 100% !important; transition: 0.3s; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2); margin-top: 2px; font-size: 0.75rem !important; }}
 .stButton > button[kind="primary"]:hover {{ transform: translateY(-2px); box-shadow: 0 6px 15px rgba(212, 175, 55, 0.4); }}
 
+/* BI KPI DASHBOARD */
 .custom-kpi-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 8px; }}
 .kpi-box {{ background: rgba(30, 41, 59, 0.4); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); border-left: 3px solid #D4AF37; padding: 6px 10px; backdrop-filter: blur(10px); }}
 .kpi-title {{ color: #94a3b8; font-size: 0.50rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; display:block; margin-bottom: 2px; }}
@@ -551,66 +546,73 @@ div[data-testid="stExpander"] > div {{ padding-bottom: 5px !important; padding-t
 [data-testid="stTabs"] button {{ padding: 4px 12px !important; font-size: 0.75rem !important; font-weight: 600 !important; color: #94a3b8 !important; border-bottom: 2px solid transparent !important; }}
 [data-testid="stTabs"] button[aria-selected="true"] {{ color: #D4AF37 !important; border-bottom: 2px solid #D4AF37 !important; background: rgba(212, 175, 55, 0.05) !important; border-radius: 6px 6px 0 0; }}
 
-/* ⚠️ V345: LOGIN ULTRA COMPACTO ⚠️ */
-.login-box {{ background: rgba(30, 41, 59, 0.6); padding: 25px; border-radius: 12px; border: 1px solid rgba(212, 175, 55, 0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-width: 350px; margin: 40px auto; text-align: center; backdrop-filter: blur(10px); }}
-.login-title {{ color: #f8fafc; font-size: 1.4rem; font-weight: 700; margin-bottom: 0px; line-height: 1.2; letter-spacing: 1px; }}
-.login-subtitle {{ color: #D4AF37; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; }}
+/* ⚠️ V346: TELA DE LOGIN SEGURA ⚠️ */
+[data-testid="stForm"] {{ background: rgba(30, 41, 59, 0.6) !important; padding: 25px !important; border-radius: 12px !important; border: 1px solid rgba(212, 175, 55, 0.3) !important; box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important; max-width: 350px !important; margin: 40px auto !important; text-align: center !important; backdrop-filter: blur(10px) !important; }}
+.login-title {{ color: #f8fafc; font-size: 1.4rem; font-weight: 700; margin-bottom: 0px; line-height: 1.2; letter-spacing: 1px; text-align: center; }}
+.login-subtitle {{ color: #D4AF37; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; text-align: center; }}
 
 .stProgress > div > div > div > div {{ background-color: #D4AF37 !important; }}
 </style>
 """
 st.markdown(css_code, unsafe_allow_html=True)
 
+# ==========================================
+# 🔐 MURALHA DE GELO NATIVA (ST.FORM)
+# ==========================================
 if not st.session_state.logged_in:
-    # Login sem quadrados fantasmas e sem rolagem
     st.markdown("<br>", unsafe_allow_html=True)
     col_l, col_m, col_r = st.columns([1, 1.2, 1])
     with col_m:
-        st.markdown('<div class="login-box">', unsafe_allow_html=True)
-        st.markdown('<div class="login-title">AETHER KARV</div>', unsafe_allow_html=True)
-        st.markdown('<div class="login-subtitle">ENTERPRISE V345</div>', unsafe_allow_html=True)
-        
-        login_user = st.text_input("Usuário", placeholder="Ex: henrique...")
-        login_pass = st.text_input("Senha", type="password", placeholder="Sua senha secreta...")
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("🔐 LOGIN", type="primary", use_container_width=True):
+        with st.form("login_form"):
+            st.markdown('<div class="login-title">AETHER KARV</div>', unsafe_allow_html=True)
+            st.markdown('<div class="login-subtitle">ENTERPRISE V346</div>', unsafe_allow_html=True)
+            
+            login_user = st.text_input("Usuário", placeholder="Ex: henrique...")
+            login_pass = st.text_input("Senha", type="password", placeholder="Sua senha secreta...")
+            
+            submit_log = st.form_submit_button("🔐 LOGIN OU CRIAR CONTA", use_container_width=True)
+            
+            if submit_log:
                 conn = sqlite3.connect('aether_fortknox.db')
                 c = conn.cursor()
                 c.execute("SELECT * FROM users WHERE username=? AND password=?", (login_user, login_pass))
                 user = c.fetchone()
-                conn.close()
+                
                 if user:
                     st.session_state.logged_in = True
                     st.session_state.username = login_user
                     st.toast(f"Bem-vindo, {login_user.upper()}!", icon="✅")
-                    time.sleep(0.5)
                     st.rerun()
-                else: st.error("Credenciais Inválidas.")
-        with col2:
-            if st.button("📝 CRIAR CONTA", type="secondary", use_container_width=True):
-                if login_user and login_pass:
-                    if create_new_user(login_user, login_pass): st.success("Conta criada!")
-                    else: st.error("Usuário já existe.")
-        st.markdown("</div>", unsafe_allow_html=True)
+                else:
+                    if login_user and login_pass:
+                        c.execute("SELECT * FROM users WHERE username=?", (login_user,))
+                        if c.fetchone():
+                            st.error("Senha Incorreta.")
+                        else:
+                            c.execute("INSERT INTO users (username, password) VALUES (?, ?)", (login_user, login_pass))
+                            conn.commit()
+                            st.success("Conta criada! Clique novamente para entrar.")
+                    else:
+                        st.warning("Preencha usuário e senha.")
+                conn.close()
 
+# ==========================================
+# INTERFACE PRINCIPAL
+# ==========================================
 else:
     GROQ_KEY = st.secrets.get("GROQ_API_KEY", "")
     GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", "")
     CNJ_API_KEY = st.secrets.get("CNJ_API_KEY", "DEMO_KEY")
 
     with st.sidebar:
-        st.markdown(f'<div class="omni-brand" style="margin-bottom: 10px;"><h1>AETHER KARV</h1><span>V345 ZERO-UI | {st.session_state.username.upper()}</span></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="omni-brand" style="margin-bottom: 10px;"><h1>AETHER KARV</h1><span>V346 BI | {st.session_state.username.upper()}</span></div>', unsafe_allow_html=True)
 
-        with st.expander("📁 DADOS DA AUDITORIA", expanded=True):
-            up = st.file_uploader("Documentos base...", accept_multiple_files=True, label_visibility="collapsed")
-            num_processo_input = st.text_input("DataJud", placeholder="Nº do Processo / CNPJ...", label_visibility="collapsed")
-            cmd = st.text_area("", key="cmd_input", placeholder="Instruções ou cole o texto aqui...", label_visibility="collapsed")
+        up = st.file_uploader("Documentos base...", accept_multiple_files=True, label_visibility="collapsed")
+        num_processo_input = st.text_input("DataJud", placeholder="Nº do Processo / CNPJ...", label_visibility="collapsed")
+        cmd = st.text_area("", key="cmd_input", placeholder="Instruções ou cole o texto aqui...", label_visibility="collapsed")
 
-        # ⚠️ V345: PARÂMETROS COMPACTADOS (Redlining e Prazos ativados por padrão no motor, sem poluir a tela)
-        with st.expander("⚙️ CONFIGURAÇÕES (OPCIONAL)", expanded=False):
-            data_intimacao = st.date_input("Data da Intimação/Citação", value=date.today())
+        with st.expander("⚙️ CONFIGURAÇÕES AVANÇADAS", expanded=False):
+            data_intimacao = st.date_input("Data Intimação/Citação", value=date.today())
             valor_hora = st.number_input("Valor Hora (R$)", min_value=50.0, max_value=5000.0, value=350.0, step=50.0)
             agente_foco = st.selectbox("Especialidade", ["Análise de Contratos", "Due Diligence Societária", "Compliance e Risco", "Auditoria Trabalhista", "Direito Público"])
 
@@ -621,10 +623,10 @@ else:
                 
                 texto_arquivos, num_arquivos, usou_ocr = extrator_nexus_v3(up) if up else ("", 0, False)
                 
-                progress_bar.progress(40, text="Processando RAG e Motores...")
+                progress_bar.progress(40, text="Processando Motores e BI...")
                 resposta, motor_usado = orquestrador_omni(cmd, texto_arquivos, num_processo_input, agente_foco, valor_hora, data_intimacao, GROQ_KEY, GEMINI_KEY, CNJ_API_KEY)
                 
-                progress_bar.progress(75, text="Sincronizando com Omni-Cloud DB...")
+                progress_bar.progress(75, text="Sincronizando Banco e Dashboard...")
                 
                 titulo_doc = up[0].name if up else (cmd[:30] + "..." if cmd else f"Proc: {num_processo_input}")
                 save_dossier(st.session_state.username, titulo_doc, resposta)
@@ -652,10 +654,14 @@ else:
             st.session_state.res_aether = None
             st.rerun()
 
+    # --- 📊 AETHER B.I. ENGINE (Leitura de Banco de Dados) ---
+    historico = load_history(st.session_state.username)
+    total_docs_historico = len(historico)
+    
     # --- ÁREA PRINCIPAL ---
     st.markdown(f"""
     <div class="omni-topbar">
-        <div style="font-weight: 600; color: #f8fafc; font-size: 0.75rem;">DASHBOARD ANALÍTICO</div>
+        <div style="font-weight: 600; color: #f8fafc; font-size: 0.75rem;">AETHER BUSINESS INTELLIGENCE</div>
         <div style="font-size: 0.65rem; color: #94a3b8;">Sessão Ativa: <span style="color: #22c55e;">{st.session_state.username.upper()}</span></div>
     </div>
     """, unsafe_allow_html=True)
@@ -663,14 +669,14 @@ else:
     t = st.session_state.telemetria
     st.markdown(f"""
     <div class="custom-kpi-grid">
-        <div class="kpi-box"><span class="kpi-title">Documentos Lidos</span><span class="kpi-value">{t['arquivos']}</span></div>
-        <div class="kpi-box"><span class="kpi-title">Nó de Processamento</span><span class="kpi-value">{t['motor']}</span></div>
-        <div class="kpi-box"><span class="kpi-title">Módulo de Visão</span><span class="kpi-value">{t['ocr']}</span></div>
-        <div class="kpi-box"><span class="kpi-title">Status da Operação</span><span class="kpi-value">{t['risco']}</span></div>
+        <div class="kpi-box"><span class="kpi-title">Módulo Visão (OCR)</span><span class="kpi-value">{t['ocr']}</span></div>
+        <div class="kpi-box"><span class="kpi-title">Nó de Processamento</span><span class="kpi-value highlight">{t['motor']}</span></div>
+        <div class="kpi-box"><span class="kpi-title">Total Pareceres Emitidos (Cofre)</span><span class="kpi-value" style="color: #22c55e;">{total_docs_historico}</span></div>
+        <div class="kpi-box"><span class="kpi-title">Status da Última Operação</span><span class="kpi-value highlight">{t['risco']}</span></div>
     </div>
     """, unsafe_allow_html=True)
 
-    tab1, tab2, tab3, tab4 = st.tabs(["📊 Dossiê", "📥 Exportação", "🕵️‍♂️ Raw", "🗄️ Cofre Nuvem"])
+    tab1, tab2, tab3, tab4 = st.tabs(["📊 Dossiê Gerado", "📥 Exportação", "🕵️‍♂️ Código Raw", "🗄️ Cofre e Dashboard B.I."])
     
     with tab1:
         if st.session_state.res_aether:
@@ -678,7 +684,7 @@ else:
             st.markdown(st.session_state.res_aether)
             st.markdown('</div>', unsafe_allow_html=True)
         else:
-            st.markdown('<div class="standby-container"><div class="welcome-title" style="font-size: 1.2rem;">Workspace Online.</div><div class="welcome-subtitle" style="font-size: 0.8rem;">Injete documentos no painel lateral.</div></div>', unsafe_allow_html=True)
+            st.markdown('<div class="standby-container"><div class="welcome-title" style="font-size: 1.2rem;">Workspace B.I. Online.</div><div class="welcome-subtitle" style="font-size: 0.8rem;">Injete documentos no painel lateral. A tela está travada e livre de rolagens.</div></div>', unsafe_allow_html=True)
             
     with tab2:
         if st.session_state.res_aether:
@@ -696,7 +702,7 @@ else:
         if st.session_state.res_aether: st.code(st.session_state.res_aether, language="markdown")
             
     with tab4:
-        historico = load_history(st.session_state.username)
+        st.write(f"Cofre Criptografado & Analytics: **{st.session_state.username.upper()}**")
         if len(historico) == 0: st.warning("Cofre vazio.")
         else:
             for idx, (data_hora, titulo, conteudo) in enumerate(historico):
