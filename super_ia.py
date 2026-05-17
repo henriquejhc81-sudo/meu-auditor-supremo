@@ -1,7 +1,7 @@
 import streamlit as st
 
-# ⚠️ V338 APEX: SEQUÊNCIA DE IGNIÇÃO BLINDADA ⚠️
-st.set_page_config(page_title="AETHER KARV V338 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
+# ⚠️ V339 APEX: SEQUÊNCIA DE IGNIÇÃO BLINDADA ⚠️
+st.set_page_config(page_title="AETHER KARV V339 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
 
 import pandas as pd
 import os, time, base64, io, re
@@ -22,6 +22,7 @@ def init_db():
     c = conn.cursor()
     c.execute('CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY, password TEXT)')
     c.execute('CREATE TABLE IF NOT EXISTS history (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, data_hora TEXT, titulo TEXT, conteudo TEXT)')
+    c.execute('CREATE TABLE IF NOT EXISTS api_keys (username TEXT PRIMARY KEY, groq_key TEXT, gemini_key TEXT, cnj_key TEXT)')
     c.execute("INSERT OR IGNORE INTO users (username, password) VALUES ('admin', 'admin123')")
     conn.commit()
     conn.close()
@@ -40,6 +41,21 @@ def load_history(username):
     data = c.fetchall()
     conn.close()
     return data
+
+def get_api_keys(username):
+    conn = sqlite3.connect('aether_fortknox.db')
+    c = conn.cursor()
+    c.execute("SELECT groq_key, gemini_key, cnj_key FROM api_keys WHERE username = ?", (username,))
+    keys = c.fetchone()
+    conn.close()
+    return keys
+
+def save_api_keys(username, groq, gemini, cnj):
+    conn = sqlite3.connect('aether_fortknox.db')
+    c = conn.cursor()
+    c.execute("INSERT OR REPLACE INTO api_keys (username, groq_key, gemini_key, cnj_key) VALUES (?, ?, ?, ?)", (username, groq, gemini, cnj))
+    conn.commit()
+    conn.close()
 
 def create_new_user(username, password):
     conn = sqlite3.connect('aether_fortknox.db')
@@ -470,7 +486,7 @@ def gerar_pdf_aether(texto_markdown):
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V338 (COMPACTAÇÃO MÁXIMA & ANTI-ROLL)
+# 🎨 CSS APEX V339 (MINIMALIST UI)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -482,17 +498,15 @@ html, body {{ overflow-x: hidden !important; width: 100vw !important; margin: 0;
 .stApp {{ {bg_css} color: #cbd5e1; font-family: 'Inter', sans-serif; }}
 [data-testid="stHeader"], footer {{ display: none !important; }}
 
-/* ⚠️ V338: COMPACTAÇÃO DA BARRA LATERAL E IMAGEM ⚠️ */
 [data-testid="stSidebar"] {{ background: rgba(15, 23, 42, 0.95) !important; border-right: 1px solid rgba(212, 175, 55, 0.2) !important; padding-top: 10px; }}
 [data-testid="stSidebarContent"] {{ padding: 0 10px; }}
-[data-testid="stSidebar"] img {{ max-width: 140px; margin: 0 auto 5px auto; display: block; filter: grayscale(100%) brightness(150%); }} /* Hack de cor para logo */
 
-.omni-topbar {{ display: flex; justify-content: space-between; align-items: center; background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(212, 175, 55, 0.15); padding: 5px 15px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); }}
+.omni-topbar {{ display: flex; justify-content: space-between; align-items: center; background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(212, 175, 55, 0.15); padding: 8px 15px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); }}
 .omni-brand {{ display: flex; align-items: center; gap: 10px; }}
 .omni-brand h1 {{ margin: 0; font-family: 'Inter', sans-serif; font-size: 1.0rem; color: #f8fafc; font-weight: 700; letter-spacing: 0.5px; }}
 .omni-brand span {{ color: #D4AF37; font-size: 0.55rem; font-weight: 700; letter-spacing: 1px; border: 1px solid rgba(212, 175, 55, 0.4); padding: 2px 6px; border-radius: 6px; background: rgba(212, 175, 55, 0.05); text-transform: uppercase; }}
 
-div[data-testid="stExpander"] {{ background: rgba(15, 23, 42, 0.3) !important; border: 1px solid rgba(255,255,255,0.05) !important; border-radius: 6px !important; margin-bottom: 0px !important; padding: 0 !important; }}
+div[data-testid="stExpander"] {{ background: rgba(15, 23, 42, 0.3) !important; border: 1px solid rgba(255,255,255,0.05) !important; border-radius: 6px !important; margin-bottom: 5px !important; padding: 0 !important; }}
 div[data-testid="stExpander"] p {{ font-size: 0.70rem !important; font-weight: 600 !important; color: #D4AF37 !important; text-transform: uppercase; margin: 0 !important; }}
 
 div[data-baseweb="select"] > div {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.75rem !important; border-radius: 6px !important; min-height: 28px !important; }}
@@ -521,9 +535,7 @@ div[data-baseweb="select"] > div {{ background-color: rgba(15, 23, 42, 0.6) !imp
 [data-testid="stTabs"] button {{ padding: 6px 15px !important; font-size: 0.8rem !important; font-weight: 600 !important; color: #94a3b8 !important; border-bottom: 2px solid transparent !important; }}
 [data-testid="stTabs"] button[aria-selected="true"] {{ color: #D4AF37 !important; border-bottom: 2px solid #D4AF37 !important; background: rgba(212, 175, 55, 0.05) !important; border-radius: 6px 6px 0 0; }}
 
-/* ⚠️ V338: LOGIN SCREEN COMPACTADA ⚠️ */
 .login-box {{ background: rgba(30, 41, 59, 0.6); padding: 30px; border-radius: 12px; border: 1px solid rgba(212, 175, 55, 0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-width: 380px; margin: 60px auto; text-align: center; backdrop-filter: blur(10px); }}
-.login-box img {{ max-width: 160px; margin-bottom: 10px; filter: grayscale(100%) brightness(150%); }}
 .login-title {{ color: #f8fafc; font-size: 1.6rem; font-weight: 700; margin-bottom: 0px; line-height: 1.2; }}
 .login-subtitle {{ color: #D4AF37; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; }}
 
@@ -537,10 +549,8 @@ st.markdown(css_code, unsafe_allow_html=True)
 # ==========================================
 if not st.session_state.logged_in:
     st.markdown('<div class="login-box">', unsafe_allow_html=True)
-    if os.path.exists("logo.png"):
-        st.image("logo.png", use_container_width=False)
     st.markdown('<div class="login-title">AETHER KARV</div>', unsafe_allow_html=True)
-    st.markdown('<div class="login-subtitle">ENTERPRISE EDITION V338</div>', unsafe_allow_html=True)
+    st.markdown('<div class="login-subtitle">ENTERPRISE EDITION V339</div>', unsafe_allow_html=True)
     
     st.markdown("<p style='color: #94a3b8; font-size: 0.75rem; margin-bottom: 15px;'>Acesso Restrito ao Cofre de Dados</p>", unsafe_allow_html=True)
     
@@ -580,16 +590,12 @@ if not st.session_state.logged_in:
 # INTERFACE PRINCIPAL (SÓ APARECE SE LOGADO)
 # ==========================================
 else:
-    # ⚠️ V338: OBTÉM AS CHAVES GLOBAIS DO SERVIDOR (O Advogado Não Precisa Mais Ver Isso) ⚠️
     GROQ_KEY = st.secrets.get("GROQ_API_KEY", "")
     GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", "")
     CNJ_API_KEY = st.secrets.get("CNJ_API_KEY", "DEMO_KEY")
 
     with st.sidebar:
-        if os.path.exists("logo.png"):
-            st.image("logo.png")
-        else:
-            st.markdown(f'<div class="omni-brand" style="margin-bottom: 10px;"><h1>AETHER KARV</h1><span>V338 DB | {st.session_state.username.upper()}</span></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="omni-brand" style="margin-bottom: 10px;"><h1>AETHER KARV</h1><span>V339 DB | {st.session_state.username.upper()}</span></div>', unsafe_allow_html=True)
 
         with st.expander("📁 Base de Conhecimento", expanded=True):
             up = st.file_uploader("Documentos base...", accept_multiple_files=True, label_visibility="collapsed")
@@ -613,7 +619,6 @@ else:
                 texto_arquivos, num_arquivos, usou_ocr = extrator_nexus_v3(up) if up else ("", 0, False)
                 
                 progress_bar.progress(40, text="Consultando bases e estruturando RAG...")
-                # Repassamos as chaves globais ocultas para a IA trabalhar
                 resposta, motor_usado = orquestrador_omni(cmd, texto_arquivos, True, num_processo_input, agente_foco, ativar_redlining, valor_hora, GROQ_KEY, GEMINI_KEY, CNJ_API_KEY)
                 
                 progress_bar.progress(75, text="Gravando no Banco de Dados (Fort Knox)...")
