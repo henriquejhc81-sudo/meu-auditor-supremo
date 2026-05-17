@@ -1,7 +1,7 @@
 import streamlit as st
 
-# ⚠️ V343 APEX: SEQUÊNCIA DE IGNIÇÃO BLINDADA ⚠️
-st.set_page_config(page_title="AETHER KARV V343 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
+# ⚠️ V344 APEX: SEQUÊNCIA DE IGNIÇÃO BLINDADA ⚠️
+st.set_page_config(page_title="AETHER KARV V344 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
 
 import pandas as pd
 import os, time, base64, io, re
@@ -112,7 +112,6 @@ def gerar_botao_secundario(buffer, filename, label, mime):
     out_css = "this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='rgba(255,255,255,0.15)'; this.style.color='#cbd5e1';"
     return f'<a href="data:{mime};base64,{b64}" download="{filename}" style="{css}" onmouseover="{hover_css}" onmouseout="{out_css}">{label}</a>'
 
-# ⚠️ CHRONOS ENGINE AJUSTÁVEL ⚠️
 def calcular_prazo_cpc(dias_uteis, data_inicial):
     data_atual = datetime(data_inicial.year, data_inicial.month, data_inicial.day)
     dias_adicionados = 0
@@ -128,8 +127,6 @@ if "res_docx" not in st.session_state: st.session_state.res_docx = None
 if "res_pdf" not in st.session_state: st.session_state.res_pdf = None
 if "telemetria" not in st.session_state or st.session_state.telemetria is None: 
     st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--", "risco": "Aguardando", "ocr": "Inativo", "motor": "Standby"}
-
-def set_template(texto): st.session_state.cmd_input = texto
 
 # --- 🌐 MÓDULO INTERNET & CNJ DATAJUD ---
 def buscar_na_internet(query):
@@ -501,11 +498,10 @@ def gerar_pdf_aether(texto_markdown, data_intimacao):
         emergencia.add_page()
         emergencia.set_font("helvetica", size=10)
         emergencia.cell(0, 6, txt="ERRO PDF: Utilize exportacao DOCX.", ln=1)
-        emergencia.cell(0, 6, txt=f"Log: {str(e)[:50]}", ln=1)
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V343 (UI COMPACTA & CORRIGIDA)
+# 🎨 CSS APEX V344 (UI PURIFICADA)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -516,6 +512,7 @@ css_code = f"""
 html, body {{ overflow-x: hidden !important; width: 100vw !important; margin: 0; padding: 0; }}
 .stApp {{ {bg_css} color: #cbd5e1; font-family: 'Inter', sans-serif; }}
 [data-testid="stHeader"], footer {{ display: none !important; }}
+[data-testid="block-container"] {{ padding-top: 2rem !important; padding-bottom: 0rem !important; }}
 
 [data-testid="stSidebar"] {{ background: rgba(15, 23, 42, 0.95) !important; border-right: 1px solid rgba(212, 175, 55, 0.2) !important; padding-top: 10px; }}
 [data-testid="stSidebarContent"] {{ padding: 0 10px; }}
@@ -540,40 +537,43 @@ div[data-testid="stExpander"] p {{ font-size: 0.70rem !important; font-weight: 6
 .kpi-title {{ color: #94a3b8; font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; display:block; margin-bottom: 2px; }}
 .kpi-value {{ color: #f8fafc; font-size: 1.0rem; font-weight: 600; line-height: 1.2; display:block; }}
 
-.login-box {{ background: rgba(30, 41, 59, 0.6); padding: 30px; border-radius: 12px; border: 1px solid rgba(212, 175, 55, 0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-width: 380px; margin: 100px auto; text-align: center; backdrop-filter: blur(10px); }}
+.stProgress > div > div > div > div {{ background-color: #D4AF37 !important; }}
 </style>
 """
 st.markdown(css_code, unsafe_allow_html=True)
 
 if not st.session_state.logged_in:
-    st.markdown('<div class="login-box">', unsafe_allow_html=True)
-    st.markdown('<div class="login-title">AETHER KARV</div>', unsafe_allow_html=True)
-    st.markdown('<div class="login-subtitle">ENTERPRISE EDITION V343</div>', unsafe_allow_html=True)
-    
-    login_user = st.text_input("Usuário", placeholder="Ex: henrique...")
-    login_pass = st.text_input("Senha", type="password", placeholder="Sua senha secreta...")
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("🔐 LOGIN", type="primary", use_container_width=True):
-            conn = sqlite3.connect('aether_fortknox.db')
-            c = conn.cursor()
-            c.execute("SELECT * FROM users WHERE username=? AND password=?", (login_user, login_pass))
-            user = c.fetchone()
-            conn.close()
-            if user:
-                st.session_state.logged_in = True
-                st.session_state.username = login_user
-                st.toast(f"Bem-vindo, {login_user.upper()}!", icon="✅")
-                time.sleep(0.5)
-                st.rerun()
-            else: st.error("Credenciais Inválidas.")
-    with col2:
-        if st.button("📝 CRIAR CONTA", type="secondary", use_container_width=True):
-            if login_user and login_pass:
-                if create_new_user(login_user, login_pass): st.success("Conta criada!")
-                else: st.error("Usuário já existe.")
-    st.markdown("</div>", unsafe_allow_html=True)
+    # ⚠️ V344 APEX: LOGIN LIMPO E CENTRALIZADO (Sem quadrados fantasmas)
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    col_l_space, col_login, col_r_space = st.columns([1, 1.5, 1])
+    with col_login:
+        with st.container(border=True):
+            st.markdown("<h1 style='text-align: center; color: #f8fafc; margin-bottom: 0;'>AETHER KARV</h1>", unsafe_allow_html=True)
+            st.markdown("<p style='text-align: center; color: #D4AF37; font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 20px;'>ENTERPRISE EDITION V344</p>", unsafe_allow_html=True)
+            
+            login_user = st.text_input("Usuário", placeholder="Ex: henrique...")
+            login_pass = st.text_input("Senha", type="password", placeholder="Sua senha secreta...")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("🔐 LOGIN", type="primary", use_container_width=True):
+                    conn = sqlite3.connect('aether_fortknox.db')
+                    c = conn.cursor()
+                    c.execute("SELECT * FROM users WHERE username=? AND password=?", (login_user, login_pass))
+                    user = c.fetchone()
+                    conn.close()
+                    if user:
+                        st.session_state.logged_in = True
+                        st.session_state.username = login_user
+                        st.toast(f"Bem-vindo, {login_user.upper()}!", icon="✅")
+                        time.sleep(0.5)
+                        st.rerun()
+                    else: st.error("Credenciais Inválidas.")
+            with col2:
+                if st.button("📝 CRIAR CONTA", type="secondary", use_container_width=True):
+                    if login_user and login_pass:
+                        if create_new_user(login_user, login_pass): st.success("Conta criada!")
+                        else: st.error("Usuário já existe.")
 
 else:
     GROQ_KEY = st.secrets.get("GROQ_API_KEY", "")
@@ -581,7 +581,7 @@ else:
     CNJ_API_KEY = st.secrets.get("CNJ_API_KEY", "DEMO_KEY")
 
     with st.sidebar:
-        st.markdown(f'<div class="omni-brand" style="margin-bottom: 15px;"><h1>AETHER KARV</h1><span>V343 APEX | {st.session_state.username.upper()}</span></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="omni-brand" style="margin-bottom: 15px;"><h1>AETHER KARV</h1><span>V344 APEX | {st.session_state.username.upper()}</span></div>', unsafe_allow_html=True)
 
         with st.expander("📁 Base de Conhecimento", expanded=True):
             up = st.file_uploader("Documentos base...", accept_multiple_files=True, label_visibility="collapsed")
@@ -660,7 +660,7 @@ else:
         else:
             st.markdown('<div class="standby-container"><div class="welcome-title">Workspace Online.</div></div>', unsafe_allow_html=True)
             
-    with tab2: # ⚠️ V343: Bug do "with tab tab2:" corrigido.
+    with tab2:
         if st.session_state.res_aether:
             st.write("Bypass de Extensão Ativo:")
             c1, c2 = st.columns(2)
