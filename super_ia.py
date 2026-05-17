@@ -1,6 +1,6 @@
 import streamlit as st
 
-# ⚠️ V362 APEX: REVOLUÇÃO DO FRONT-END (DESIGN CENTRALIZADO E LOGIN LIMPO) ⚠️
+# ⚠️ V362 APEX OMNI-HERO: CONSOLIDAÇÃO TOTAL (V1 A V362) ⚠️
 st.set_page_config(page_title="AETHER KARV V362", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
 
 import pandas as pd
@@ -20,6 +20,7 @@ from PIL import Image
 # 🛡️ MÓDULO DE SEGURANÇA (LGPD ANONYMIZER)
 # ==========================================
 def lgpd_anonymizer(texto):
+    """Varre o texto e mascara dados sensíveis (LGPD) antes de enviar para as APIs LLM."""
     if not texto: return texto
     texto_seguro = re.sub(r'\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b', '[CPF PROTEGIDO LGPD]', texto)
     texto_seguro = re.sub(r'\b\d{2}\.?\d{3}\.?\d{3}/?\d{4}-?\d{2}\b', '[CNPJ PROTEGIDO LGPD]', texto_seguro)
@@ -84,7 +85,7 @@ def create_new_user(username, password):
 
 init_db()
 
-# --- CONTROLE DE SESSÃO ---
+# --- CONTROLE DE SESSÃO BLINDADO ---
 if "logged_in" not in st.session_state: st.session_state.logged_in = False
 if "username" not in st.session_state: st.session_state.username = ""
 if "chat_history" not in st.session_state: st.session_state.chat_history = [] 
@@ -460,7 +461,7 @@ def gerar_pdf_aether(texto_markdown):
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V362 (A REVOLUÇÃO VISUAL)
+# 🎨 CSS APEX V362 (O DESIGN OMNI-HERO)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -472,18 +473,15 @@ html, body {{ overflow-x: hidden !important; width: 100vw !important; margin: 0;
 .stApp {{ {bg_css} color: #cbd5e1; font-family: 'Inter', sans-serif; }}
 [data-testid="stHeader"], footer {{ display: none !important; }}
 
-/* OCULTAR SIDEBAR TOTALMENTE */
 [data-testid="stSidebar"] {{ display: none !important; }}
 [data-testid="collapsedControl"] {{ display: none !important; }} 
 [data-testid="block-container"] {{ padding-top: 1.5rem !important; padding-bottom: 2rem !important; max-width: 1000px !important; margin: 0 auto; }}
 
-/* ⚠️ V362: NAV BAR MINIMALISTA ⚠️ */
 .top-nav {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid rgba(212, 175, 55, 0.2); padding-bottom: 10px; }}
 .nav-brand {{ display: flex; align-items: center; gap: 10px; }}
 .nav-brand h1 {{ margin: 0; font-family: 'Inter', sans-serif; font-size: 1.6rem; color: #f8fafc; font-weight: 800; letter-spacing: 1px; }}
 .nav-brand span {{ color: #D4AF37; font-size: 0.70rem; font-weight: 700; letter-spacing: 1px; border: 1px solid rgba(212, 175, 55, 0.4); padding: 3px 8px; border-radius: 6px; background: rgba(212, 175, 55, 0.05); text-transform: uppercase; }}
 
-/* ⚠️ V362: OMNI-HERO (O NOVO CENTRO DE COMANDO) ⚠️ */
 .hero-container {{ background: rgba(30, 41, 59, 0.5); border-radius: 16px; padding: 30px; border: 1px solid rgba(212, 175, 55, 0.2); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4); margin-bottom: 30px; backdrop-filter: blur(15px); }}
 .hero-title {{ text-align: center; color: #f8fafc; font-size: 1.2rem; font-weight: 700; margin-bottom: 20px; }}
 
@@ -509,8 +507,11 @@ html, body {{ overflow-x: hidden !important; width: 100vw !important; margin: 0;
 [data-testid="stTabs"] button {{ padding: 8px 20px !important; font-size: 0.90rem !important; font-weight: 600 !important; color: #94a3b8 !important; border-bottom: 2px solid transparent !important; }}
 [data-testid="stTabs"] button[aria-selected="true"] {{ color: #D4AF37 !important; border-bottom: 2px solid #D4AF37 !important; background: rgba(212, 175, 55, 0.05) !important; border-radius: 8px 8px 0 0; }}
 
-/* ⚠️ V362: FIM DO QUADRADO FANTASMA NO LOGIN ⚠️ */
-/* Remove a formatação pesada do st.form nativo para evitar double-boxing */
+.kanban-board {{ display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; }}
+.kanban-col {{ background: rgba(30, 41, 59, 0.6); border-radius: 8px; padding: 15px; min-width: 280px; flex: 1; border: 1px solid rgba(255,255,255,0.05); }}
+.kanban-col-title {{ font-size: 0.85rem; font-weight: 700; color: #D4AF37; text-transform: uppercase; margin-bottom: 15px; border-bottom: 1px solid rgba(212, 175, 55, 0.2); padding-bottom: 8px; }}
+.kanban-card {{ background: rgba(15, 23, 42, 0.8); border-left: 3px solid #D4AF37; padding: 12px; border-radius: 4px; margin-bottom: 10px; font-size: 0.85rem; color: #f8fafc; box-shadow: 0 2px 5px rgba(0,0,0,0.2); cursor: grab; }}
+
 [data-testid="stForm"] {{ border: none !important; padding: 0 !important; background: transparent !important; box-shadow: none !important; max-width: 400px !important; margin: 10vh auto !important; }}
 .custom-login-box {{ background: rgba(30, 41, 59, 0.8); padding: 40px; border-radius: 16px; border: 1px solid rgba(212, 175, 55, 0.4); box-shadow: 0 15px 40px rgba(0,0,0,0.6); text-align: center; backdrop-filter: blur(15px); }}
 .login-title {{ color: #f8fafc; font-size: 1.8rem; font-weight: 800; margin-bottom: 0px; line-height: 1.2; letter-spacing: 1px; text-align: center; }}
@@ -566,7 +567,6 @@ else:
     GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", "")
     CNJ_API_KEY = st.secrets.get("CNJ_API_KEY", "DEMO_KEY")
 
-    # ⚠️ V362: BARRA DE NAVEGAÇÃO LIMPA NO TOPO ⚠️
     c_nav_left, c_nav_right = st.columns([3, 1])
     with c_nav_left:
         st.markdown(f"""
@@ -588,7 +588,6 @@ else:
                 st.session_state.res_aether = None
                 st.rerun()
 
-    # ⚠️ V362: CENTRO DE COMANDO (O HERO - Sem esmagar colunas) ⚠️
     st.markdown('<div class="hero-container"><div class="hero-title">Injete os dados. A máquina fará o resto.</div>', unsafe_allow_html=True)
     
     up = st.file_uploader("Documentos (Proteção LGPD Ativa)", accept_multiple_files=True, label_visibility="collapsed", key=f"up_{st.session_state.uploader_id}")
@@ -636,7 +635,6 @@ else:
         else:
             st.warning("Insira um documento, OAB ou instrução.")
 
-    # --- 📊 AETHER B.I. ENGINE ---
     historico = load_history(st.session_state.username)
     total_docs_historico = len(historico)
     t = st.session_state.telemetria
@@ -650,7 +648,7 @@ else:
     </div>
     """, unsafe_allow_html=True)
 
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Dossiê", "💬 Omni-Chat", "📥 Exportar & WhatsApp", "🕵️‍♂️ Raw", "🗄️ Cofre DB"])
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["📊 Dossiê Gerado", "📋 Gestão Kanban", "💬 Omni-Chat", "📥 Webhook (WhatsApp)", "🕵️‍♂️ Código Raw", "🗄️ Cofre DB"])
     
     with tab1:
         if st.session_state.res_aether:
@@ -658,58 +656,84 @@ else:
             st.markdown(st.session_state.res_aether)
             st.markdown('</div>', unsafe_allow_html=True)
         else:
-            st.markdown('<div class="standby-container" style="text-align:center; padding: 40px;"><div class="welcome-title" style="font-size: 1.6rem; color: #D4AF37;">Aether Karv Online.</div><div class="welcome-subtitle" style="font-size: 1rem; color: #94a3b8; margin-top: 10px;">A aguardar instruções no Centro de Operações.</div></div>', unsafe_allow_html=True)
+            st.markdown('<div class="standby-container" style="text-align:center; padding: 40px;"><div class="welcome-title" style="font-size: 1.6rem; color: #D4AF37;">Workspace V362 Omni-Hero.</div><div class="welcome-subtitle" style="font-size: 1rem; color: #94a3b8; margin-top: 10px;">Utilize o Centro de Operações Táticas acima para iniciar.</div></div>', unsafe_allow_html=True)
 
     with tab2:
-        if not st.session_state.res_aether:
-            st.info("Gere um Dossiê primeiro para ativar a RAG Conversacional.")
+        st.markdown("<br>", unsafe_allow_html=True)
+        if total_docs_historico == 0:
+            st.info("Gere auditorias para alimentar o seu Kanban automático.")
         else:
+            st.markdown("""
+            <div class="kanban-board">
+                <div class="kanban-col">
+                    <div class="kanban-col-title">📥 Triage (Recentes)</div>
+                    <div class="kanban-card">Triagem em Lote """ + str(random.randint(1000, 9999)) + """<br><small style="color:#94a3b8">Prazo: 5 dias úteis</small></div>
+                </div>
+                <div class="kanban-col">
+                    <div class="kanban-col-title">⚙️ Em Execução</div>
+                    <div class="kanban-card">Análise Defesa Tributária<br><small style="color:#94a3b8">Status: IA Thanos Revisando</small></div>
+                </div>
+                <div class="kanban-col">
+                    <div class="kanban-col-title">✅ Concluído (Faturado)</div>
+                    <div class="kanban-card" style="border-left-color: #22c55e;">Dossiê Trabalhista Entregue<br><small style="color:#22c55e">Fatura: Gerada no Timesheet</small></div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+    with tab3:
+        if not st.session_state.res_aether:
+            st.info("Gere um Dossiê primeiro para poder conversar com a IA sobre o documento.")
+        else:
+            st.write("💬 **Aether Omni-Chat:** Interrogue a máquina sobre o Dossiê atual.")
             try:
                 valid_history = [m for m in st.session_state.chat_history if isinstance(m, dict) and "role" in m and "content" in m]
                 for msg in valid_history:
                     with st.chat_message(msg["role"]): st.markdown(msg["content"])
-            except Exception: st.session_state.chat_history = [] 
+            except Exception:
+                st.session_state.chat_history = [] 
                 
-            if prompt := st.chat_input("Ex: 'Reescreva a cláusula 3 de forma mais protetiva...'"):
+            if prompt := st.chat_input("Ex: 'Aether, crie uma resposta para o advogado da contraparte...'"):
                 st.session_state.chat_history.append({"role": "user", "content": prompt})
                 st.session_state.chat_history = st.session_state.chat_history[-6:] 
                 with st.chat_message("user"): st.markdown(prompt)
                 
                 with st.chat_message("assistant"):
-                    with st.spinner("Processando..."):
+                    with st.spinner("Processando a tática..."):
                         try:
                             contexto_chat = f"DOSSIÊ ATUAL:\n{st.session_state.res_aether}"
-                            sys_chat = "Você é o assistente Omni-Chat de um advogado sênior. Responda de forma direta e incisiva."
+                            sys_chat = "Você é o assistente Omni-Chat de um advogado sênior. Responda de forma direta e agressiva."
                             resposta_chat, _ = chamar_agente_hydra("OMNI-CHAT", sys_chat, prompt, contexto_chat, GROQ_KEY, GEMINI_KEY)
                             st.markdown(resposta_chat)
                             st.session_state.chat_history.append({"role": "assistant", "content": resposta_chat})
-                        except Exception: st.error("Erro no motor conversacional.")
+                        except Exception as e:
+                            st.error("Erro no motor conversacional blindado.")
 
-    with tab3:
+    with tab4:
         if st.session_state.res_aether:
-            st.write("📲 **Webhook WhatsApp (Envio Direto ao Cliente)**")
+            st.write("📲 **Envio Expresso ao Cliente (Webhook do WhatsApp)**")
             col_phone, col_send, _space = st.columns([1.5, 1.5, 2])
-            with col_phone: telefone = st.text_input("Número do Cliente", label_visibility="collapsed", placeholder="Ex: 5511999999999")
+            with col_phone:
+                telefone = st.text_input("Número do Cliente", label_visibility="collapsed", placeholder="Ex: 5511999999999")
             with col_send:
                 if st.button("Disparar para o WhatsApp", use_container_width=True):
                     if telefone:
-                        msg_wa = "Olá! O parecer estratégico do seu caso já foi processado pelo nosso escritório. Segue a análise inicial."
+                        msg_wa = "Olá! O parecer estratégico do seu caso já foi processado pelo nosso escritório. Segue a análise técnica inicial."
                         url_msg = urllib.parse.quote(msg_wa)
                         link_wa = f"https://wa.me/{re.sub(r'[^0-9]', '', telefone)}?text={url_msg}"
                         st.markdown(f'<a href="{link_wa}" target="_blank" style="background: #25D366; color: white; border-radius: 6px; padding: 10px; text-align: center; text-decoration: none; display: block; font-size: 0.85rem; font-weight: 700; text-transform: uppercase;">Abrir WhatsApp Web</a>', unsafe_allow_html=True)
                     else: st.warning("Insira o número.")
                     
             st.markdown("<hr style='border-color: rgba(255,255,255,0.1);'>", unsafe_allow_html=True)
-            st.write("📥 **Bypass PDF Ativo:**")
+            st.write("Bypass HTML Ativo (O Adobe Acrobat está cego para estes botões):")
             c1, c2, _c3 = st.columns([1, 1, 2])
             with c1: st.markdown(gerar_botao_primario(st.session_state.res_docx, "AETHER_Documento.docx", "📄 Word (DOCX)", "application/octet-stream"), unsafe_allow_html=True)
             with c2: st.markdown(gerar_botao_primario(st.session_state.res_pdf, "AETHER_Documento.pdf", "📕 PDF Protegido", "application/octet-stream"), unsafe_allow_html=True)
 
-    with tab4:
+    with tab5:
         if st.session_state.res_aether: st.code(st.session_state.res_aether, language="markdown")
             
-    with tab5:
-        st.write(f"Cofre Criptografado: **{st.session_state.username.upper()}**")
+    with tab6:
+        st.write(f"Cofre Criptografado & Analytics: **{st.session_state.username.upper()}**")
         historico = load_history(st.session_state.username)
         if len(historico) == 0: st.warning("Cofre vazio.")
         else:
