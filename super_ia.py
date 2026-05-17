@@ -1,7 +1,7 @@
 import streamlit as st
 
-# ⚠️ V341 APEX: SEQUÊNCIA DE IGNIÇÃO BLINDADA ⚠️
-st.set_page_config(page_title="AETHER KARV V341 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
+# ⚠️ V342 APEX: SEQUÊNCIA DE IGNIÇÃO BLINDADA ⚠️
+st.set_page_config(page_title="AETHER KARV V342 APEX", page_icon="⚖️", layout="wide", initial_sidebar_state="expanded")
 
 import pandas as pd
 import os, time, base64, io, re
@@ -11,7 +11,7 @@ import concurrent.futures
 import requests
 import json
 import sqlite3
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from PIL import Image
 
 # ==========================================
@@ -22,7 +22,6 @@ def init_db():
     c = conn.cursor()
     c.execute('CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY, password TEXT)')
     c.execute('CREATE TABLE IF NOT EXISTS history (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, data_hora TEXT, titulo TEXT, conteudo TEXT)')
-    c.execute('CREATE TABLE IF NOT EXISTS api_keys (username TEXT PRIMARY KEY, groq_key TEXT, gemini_key TEXT, cnj_key TEXT)')
     c.execute("INSERT OR IGNORE INTO users (username, password) VALUES ('admin', 'admin123')")
     conn.commit()
     conn.close()
@@ -56,11 +55,10 @@ def create_new_user(username, password):
 
 init_db()
 
-# --- CONTROLE DE SESSÃO E LOGIN ---
 if "logged_in" not in st.session_state: st.session_state.logged_in = False
 if "username" not in st.session_state: st.session_state.username = ""
 
-# --- 🛡️ PROTOCOLO DE PRESERVAÇÃO TOTAL & LIBS TÁTICAS ---
+# --- LIBS TÁTICAS ---
 try: from groq import Groq
 except ImportError: pass
 try: import google.generativeai as genai
@@ -100,7 +98,6 @@ def get_base64_image(file):
         with open(file, "rb") as f: return base64.b64encode(f.read()).decode()
     return ""
 
-# ⚠️ BOTÕES HTML PARA BYPASS DO ADOBE ACROBAT ⚠️
 def gerar_botao_primario(buffer, filename, label, mime):
     b64 = base64.b64encode(buffer).decode()
     css = "background: linear-gradient(135deg, #B8860B, #D4AF37); color: #020617; border-radius: 6px; padding: 10px; text-align: center; text-decoration: none; display: block; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-bottom: 5px; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2); transition: 0.3s;"
@@ -115,8 +112,9 @@ def gerar_botao_secundario(buffer, filename, label, mime):
     out_css = "this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='rgba(255,255,255,0.15)'; this.style.color='#cbd5e1';"
     return f'<a href="data:{mime};base64,{b64}" download="{filename}" style="{css}" onmouseover="{hover_css}" onmouseout="{out_css}">{label}</a>'
 
-def calcular_prazo_cpc(dias_uteis):
-    data_atual = datetime.utcnow() - timedelta(hours=3)
+# ⚠️ V342 APEX: CHRONOS ENGINE AJUSTÁVEL ⚠️
+def calcular_prazo_cpc(dias_uteis, data_inicial):
+    data_atual = datetime(data_inicial.year, data_inicial.month, data_inicial.day)
     dias_adicionados = 0
     while dias_adicionados < dias_uteis:
         data_atual += timedelta(days=1)
@@ -263,15 +261,14 @@ def chamar_agente_hydra(nome_agente, system_prompt, comando, contexto, groq_key,
 
     return f"[{nome_agente}] Erro Crítico: Sistema sem Chaves API Oficiais.", "OFFLINE"
 
-# ⚠️ V341 APEX: OMNI AUTOMATIZADO (Tudo Ativado por Padrão) ⚠️
-def orquestrador_omni(comando, contexto_arquivos, num_processo_cnj, groq_k, gemini_k, cnj_k):
+# --- ORQUESTRADOR MULTI-AGENTE ---
+def orquestrador_omni(comando, contexto_arquivos, num_processo_cnj, agente_foco, ativar_redlining, valor_hora, data_intimacao, groq_k, gemini_k, cnj_k):
     dados_tribunal = consultar_datajud(num_processo_cnj, cnj_k) if num_processo_cnj else ""
     contexto_final = contexto_arquivos + "\n" + dados_tribunal
     
     tamanho_dados = len(contexto_final) + len(comando)
     horas_humanas_estimadas = max(1.5, tamanho_dados / 4000) 
-    valor_hora_padrao = 350.00
-    faturamento_total = horas_humanas_estimadas * valor_hora_padrao
+    faturamento_total = horas_humanas_estimadas * valor_hora
     
     if len(contexto_final) > 60000: contexto_final = processar_com_rag(contexto_final, comando, gemini_k)
     
@@ -316,33 +313,33 @@ def orquestrador_omni(comando, contexto_arquivos, num_processo_cnj, groq_k, gemi
     dossie_final, m3 = chamar_agente_hydra("AETHER OMNI", agente_3_sys, "Crie o Dossiê Final. Use Tabela Markdown com barras verticais (|).", contexto_sintese, groq_k, gemini_k)
     motores_usados.add(m3)
     
-    # Injeção Automática de Prazos
-    data_inicio_str = (datetime.utcnow() - timedelta(hours=3)).strftime('%d/%m/%Y')
-    prazo_fatal_str = calcular_prazo_cpc(15)
+    # Injeção Automática de Prazos baseada na entrada dinâmica
+    data_inicio_str = data_intimacao.strftime('%d/%m/%Y')
+    prazo_fatal_str = calcular_prazo_cpc(15, data_intimacao)
     bloco_prazos = f"""
     
 ---
 ### ALERTA DE PRAZO (Motor Chronos - CPC)
-* **Data de Início da Contagem (Hoje):** {data_inicio_str}
+* **Data de Início da Contagem (Intimação):** {data_inicio_str}
 * **Regra Aplicada:** 15 dias úteis (Art. 219 CPC)
 * **DATA FATAL (Fim do Prazo):** **{prazo_fatal_str}**
-*(Nota do Sistema: O Motor Chronos excluiu sábados e domingos. Feriados devem ser confirmados).*
+*(Nota do Sistema: O Motor Chronos excluiu sábados e domingos do cálculo matemático).*
 """
     dossie_final += bloco_prazos
 
-    # Fatura Automática
+    # Fatura Automática baseada no valor estipulado para o caso
     bloco_fatura = f"""
 ---
 ### Fatura Pro-Forma (Timesheet Audit)
 * **Tempo Humano Estimado Poupado:** {horas_humanas_estimadas:.1f} horas
-* **Valor da Hora Técnica (Padrão):** R$ {valor_hora_padrao:.2f}
+* **Valor da Hora Técnica Aplicada:** R$ {valor_hora:.2f}
 * **Total Sugerido para Cobrança:** **R$ {faturamento_total:.2f}**
 """
     dossie_final += bloco_fatura
     return dossie_final, " | ".join(list(motores_usados))
 
 # --- 📄 EXPORTAÇÕES OMNI PARSER ---
-def gerar_docx_aether(texto_markdown):
+def gerar_docx_aether(texto_markdown, data_intimacao):
     doc = Document()
     font = doc.styles['Normal'].font
     font.name = 'Arial'; font.size = Pt(10)
@@ -392,7 +389,6 @@ def gerar_docx_aether(texto_markdown):
 
         in_table = False
         
-        # ⚠️ V341: TRAVA ANTI-VAZAMENTO DE TINTA AZUL ⚠️
         if linha.startswith('#') or linha.startswith('---') or 'ALERTA' in linha.upper() or 'FATURA' in linha.upper() or 'CONCLUSÃO' in linha.upper():
             is_redlining_mode = False 
 
@@ -416,10 +412,7 @@ def gerar_docx_aether(texto_markdown):
     buffer.seek(0)
     return buffer
 
-def sanitize_for_pdf(texto):
-    return unicodedata.normalize('NFKD', texto).encode('ascii', 'ignore').decode('ascii')
-
-def gerar_pdf_aether(texto_markdown):
+def gerar_pdf_aether(texto_markdown, data_intimacao):
     try:
         pdf = FPDF()
         pdf.add_page()
@@ -455,7 +448,7 @@ def gerar_pdf_aether(texto_markdown):
             elif ('Nivel de Risco' in linha_filtrada or 'Tribunal' in linha_filtrada or 'Polo Ativo' in linha_filtrada) and (',' in linha_filtrada or '\t' in linha_filtrada):
                 linha_limpa_csv = linha_filtrada.replace('"', '')
                 sep = '\t' if '\t' in linha_limpa_csv else ','
-                cols = [c.strip() for c in linha_limpa_csv.split(sep)]
+                cols = [c.strip() for c in App.split(sep)]
                 if len(cols) >= 3: is_table_line = True
                 
             if is_table_line:
@@ -483,7 +476,6 @@ def gerar_pdf_aether(texto_markdown):
             else:
                 table_headers = []
 
-            # ⚠️ V341: TRAVA ANTI-VAZAMENTO DE TINTA AZUL (PDF) ⚠️
             if linha_filtrada.startswith('#') or linha_filtrada.startswith('---') or 'ALERTA' in linha_filtrada.upper() or 'FATURA' in linha_filtrada.upper() or 'CONCLUSAO' in linha_filtrada.upper():
                 is_redlining_mode = False
 
@@ -508,11 +500,10 @@ def gerar_pdf_aether(texto_markdown):
         emergencia.add_page()
         emergencia.set_font("helvetica", size=10)
         emergencia.cell(0, 6, txt="ERRO PDF: Modo Grafico Falhou. Utilize exportacao DOCX.", ln=1)
-        emergencia.cell(0, 6, txt=f"Log: {str(e)[:50]}", ln=1)
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V341 (MINIMALIST & CLEAN)
+# 🎨 CSS APEX V342 (UI COMPACTA)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
@@ -535,44 +526,27 @@ html, body {{ overflow-x: hidden !important; width: 100vw !important; margin: 0;
 div[data-testid="stExpander"] {{ background: rgba(15, 23, 42, 0.3) !important; border: 1px solid rgba(255,255,255,0.05) !important; border-radius: 6px !important; margin-bottom: 5px !important; padding: 0 !important; }}
 div[data-testid="stExpander"] p {{ font-size: 0.70rem !important; font-weight: 600 !important; color: #D4AF37 !important; text-transform: uppercase; margin: 0 !important; }}
 
-.stTextArea label, .stTextInput label {{ font-size: 0.65rem !important; color: #cbd5e1 !important; font-weight: 600 !important; margin-bottom: 0px !important; }}
-.stTextArea textarea, .stTextInput input, input[type="password"] {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.75rem !important; border-radius: 6px !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); padding: 5px !important; }}
-.stTextArea textarea:focus, .stTextInput input:focus, input[type="password"]:focus {{ border-color: #D4AF37 !important; box-shadow: 0 0 8px rgba(212, 175, 55, 0.1) !important; }}
+.stTextArea label, .stTextInput label, .stDateInput label, .stNumberInput label {{ font-size: 0.65rem !important; color: #cbd5e1 !important; font-weight: 600 !important; margin-bottom: 0px !important; }}
+.stTextArea textarea, .stTextInput input, .stDateInput input, .stNumberInput input, input[type="password"] {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.05) !important; color: #f8fafc !important; font-size: 0.75rem !important; border-radius: 6px !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); padding: 5px !important; }}
 .stTextArea textarea {{ height: 100px !important; min-height: 100px !important; }}
 
 .stButton > button[kind="primary"] {{ background: linear-gradient(135deg, #B8860B, #D4AF37) !important; border-radius: 6px !important; font-weight: 700 !important; color: #020617 !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; padding: 6px !important; border: none !important; width: 100% !important; transition: 0.3s; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2); margin-top: 5px; font-size: 0.75rem !important; }}
 .stButton > button[kind="primary"]:hover {{ transform: translateY(-2px); box-shadow: 0 6px 15px rgba(212, 175, 55, 0.4); }}
 
-.stButton > button[kind="secondary"] {{ background: rgba(255,255,255,0.05) !important; color: #cbd5e1 !important; border: 1px solid rgba(255,255,255,0.15) !important; border-radius: 6px !important; font-weight: 600 !important; transition: 0.3s; padding: 4px !important; font-size: 0.70rem !important; }}
-.stButton > button[kind="secondary"]:hover {{ background: rgba(212,175,55,0.1) !important; color: #fff !important; border-color: #D4AF37 !important; }}
-
 .custom-kpi-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; }}
 .kpi-box {{ background: rgba(30, 41, 59, 0.4); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); border-left: 3px solid #D4AF37; padding: 8px 12px; backdrop-filter: blur(10px); }}
 .kpi-title {{ color: #94a3b8; font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; display:block; margin-bottom: 2px; }}
 .kpi-value {{ color: #f8fafc; font-size: 1.0rem; font-weight: 600; line-height: 1.2; display:block; }}
-.kpi-value.highlight {{ color: #D4AF37; font-weight: 700; }}
-
-[data-testid="stTabs"] button {{ padding: 6px 15px !important; font-size: 0.8rem !important; font-weight: 600 !important; color: #94a3b8 !important; border-bottom: 2px solid transparent !important; }}
-[data-testid="stTabs"] button[aria-selected="true"] {{ color: #D4AF37 !important; border-bottom: 2px solid #D4AF37 !important; background: rgba(212, 175, 55, 0.05) !important; border-radius: 6px 6px 0 0; }}
 
 .login-box {{ background: rgba(30, 41, 59, 0.6); padding: 30px; border-radius: 12px; border: 1px solid rgba(212, 175, 55, 0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-width: 380px; margin: 100px auto; text-align: center; backdrop-filter: blur(10px); }}
-.login-title {{ color: #f8fafc; font-size: 1.8rem; font-weight: 700; margin-bottom: 0px; line-height: 1.2; }}
-.login-subtitle {{ color: #D4AF37; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; }}
-
-.stProgress > div > div > div > div {{ background-color: #D4AF37 !important; }}
 </style>
 """
 st.markdown(css_code, unsafe_allow_html=True)
 
-# ==========================================
-# 🔐 MURALHA DE GELO (TELA DE LOGIN)
-# ==========================================
 if not st.session_state.logged_in:
     st.markdown('<div class="login-box">', unsafe_allow_html=True)
     st.markdown('<div class="login-title">AETHER KARV</div>', unsafe_allow_html=True)
-    st.markdown('<div class="login-subtitle">ENTERPRISE EDITION V341</div>', unsafe_allow_html=True)
-    
-    st.markdown("<p style='color: #94a3b8; font-size: 0.75rem; margin-bottom: 15px;'>Acesso Restrito ao Cofre de Dados</p>", unsafe_allow_html=True)
+    st.markdown('<div class="login-subtitle">ENTERPRISE EDITION V342</div>', unsafe_allow_html=True)
     
     login_user = st.text_input("Usuário", placeholder="Ex: henrique...")
     login_pass = st.text_input("Senha", type="password", placeholder="Sua senha secreta...")
@@ -585,99 +559,79 @@ if not st.session_state.logged_in:
             c.execute("SELECT * FROM users WHERE username=? AND password=?", (login_user, login_pass))
             user = c.fetchone()
             conn.close()
-            
             if user:
                 st.session_state.logged_in = True
                 st.session_state.username = login_user
                 st.toast(f"Bem-vindo, {login_user.upper()}!", icon="✅")
                 time.sleep(0.5)
                 st.rerun()
-            else:
-                st.error("Credenciais Inválidas.")
+            else: st.error("Credenciales Inválidas.")
     with col2:
         if st.button("📝 CRIAR CONTA", type="secondary", use_container_width=True):
             if login_user and login_pass:
-                if create_new_user(login_user, login_pass):
-                    st.success("Conta criada! Pode fazer login.")
-                else:
-                    st.error("Usuário já existe.")
-            else:
-                st.warning("Preencha usuário e senha.")
-    
+                if create_new_user(login_user, login_pass): st.success("Conta criada!")
+                else: st.error("Usuário já existe.")
     st.markdown("</div>", unsafe_allow_html=True)
 
-# ==========================================
-# INTERFACE PRINCIPAL (SÓ APARECE SE LOGADO)
-# ==========================================
 else:
     GROQ_KEY = st.secrets.get("GROQ_API_KEY", "")
     GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", "")
     CNJ_API_KEY = st.secrets.get("CNJ_API_KEY", "DEMO_KEY")
 
     with st.sidebar:
-        # V341: FIM DO LOGO ZUMBI. TIPOGRAFIA PURA.
-        st.markdown(f'<div class="omni-brand" style="margin-bottom: 15px;"><h1>AETHER KARV</h1><span>V341 ZERO-CLICK | {st.session_state.username.upper()}</span></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="omni-brand" style="margin-bottom: 15px;"><h1>AETHER KARV</h1><span>V342 CHRONOS | {st.session_state.username.upper()}</span></div>', unsafe_allow_html=True)
 
         with st.expander("📁 Base de Conhecimento", expanded=True):
             up = st.file_uploader("Documentos base...", accept_multiple_files=True, label_visibility="collapsed")
             num_processo_input = st.text_input("Nº do Processo / CNPJ", placeholder="Extração DataJud (Ex: 0001234-56...)")
             cmd = st.text_area("", key="cmd_input", placeholder="Instruções ou cole o texto aqui...", label_visibility="collapsed")
 
-        # V341: MOTOR DE CONFIGURAÇÕES DELETADO. A IA É AUTOSSUFICIENTE.
+        # ⚠️ PARAMETRIZAÇÃO ADAPTATIVA REINVENTADA EM MÓDULO EXPANSÍVEL ⚠️
+        with st.expander("⚙️ Parâmetros do Caso", expanded=False):
+            data_intimacao = st.date_input("Data Real da Intimação/Citação", value=date.today(), help="Defina a data em que o prazo realmente começou a fluir para sanar atrasos do cliente.")
+            valor_hora = st.number_input("Sua Hora Técnica para este Caso (R$)", min_value=50.0, max_value=5000.0, value=350.0, step=50.0, help="Ajuste o valor dos honorários com base na complexidade desta pasta específica.")
+            agente_foco = st.selectbox("Especialidade do Córtex", ["Análise de Contratos", "Due Diligence Societária", "Compliance e Risco", "Auditoria Trabalhista", "Direito Público"])
+            ativar_redlining = st.checkbox("Ativar Redlining (Reescrita Ativa)", value=True)
+
         if st.button("🚀 INICIAR AUDITORIA OMNI", type="primary"):
-            if not GROQ_KEY and not GEMINI_KEY:
-                st.error("⚠️ ERRO CRÍTICO: Chaves API ausentes no st.secrets do Servidor.")
-            elif cmd or up or num_processo_input:
+            if cmd or up or num_processo_input:
                 st.toast("Iniciando Motor Hydra...", icon="🔥")
                 progress_bar = st.progress(5, text="Iniciando Córtex de Ingestão...")
-                time.sleep(0.5)
                 
-                progress_bar.progress(20, text="Extraindo dados...")
                 texto_arquivos, num_arquivos, usou_ocr = extrator_nexus_v3(up) if up else ("", 0, False)
                 
-                progress_bar.progress(40, text="Executando RAG e Redlining Automático...")
-                # AETHER OMNI ATIVADO POR PADRÃO (Sem perguntas ao usuário)
-                resposta, motor_usado = orquestrador_omni(comando=cmd, contexto_arquivos=texto_arquivos, num_processo_cnj=num_processo_input, groq_k=GROQ_KEY, gemini_k=GEMINI_KEY, cnj_k=CNJ_API_KEY)
+                progress_bar.progress(40, text="Processando RAG e Motor Chronos...")
+                resposta, motor_usado = orquestrador_omni(cmd, texto_arquivos, num_processo_input, agente_foco, ativar_redlining, valor_hora, data_intimacao, GROQ_KEY, GEMINI_KEY, CNJ_API_KEY)
                 
                 progress_bar.progress(75, text="Gravando no Banco de Dados (Fort Knox)...")
                 
-                if up: titulo_doc = up[0].name
-                elif cmd: titulo_doc = cmd[:30] + "..."
-                elif num_processo_input: titulo_doc = f"Proc: {num_processo_input}"
-                else: titulo_doc = "Auditoria Genérica"
-                
+                titulo_doc = up[0].name if up else (cmd[:30] + "..." if cmd else f"Proc: {num_processo_input}")
                 save_dossier(st.session_state.username, titulo_doc, resposta)
                 
-                docx_buffer = gerar_docx_aether(resposta)
-                pdf_data = gerar_pdf_aether(resposta)
+                docx_buffer = gerar_docx_aether(resposta, data_intimacao)
+                pdf_data = gerar_pdf_aether(resposta, data_intimacao)
                 
-                progress_bar.progress(100, text="Auditoria Salva com Sucesso!")
-                st.toast("Dossiê Executivo Salvo no Banco!", icon="✅")
-                time.sleep(0.5)
+                progress_bar.progress(100, text="Concluído!")
+                st.toast("Dossiê Executivo Salvo!", icon="✅")
                 progress_bar.empty()
                 
                 st.session_state.res_aether = resposta
                 st.session_state.res_docx = docx_buffer.getvalue()
                 st.session_state.res_pdf = pdf_data
                 st.session_state.telemetria = {
-                    "arquivos": str(num_arquivos),
-                    "volume": f"{len(texto_arquivos)/1024:.1f} KB",
-                    "tempo": get_data_hora_br().split("às ")[1], 
-                    "risco": "Gravado na Nuvem",
-                    "ocr": "Online" if usou_ocr else ("Standby" if MODULO_VISAO else "Offline"),
-                    "motor": motor_usado
+                    "arquivos": str(num_arquivos), "volume": f"{len(texto_arquivos)/1024:.1f} KB",
+                    "tempo": get_data_hora_br().split("às ")[1], "risco": "Gravado na Nuvem",
+                    "ocr": "Online" if usou_ocr else "Standby", "motor": motor_usado
                 }
-                st.rerun() 
-            else:
-                st.warning("Forneça um documento, processo ou comando.")
-                
+                st.rerun()
+
         if st.button("🚪 LOGOUT", type="secondary"):
             st.session_state.logged_in = False
             st.session_state.username = ""
             st.session_state.res_aether = None
             st.rerun()
 
-    # --- ÁREA PRINCIPAL (WORKSPACE) ---
+    # --- ÁREA PRINCIPAL ---
     st.markdown(f"""
     <div class="omni-topbar">
         <div style="font-weight: 600; color: #f8fafc; font-size: 0.8rem;">DASHBOARD ANALÍTICO</div>
@@ -689,9 +643,9 @@ else:
     st.markdown(f"""
     <div class="custom-kpi-grid">
         <div class="kpi-box"><span class="kpi-title">Documentos Lidos</span><span class="kpi-value">{t['arquivos']}</span></div>
-        <div class="kpi-box"><span class="kpi-title">Nó de Processamento</span><span class="kpi-value highlight">{t['motor']}</span></div>
+        <div class="kpi-box"><span class="kpi-title">Nó de Processamento</span><span class="kpi-value">{t['motor']}</span></div>
         <div class="kpi-box"><span class="kpi-title">Módulo de Visão</span><span class="kpi-value">{t['ocr']}</span></div>
-        <div class="kpi-box"><span class="kpi-title">Status da Operação</span><span class="kpi-value highlight">{t['risco']}</span></div>
+        <div class="kpi-box"><span class="kpi-title">Status da Operação</span><span class="kpi-value">{t['risco']}</span></div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -703,46 +657,28 @@ else:
             st.markdown(st.session_state.res_aether)
             st.markdown('</div>', unsafe_allow_html=True)
         else:
-            st.markdown('<div class="standby-container">', unsafe_allow_html=True)
-            st.markdown('<div class="welcome-title">Workspace Online.</div>', unsafe_allow_html=True)
-            st.markdown('<div class="welcome-subtitle">Injete documentos no painel lateral. A IA está 100% automatizada.</div>', unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
+            st.markdown('<div class="standby-container"><div class="welcome-title">Workspace Online.</div></div>', unsafe_allow_html=True)
             
-    with tab2:
+    with tab tab2:
         if st.session_state.res_aether:
-            st.write("Baixe o relatório (Protegido contra Extensões de Navegador):")
-            c1, c2, c3, c4 = st.columns(4)
-            # ⚠️ V341: BOTÕES HTML (O Bypass Definitivo do Adobe) ⚠️
-            with c1: st.markdown(gerar_botao_primario(st.session_state.res_docx, "AETHER_Parecer.docx", "📄 Download WORD", "application/octet-stream"), unsafe_allow_html=True)
-            with c2: st.markdown(gerar_botao_primario(st.session_state.res_pdf, "AETHER_Parecer.pdf", "📕 Download PDF", "application/octet-stream"), unsafe_allow_html=True)
-            with c3: st.markdown(gerar_botao_secundario(st.session_state.res_aether.encode('utf-8'), "AETHER_Parecer.txt", "📝 Download TXT", "application/octet-stream"), unsafe_allow_html=True)
-            with c4: st.markdown(gerar_botao_secundario(st.session_state.res_aether.encode('utf-8'), "AETHER_Parecer.md", "📊 Download MD", "application/octet-stream"), unsafe_allow_html=True)
+            st.write("Bypass de Extensão Ativo:")
+            c1, c2 = st.columns(2)
+            with c1: st.markdown(gerar_botao_primario(st.session_state.res_docx, "AETHER_Parecer.docx", "📄 Word (DOCX)", "application/octet-stream"), unsafe_allow_html=True)
+            with c2: st.markdown(gerar_botao_primario(st.session_state.res_pdf, "AETHER_Parecer.pdf", "📕 PDF Protegido", "application/octet-stream"), unsafe_allow_html=True)
             
-            st.markdown("<br>", unsafe_allow_html=True)
             if st.button("⟳ Limpar Tela", use_container_width=True):
                 st.session_state.res_aether = None
-                st.session_state.res_docx = None
-                st.session_state.res_pdf = None
-                st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--:--", "risco": "Aguardando", "ocr": "Inativo", "motor": "Standby"}
+                st.session_state.telemetria = {"arquivos": "0", "volume": "0 KB", "tempo": "--:--", "risco": "Aguardando", "ocr": "Inativo", "motor": "Standby"}
                 st.rerun()
-        else:
-            st.info("Gere uma análise primeiro.")
             
     with tab3:
-        if st.session_state.res_aether:
-            st.code(st.session_state.res_aether, language="markdown")
-        else:
-            st.info("Nenhum código raw na memória.")
+        if st.session_state.res_aether: st.code(st.session_state.res_aether, language="markdown")
             
     with tab4:
-        st.write(f"Cofre Criptografado: **{st.session_state.username.upper()}**")
         historico = load_history(st.session_state.username)
-        
-        if len(historico) == 0:
-            st.warning("O seu cofre de dados está vazio.")
+        if len(historico) == 0: st.warning("Cofre vazio.")
         else:
             for idx, (data_hora, titulo, conteudo) in enumerate(historico):
                 with st.expander(f"📁 {titulo} | 🕒 {data_hora}"):
                     st.markdown(conteudo)
-                    # Hack: Aqui mantemos st.download_button pro txt, mas pode ser bypass tambem se quiser, o importante é a exportacao principal estar blindada.
-                    st.download_button("Baixar Backup (TXT)", data=conteudo.encode('utf-8'), file_name=f"Backup_Aether_{idx}.txt", mime="application/octet-stream", key=f"bkp_{idx}")
+                    st.markdown(gerar_botao_secundario(conteudo.encode('utf-8'), f"Backup_{idx}.txt", "Baixar TXT", "application/octet-stream"), unsafe_allow_html=True)
