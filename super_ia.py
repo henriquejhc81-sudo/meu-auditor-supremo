@@ -1,7 +1,7 @@
 import streamlit as st
 
-# ⚠️ V368 APEX LOCK: LOGIN COMPRIMIDO (ZERO SCROLL) E CHAT BLINDADO ⚠️
-st.set_page_config(page_title="AETHER KARV V368", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
+# ⚠️ V369 APEX LOCKDOWN: LOGIN MATEMATICAMENTE COMPACTADO (ZERO SCROLL) ⚠️
+st.set_page_config(page_title="AETHER KARV V369", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
 
 import pandas as pd
 import os, time, base64, io, re
@@ -21,8 +21,8 @@ from PIL import Image
 # ==========================================
 def lgpd_anonymizer(texto):
     if not texto: return texto
-    texto_seguro = re.sub(r'\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b', '[CPF PROTEGIDO]', texto)
-    texto_seguro = re.sub(r'\b\d{2}\.?\d{3}\.?\d{3}/?\d{4}-?\d{2}\b', '[CNPJ PROTEGIDO]', texto_seguro)
+    texto_seguro = re.sub(r'\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b', '[CPF PROTEGIDO LGPD]', texto)
+    texto_seguro = re.sub(r'\b\d{2}\.?\d{3}\.?\d{3}/?\d{4}-?\d{2}\b', '[CNPJ PROTEGIDO LGPD]', texto_seguro)
     return texto_seguro
 
 # ==========================================
@@ -82,11 +82,10 @@ def create_new_user(username, password):
 
 init_db()
 
-# --- CONTROLE DE SESSÃO BLINDADO (V368 FIX) ---
+# --- CONTROLE DE SESSÃO BLINDADO ---
 if "theme_mode" not in st.session_state: st.session_state.theme_mode = "Dark" 
 if "logged_in" not in st.session_state: st.session_state.logged_in = False
 if "username" not in st.session_state: st.session_state.username = ""
-# A garantia de que a lista de histórico não gera 'KeyError' começa na iniciação correta:
 if "chat_history" not in st.session_state: st.session_state.chat_history = []
 if "res_aether" not in st.session_state: st.session_state.res_aether = None
 if "res_docx" not in st.session_state: st.session_state.res_docx = None
@@ -460,7 +459,7 @@ def gerar_pdf_aether(texto_markdown):
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V366 (O MOTOR CAMALEÃO E COMPRESSÃO DE SCROLL)
+# 🎨 CSS APEX V369 (O MOTOR CAMALEÃO E ANIQUILAÇÃO DE SCROLL)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 
@@ -470,12 +469,11 @@ bg_color = "#f1f5f9" if is_light else "#0F172A"
 text_primary = "#0f172a" if is_light else "#f8fafc"
 text_muted = "#475569" if is_light else "#94a3b8"
 panel_bg = "rgba(255, 255, 255, 0.95)" if is_light else "rgba(30, 41, 59, 0.85)"
-input_bg = "rgba(255, 255, 255, 1)" if is_light else "rgba(15, 23, 42, 0.9)"
+input_bg = "rgba(241, 245, 249, 1)" if is_light else "rgba(0, 0, 0, 0.3)"
 border_color = "rgba(0, 0, 0, 0.1)" if is_light else "rgba(255, 255, 255, 0.1)"
 accent_color = "#B8860B"
 
-# Fundo escuro usa a imagem vítrea; fundo claro usa cor sólida limpa.
-bg_css = f"background-color: {bg_color};" if is_light else f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-attachment: fixed;"
+bg_css = f"background-color: {bg_color};" if is_light else f"background: linear-gradient(rgba(11, 17, 32, 0.95), rgba(11, 17, 32, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-attachment: fixed;"
 
 css_code = f"""
 <style>
@@ -487,26 +485,26 @@ html, body {{ overflow: hidden !important; width: 100vw !important; height: 100v
 /* REMOVER SIDEBAR TOTALMENTE */
 [data-testid="stSidebar"], [data-testid="collapsedControl"] {{ display: none !important; }} 
 
-/* ⚠️ V366: FIM DO SCROLL GLOBAL. O CONTAINER É FIXO. ⚠️ */
+/* ⚠️ V369: FIM DO SCROLL GLOBAL NO CONTAINER ⚠️ */
 [data-testid="block-container"] {{ padding-top: 1rem !important; padding-bottom: 0rem !important; max-width: 100% !important; height: 100vh !important; overflow: hidden !important; margin: 0; }}
 
-/* ⚠️ V366: ANIQUILAÇÃO TOTAL DO FOCUS NATIVO (O Bug do Login) ⚠️ */
+/* ⚠️ V369: ANIQUILAÇÃO TOTAL DO FOCUS NATIVO ⚠️ */
 [data-baseweb="input"], [data-baseweb="base-input"] {{ background-color: transparent !important; border: none !important; padding: 0 !important; width: 100% !important; height: auto !important; }}
 [data-baseweb="input"]:focus-within, [data-baseweb="base-input"]:focus-within {{ box-shadow: none !important; outline: none !important; border: none !important; }}
 
 /* INPUTS SIMÉTRICOS E CORPORATIVOS */
-.stTextInput label, .stDateInput label, .stNumberInput label {{ font-size: 0.65rem !important; color: {text_muted} !important; font-weight: 700 !important; margin-bottom: 4px !important; text-transform: uppercase; letter-spacing: 0.5px; }}
+.stTextInput label, .stDateInput label, .stNumberInput label {{ font-size: 0.65rem !important; color: {text_muted} !important; font-weight: 700 !important; margin-bottom: 2px !important; text-transform: uppercase; letter-spacing: 0.5px; }}
 input {{ background-color: {input_bg} !important; border: 1px solid {border_color} !important; color: {text_primary} !important; font-size: 0.90rem !important; border-radius: 8px !important; padding: 10px 15px !important; transition: 0.2s; width: 100% !important; box-sizing: border-box !important; height: 42px !important; }}
 input:focus {{ border-color: {accent_color} !important; box-shadow: 0 0 0 1px {accent_color} !important; outline: none !important; }}
 
-/* ⚠️ V366: COMPRESSÃO DO LOGIN PARA MATAR O SCROLL ⚠️ */
+/* ⚠️ V369: COMPRESSÃO DO LOGIN PARA MATAR O SCROLL DEFINITIVO ⚠️ */
 [data-testid="stForm"] {{ border: none !important; padding: 0 !important; background: transparent !important; box-shadow: none !important; width: 100%; }}
-.login-wrapper {{ display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; width: 100%; }}
-.login-box {{ background: {panel_bg}; padding: 30px; border-radius: 12px; border: 1px solid {border_color}; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; width: 100%; max-width: 360px; backdrop-filter: blur(20px); }}
-.login-title {{ color: {text_primary}; font-size: 1.6rem; font-weight: 800; margin-bottom: 5px; letter-spacing: 1px; }}
+.login-wrapper {{ display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 85vh; width: 100%; }}
+.login-box {{ background: {panel_bg}; padding: 30px; border-radius: 12px; border: 1px solid {border_color}; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; width: 100%; max-width: 360px; backdrop-filter: blur(20px); margin-top: -5vh; }}
+.login-title {{ color: {text_primary}; font-size: 1.6rem; font-weight: 800; margin-bottom: 2px; letter-spacing: 1px; }}
 .login-subtitle {{ color: {accent_color}; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; font-weight: 700; }}
 
-/* ⚠️ V366: LAYOUT SPLIT-SCREEN TRAVADO ⚠️ */
+/* ⚠️ V369: LAYOUT SPLIT-SCREEN TRAVADO ⚠️ */
 .split-layout {{ display: flex; height: calc(100vh - 65px); gap: 15px; }}
 .control-panel {{ width: 320px; background: {panel_bg}; padding: 15px; border-radius: 12px; height: 100%; display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid {border_color}; }}
 .stage-panel {{ flex: 1; padding: 0px 15px 15px 5px; height: 100%; overflow-y: auto; }}
@@ -549,30 +547,20 @@ input:focus {{ border-color: {accent_color} !important; box-shadow: 0 0 0 1px {a
 st.markdown(css_code, unsafe_allow_html=True)
 
 # ==========================================
-# 🔐 MURALHA DE GELO (LOGIN ENTERPRISE V366)
+# 🔐 MURALHA DE GELO (LOGIN V369 - COMPACTO E LIMPO)
 # ==========================================
 if not st.session_state.logged_in:
     st.markdown('<div class="login-wrapper">', unsafe_allow_html=True)
-    with st.form("login_form"):
-        st.markdown("""
+    st.markdown("""
         <div class="login-box">
             <div class="login-title">AETHER KARV</div>
             <div class="login-subtitle">SECURE CLOUD</div>
-        """, unsafe_allow_html=True)
-        
+    """, unsafe_allow_html=True)
+    
+    with st.form("login_form"):
         login_user = st.text_input("ID Corporativo", placeholder="advogado@dominio.com")
         login_pass = st.text_input("Chave Mestra", type="password", placeholder="Sua senha...")
-        
         submit_log = st.form_submit_button("AUTENTICAR SESSÃO", use_container_width=True)
-        
-        # Botões Auxiliares de SSO e Recuperação, compactados para matar o scroll
-        c_opt1, c_opt2 = st.columns(2)
-        with c_opt1: 
-            if st.button("Esqueci a Senha", use_container_width=True, type="secondary"): st.toast("Recuperação enviada.", icon="ℹ️")
-        with c_opt2:
-            if st.button("Google SSO", use_container_width=True, type="secondary"): st.toast("Integração OAuth em breve.", icon="🌐")
-            
-        st.markdown('</div>', unsafe_allow_html=True)
         
         if submit_log:
             conn = sqlite3.connect('aether_fortknox.db')
@@ -594,17 +582,22 @@ if not st.session_state.logged_in:
                         st.success("Sessão criada. Entre novamente.")
                 else: st.warning("Preencha todos os campos.")
             conn.close()
-    st.markdown('</div>', unsafe_allow_html=True)
+
+    # O botão secundário fica isolado fora do form, evitando conflito de submit
+    if st.button("Esqueci a Senha", use_container_width=True, type="secondary"):
+        st.toast("Instruções de recuperação enviadas ao administrador.", icon="ℹ️")
+            
+    st.markdown('</div></div>', unsafe_allow_html=True)
 
 # ==========================================
-# INTERFACE PRINCIPAL (SPLIT-SCREEN BLINDADA)
+# INTERFACE PRINCIPAL (SPLIT-SCREEN TRAVADA)
 # ==========================================
 else:
     GROQ_KEY = st.secrets.get("GROQ_API_KEY", "")
     GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", "")
     CNJ_API_KEY = st.secrets.get("CNJ_API_KEY", "DEMO_KEY")
 
-    # --- TOP NAV & TOGGLE THEME (V366) ---
+    # --- TOP NAV & TOGGLE THEME (V369) ---
     c_nav_left, c_nav_right = st.columns([4, 1])
     with c_nav_left:
         st.markdown(f"""
@@ -629,7 +622,6 @@ else:
                 st.session_state.res_aether = None
                 st.rerun()
 
-    # ⚠️ V366: A GRANDE DIVISÃO (SPLIT SCREEN) ⚠️
     c_painel, c_palco = st.columns([1, 2.8], gap="small")
 
     with c_painel:
@@ -768,7 +760,7 @@ else:
                             msg_wa = "Prezado(a), a análise jurídica avançada do seu caso foi concluída pela nossa I.A. Enviaremos o documento a seguir."
                             url_msg = urllib.parse.quote(msg_wa)
                             link_wa = f"https://wa.me/{re.sub(r'[^0-9]', '', telefone)}?text={url_msg}"
-                            st.markdown(f'<a href="{link_wa}" target="_blank" style="background: transparent; color: {text_primary}; border: 1px solid {border_color}; border-radius: 6px; padding: 8px; text-align: center; text-decoration: none; display: block; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; margin-top:2px;">Abrir Conversa</a>', unsafe_allow_html=True)
+                            st.markdown(f'<a href="{link_wa}" target="_blank" style="background: transparent; color: {text_primary}; border: 1px solid {border_color}; border-radius: 6px; padding: 10px; text-align: center; text-decoration: none; display: block; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; margin-top:5px;">Abrir Conversa</a>', unsafe_allow_html=True)
                         else: st.warning("Insira o contato.")
                 st.markdown(f"<hr style='border-color: {border_color}; margin: 15px 0;'>", unsafe_allow_html=True)
 
