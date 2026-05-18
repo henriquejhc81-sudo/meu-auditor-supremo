@@ -1,7 +1,7 @@
 import streamlit as st
 
-# ⚠️ V365 APEX ENTERPRISE: REDESIGN HARVEY-LIKE (CLEAN UI & SINGLE FORM LOGIN) ⚠️
-st.set_page_config(page_title="AETHER KARV V365", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
+# ⚠️ V366 APEX CHAMELEON: DESIGN ENTERPRISE (DARK/LIGHT MODE + LOGIN SIMÉTRICO) ⚠️
+st.set_page_config(page_title="AETHER KARV V366", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
 
 import pandas as pd
 import os, time, base64, io, re
@@ -82,7 +82,8 @@ def create_new_user(username, password):
 
 init_db()
 
-# --- CONTROLE DE SESSÃO ---
+# --- CONTROLE DE SESSÃO & TEMA VISUAL ---
+if "theme_mode" not in st.session_state: st.session_state.theme_mode = "Dark" # Padão Escuro
 if "logged_in" not in st.session_state: st.session_state.logged_in = False
 if "username" not in st.session_state: st.session_state.username = ""
 if "chat_history" not in st.session_state: st.session_state.chat_history = [] 
@@ -132,17 +133,13 @@ def get_base64_image(file):
 
 def gerar_botao_primario(buffer, filename, label, mime):
     b64 = base64.b64encode(buffer).decode()
-    css = "background: #f8fafc; color: #0f172a; border-radius: 8px; padding: 12px; text-align: center; text-decoration: none; display: block; font-size: 0.9rem; font-weight: 700; text-transform: uppercase; margin-bottom: 5px; border: 1px solid #e2e8f0; transition: 0.3s;"
-    hover_css = "this.style.background='#e2e8f0'; this.style.transform='translateY(-2px)';"
-    out_css = "this.style.background='#f8fafc'; this.style.transform='translateY(0)';"
-    return f'<a href="data:{mime};base64,{b64}" download="{filename}" style="{css}" onmouseover="{hover_css}" onmouseout="{out_css}">{label}</a>'
+    css = "background: #1e293b; color: #f8fafc; border-radius: 8px; padding: 12px; text-align: center; text-decoration: none; display: block; font-size: 0.9rem; font-weight: 700; text-transform: uppercase; margin-bottom: 5px; border: 1px solid #D4AF37; transition: 0.3s;"
+    return f'<a href="data:{mime};base64,{b64}" download="{filename}" style="{css}">{label}</a>'
 
 def gerar_botao_secundario(buffer, filename, label, mime):
     b64 = base64.b64encode(buffer).decode()
-    css = "background: transparent; color: #94a3b8; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 12px; text-align: center; text-decoration: none; display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; transition: 0.3s;"
-    hover_css = "this.style.background='rgba(255,255,255,0.05)'; this.style.color='#f8fafc';"
-    out_css = "this.style.background='transparent'; this.style.color='#94a3b8';"
-    return f'<a href="data:{mime};base64,{b64}" download="{filename}" style="{css}" onmouseover="{hover_css}" onmouseout="{out_css}">{label}</a>'
+    css = "background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; text-align: center; text-decoration: none; display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; transition: 0.3s;"
+    return f'<a href="data:{mime};base64,{b64}" download="{filename}" style="{css}">{label}</a>'
 
 def calcular_prazo_cpc(dias_uteis, data_inicial):
     data_atual = datetime(data_inicial.year, data_inicial.month, data_inicial.day)
@@ -462,106 +459,98 @@ def gerar_pdf_aether(texto_markdown):
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V365 (DESIGN CORPORATIVO HARVEY-LIKE)
+# 🎨 CSS APEX V366 (O MOTOR CAMALEÃO - TEMA DINÂMICO)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
-# Fundo escuro e sóbrio (Slate), sem gradientes agressivos para dar ar mais corporativo
-bg_css = f"background: linear-gradient(rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.98)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-position: center; background-attachment: fixed;" if back_apex_b64 else "background-color: #0F172A;"
+
+# Variáveis Dinâmicas baseadas no Tema
+is_light = st.session_state.theme_mode == "Light"
+bg_color = "#f1f5f9" if is_light else "#0F172A"
+text_primary = "#0f172a" if is_light else "#f8fafc"
+text_muted = "#64748b" if is_light else "#94a3b8"
+panel_bg = "rgba(255, 255, 255, 0.9)" if is_light else "rgba(30, 41, 59, 0.85)"
+border_color = "rgba(0, 0, 0, 0.1)" if is_light else "rgba(255, 255, 255, 0.15)"
+input_bg = "rgba(255, 255, 255, 1)" if is_light else "rgba(15, 23, 42, 0.9)"
+accent_color = "#B8860B"
+
+bg_css = f"background-color: {bg_color};" if is_light else f"background: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('data:image/png;base64,{back_apex_b64}'); background-size: cover; background-attachment: fixed;"
 
 css_code = f"""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 html, body {{ overflow-x: hidden !important; width: 100vw !important; margin: 0; padding: 0; }}
-.stApp {{ {bg_css} color: #e2e8f0; font-family: 'Inter', sans-serif; }}
+.stApp {{ {bg_css} color: {text_primary}; font-family: 'Inter', sans-serif; transition: background 0.3s ease; }}
 [data-testid="stHeader"], footer {{ display: none !important; }}
-
-/* REMOVER SIDEBAR TOTALMENTE */
 [data-testid="stSidebar"], [data-testid="collapsedControl"] {{ display: none !important; }} 
-[data-testid="block-container"] {{ padding-top: 2rem !important; padding-bottom: 2rem !important; max-width: 1100px !important; margin: 0 auto; }}
 
-/* ⚠️ V365: CORREÇÃO DEFINITIVA DO LOGIN (FIM DO QUADRADO DUPLO) ⚠️ */
-/* Ao invés de lutar contra o st.form, transformamos o próprio st.form na caixa de Login */
-[data-testid="stForm"] {{
-    background: rgba(30, 41, 59, 0.6) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 16px !important;
-    padding: 50px 40px !important;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.5) !important;
-    max-width: 420px !important;
-    margin: 15vh auto !important;
-    backdrop-filter: blur(15px) !important;
-}}
+/* COMPRESSÃO DE SCROLL */
+[data-testid="block-container"] {{ padding-top: 1.5rem !important; padding-bottom: 2rem !important; max-width: 1100px !important; margin: 0 auto; }}
 
-/* REMOVE BORDAS FANTASMAS NATIIVAS DO STREAMLIT NOS INPUTS */
-[data-baseweb="input"], [data-baseweb="base-input"] {{ background-color: transparent !important; border: none !important; }}
-[data-baseweb="input"]:focus-within {{ box-shadow: none !important; outline: none !important; }}
+/* ⚠️ V366: ANIQUILAÇÃO TOTAL DO FOCUS NATIVO (O Bug do Login) ⚠️ */
+[data-baseweb="input"], [data-baseweb="base-input"] {{ background-color: transparent !important; border: none !important; padding: 0 !important; width: 100% !important; }}
+[data-baseweb="input"]:focus-within, [data-baseweb="base-input"]:focus-within {{ box-shadow: none !important; outline: none !important; border: none !important; }}
 
-.login-title {{ color: #f8fafc; font-size: 2.2rem; font-weight: 800; margin-bottom: 5px; line-height: 1.2; letter-spacing: 1px; text-align: center; }}
-.login-subtitle {{ color: #94a3b8; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 35px; text-align: center; font-weight: 600; }}
+/* INPUTS SIMÉTRICOS E INSTITUCIONAIS */
+.stTextInput label, .stDateInput label, .stNumberInput label {{ font-size: 0.70rem !important; color: {text_muted} !important; font-weight: 700 !important; margin-bottom: 4px !important; text-transform: uppercase; letter-spacing: 0.5px; }}
+input {{ background-color: {input_bg} !important; border: 1px solid {border_color} !important; color: {text_primary} !important; font-size: 0.95rem !important; border-radius: 8px !important; padding: 12px 16px !important; transition: 0.2s; width: 100% !important; box-sizing: border-box !important; height: 46px !important; }}
+input:focus {{ border-color: {accent_color} !important; box-shadow: 0 0 0 1px {accent_color} !important; outline: none !important; }}
 
-/* NAV BAR HARVEY STYLE */
-.top-nav-os {{ display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 30px; }}
-.os-brand h1 {{ margin: 0; font-family: 'Inter', sans-serif; font-size: 1.5rem; color: #f8fafc; font-weight: 800; letter-spacing: 1px; }}
-.os-brand span {{ color: #64748b; font-size: 0.75rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; padding-left: 10px; }}
+/* ⚠️ V366: LOGIN CENTRADO ABSOLUTO E COMPLETO ⚠️ */
+[data-testid="stForm"] {{ border: none !important; padding: 0 !important; background: transparent !important; box-shadow: none !important; }}
+.login-wrapper {{ display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 85vh; width: 100%; }}
+.login-box {{ background: {panel_bg}; padding: 45px 40px; border-radius: 16px; border: 1px solid {border_color}; box-shadow: 0 20px 40px rgba(0,0,0,0.3); text-align: center; width: 100%; max-width: 420px; backdrop-filter: blur(20px); }}
+.login-title {{ color: {text_primary}; font-size: 2rem; font-weight: 800; margin-bottom: 5px; line-height: 1.2; letter-spacing: 1px; }}
+.login-subtitle {{ color: {accent_color}; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; font-weight: 700; }}
 
-/* TABS ELEGANTES */
-[data-testid="stTabs"] {{ background: transparent !important; }}
-[data-testid="stTabs"] > div:first-child {{ border-bottom: 1px solid rgba(255,255,255,0.05) !important; margin-bottom: 25px; }}
-[data-testid="stTabs"] button {{ padding: 10px 20px !important; font-size: 0.90rem !important; font-weight: 600 !important; color: #64748b !important; border: none !important; background: transparent !important; transition: 0.3s; }}
-[data-testid="stTabs"] button:hover {{ color: #f8fafc !important; }}
-[data-testid="stTabs"] button[aria-selected="true"] {{ color: #f8fafc !important; border-bottom: 2px solid #D4AF37 !important; background: transparent !important; }}
+/* TOP NAV DA APLICAÇÃO */
+.top-nav-os {{ display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid {border_color}; margin-bottom: 25px; }}
+.os-brand h1 {{ margin: 0; font-size: 1.5rem; color: {text_primary}; font-weight: 800; letter-spacing: 1px; }}
+.os-brand span {{ color: {text_muted}; font-size: 0.70rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; padding-left: 10px; }}
 
-/* ⚠️ V365: INPUTS CORPORATIVOS (LARGER & CLEANER) ⚠️ */
-.stTextInput label, .stDateInput label, .stNumberInput label {{ font-size: 0.75rem !important; color: #94a3b8 !important; font-weight: 600 !important; margin-bottom: 6px !important; text-transform: uppercase; letter-spacing: 0.5px; }}
-.stTextInput input, .stDateInput input, .stNumberInput input {{ background-color: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255,255,255,0.1) !important; color: #f8fafc !important; font-size: 1rem !important; border-radius: 8px !important; padding: 14px 16px !important; margin-bottom: 10px !important; transition: 0.2s; width: 100%; }}
-.stTextInput input:focus, .stDateInput input:focus, .stNumberInput input:focus {{ border-color: #D4AF37 !important; box-shadow: 0 0 0 1px #D4AF37 !important; }}
+/* TABS E OMNI-HERO (Aumentando Contraste) */
+[data-testid="stTabs"] > div:first-child {{ border-bottom: 1px solid {border_color} !important; margin-bottom: 20px; }}
+[data-testid="stTabs"] button {{ font-size: 0.85rem !important; font-weight: 700 !important; color: {text_muted} !important; transition: 0.3s; text-transform: uppercase; padding: 8px 15px !important; }}
+[data-testid="stTabs"] button[aria-selected="true"] {{ color: {text_primary} !important; border-bottom: 2px solid {accent_color} !important; }}
 
-/* UPLOADER INTEGRADO */
-[data-testid="stFileUploaderDropzone"] {{ padding: 25px !important; min-height: 100px !important; margin-bottom: 15px !important; border: 1px dashed rgba(255, 255, 255, 0.15) !important; background: rgba(15, 23, 42, 0.4) !important; border-radius: 8px !important; transition: 0.3s; text-align: center; }}
-[data-testid="stFileUploaderDropzone"]:hover {{ border-color: rgba(255,255,255,0.4) !important; background: rgba(255,255,255,0.02) !important; }}
-[data-testid="stFileUploaderDropzone"] > div > span {{ font-size: 0.95rem !important; color: #cbd5e1 !important; font-weight: 500; }}
-[data-testid="stUploadedFile"] {{ background: rgba(30, 41, 59, 0.8) !important; border-radius: 6px; padding: 10px; margin-top: 8px; border: 1px solid rgba(255,255,255,0.1); }}
+[data-testid="stFileUploaderDropzone"] {{ padding: 25px !important; min-height: 100px !important; margin-bottom: 15px !important; border: 2px dashed {border_color} !important; background: {input_bg} !important; border-radius: 12px !important; text-align: center; }}
+[data-testid="stFileUploaderDropzone"] > div > span {{ font-size: 0.90rem !important; color: {text_primary} !important; font-weight: 600; }}
+[data-testid="stUploadedFile"] {{ background: {panel_bg} !important; border-radius: 6px; padding: 10px; margin-top: 8px; border-left: 3px solid {accent_color}; }}
 
-/* BOTÃO DE EXECUÇÃO (SOBRIEDADE ENTERPRISE) */
-.stButton > button[kind="primary"] {{ background: #f8fafc !important; color: #0f172a !important; border-radius: 8px !important; font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: 1px !important; padding: 14px !important; border: none !important; width: 100% !important; transition: 0.2s; margin-top: 25px; font-size: 1rem !important; }}
-.stButton > button[kind="primary"]:hover {{ background: #e2e8f0 !important; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255,255,255,0.1); }}
+/* BOTÕES DE DISPARO (Primary) */
+.stButton > button[kind="primary"] {{ background: {text_primary} !important; color: {bg_color} !important; border-radius: 8px !important; font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: 1px !important; padding: 14px !important; border: none !important; width: 100% !important; transition: 0.2s; margin-top: 23px; height: 46px !important; }}
+.stButton > button[kind="primary"]:hover {{ transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); opacity: 0.9; }}
 
-.stButton > button[kind="secondary"] {{ background: transparent !important; color: #94a3b8 !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 6px !important; font-weight: 600 !important; transition: 0.2s; padding: 10px 16px !important; font-size: 0.80rem !important; width: 100% !important; }}
-.stButton > button[kind="secondary"]:hover {{ background: rgba(255,255,255,0.05) !important; color: #f8fafc !important; }}
+.stButton > button[kind="secondary"] {{ background: transparent !important; color: {text_muted} !important; border: 1px solid {border_color} !important; border-radius: 6px !important; font-weight: 600 !important; padding: 8px 12px !important; font-size: 0.75rem !important; width: 100% !important; }}
+.stButton > button[kind="secondary"]:hover {{ background: {border_color} !important; color: {text_primary} !important; }}
 
-/* BADGE DE SEGURANÇA (NOVA ADIÇÃO) */
-.security-badge {{ display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.70rem; color: #22c55e; margin-top: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }}
+.security-badge {{ text-align: center; font-size: 0.70rem; color: #22c55e; margin-top: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }}
 
-.custom-kpi-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; margin-top: 10px; }}
-.kpi-box {{ background: transparent; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); padding: 20px; transition: 0.3s; }}
-.kpi-title {{ color: #64748b; font-size: 0.70rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; display:block; margin-bottom: 8px; }}
-.kpi-value {{ color: #f8fafc; font-size: 1.8rem; font-weight: 700; line-height: 1.1; display:block; }}
+.custom-kpi-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; }}
+.kpi-box {{ background: {panel_bg}; border-radius: 10px; border: 1px solid {border_color}; border-left: 4px solid {accent_color}; padding: 15px; }}
+.kpi-title {{ color: {text_muted}; font-size: 0.65rem; text-transform: uppercase; font-weight: 700; margin-bottom: 5px; }}
+.kpi-value {{ color: {text_primary}; font-size: 1.4rem; font-weight: 800; }}
 
-.kanban-board {{ display: flex; gap: 20px; overflow-x: auto; padding-bottom: 15px; margin-top: 20px; }}
-.kanban-col {{ background: rgba(30, 41, 59, 0.3); border-radius: 12px; padding: 20px; min-width: 300px; flex: 1; border: 1px solid rgba(255,255,255,0.05); }}
-.kanban-col-title {{ font-size: 0.90rem; font-weight: 700; color: #f8fafc; text-transform: uppercase; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }}
-.kanban-card {{ background: rgba(15, 23, 42, 0.8); border-left: 3px solid #64748b; padding: 15px; border-radius: 6px; margin-bottom: 12px; font-size: 0.90rem; color: #cbd5e1; border-top: 1px solid rgba(255,255,255,0.05); border-right: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05); cursor: grab; transition: 0.2s; }}
-.kanban-card:hover {{ border-left-color: #f8fafc; }}
-
-.stProgress > div > div > div > div {{ background-color: #f8fafc !important; }}
+.kanban-board {{ display: flex; gap: 20px; overflow-x: auto; padding-bottom: 15px; margin-top: 15px; }}
+.kanban-col {{ background: {panel_bg}; border-radius: 10px; padding: 15px; min-width: 280px; flex: 1; border: 1px solid {border_color}; }}
+.kanban-col-title {{ font-size: 0.85rem; font-weight: 800; color: {text_primary}; text-transform: uppercase; margin-bottom: 15px; border-bottom: 1px solid {border_color}; padding-bottom: 8px; }}
+.kanban-card {{ background: {input_bg}; border-left: 3px solid {accent_color}; padding: 12px; border-radius: 6px; margin-bottom: 10px; font-size: 0.85rem; color: {text_primary}; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 1px solid {border_color}; }}
+.stProgress > div > div > div > div {{ background-color: {accent_color} !important; }}
 </style>
 """
 st.markdown(css_code, unsafe_allow_html=True)
 
 # ==========================================
-# 🔐 MURALHA DE GELO (LOGIN PERFEITO V365)
+# 🔐 MURALHA DE GELO (LOGIN ENTERPRISE)
 # ==========================================
 if not st.session_state.logged_in:
+    # ⚠️ V366: CAIXA DE LOGIN GEOMETRICAMENTE CENTRADA (Flexbox) ⚠️
+    st.markdown('<div class="login-wrapper"><div class="login-box">', unsafe_allow_html=True)
+    st.markdown('<div class="login-title">AETHER KARV</div><div class="login-subtitle">ENTERPRISE CLOUD</div>', unsafe_allow_html=True)
+    
     with st.form("login_form"):
-        # Sem divs de custom-box internas, estilizamos o st.form diretamente no CSS
-        st.markdown('<div class="login-title">AETHER KARV</div>', unsafe_allow_html=True)
-        st.markdown('<div class="login-subtitle">ENTERPRISE EDITION</div>', unsafe_allow_html=True)
-        
-        login_user = st.text_input("Usuário", placeholder="ID de Acesso...")
-        login_pass = st.text_input("Senha", type="password", placeholder="Chave de Segurança...")
-        
-        st.markdown("<br>", unsafe_allow_html=True)
-        submit_log = st.form_submit_button("AUTENTICAR SESSÃO", use_container_width=True)
+        login_user = st.text_input("ID Corporativo (E-mail ou OAB)", placeholder="advogado@escritorio.com")
+        login_pass = st.text_input("Chave de Segurança", type="password", placeholder="Sua senha secreta...")
+        submit_log = st.form_submit_button("AUTENTICAR", use_container_width=True)
         
         if submit_log:
             conn = sqlite3.connect('aether_fortknox.db')
@@ -571,81 +560,94 @@ if not st.session_state.logged_in:
             if user:
                 st.session_state.logged_in = True
                 st.session_state.username = login_user
-                st.toast(f"Acesso Concedido, {login_user.upper()}.", icon="✅")
+                st.toast(f"Acesso Seguro: {login_user.upper()}", icon="✅")
                 st.rerun()
             else:
                 if login_user and login_pass:
                     c.execute("SELECT * FROM users WHERE username=?", (login_user,))
-                    if c.fetchone(): st.error("Autenticação Falhou.")
+                    if c.fetchone(): st.error("Falha na Autenticação.")
                     else:
                         c.execute("INSERT INTO users (username, password) VALUES (?, ?)", (login_user, login_pass))
                         conn.commit()
-                        st.success("Credenciais Registradas. Autentique novamente.")
-                else: st.warning("Requer preenchimento.")
+                        st.success("Sessão criada. Entre novamente.")
+                else: st.warning("Preencha todos os campos.")
             conn.close()
+            
+    # ⚠️ V366: OPÇÕES ENTERPRISE ADICIONAIS (ESTILO ASTREA/HARVEY) ⚠️
+    st.markdown("<br>", unsafe_allow_html=True)
+    c_opt1, c_opt2 = st.columns(2)
+    with c_opt1: 
+        if st.button("Esqueci a Senha", use_container_width=True, type="secondary"): st.toast("Recuperação enviada ao admin.", icon="ℹ️")
+    with c_opt2:
+        if st.button("SSO / Google", use_container_width=True, type="secondary"): st.toast("Integração OAuth em breve.", icon="🌐")
+    
+    st.markdown('</div></div>', unsafe_allow_html=True)
 
 # ==========================================
-# INTERFACE PRINCIPAL (HARVEY-LIKE)
+# INTERFACE PRINCIPAL (SISTEMA OMNI-OS)
 # ==========================================
 else:
     GROQ_KEY = st.secrets.get("GROQ_API_KEY", "")
     GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", "")
     CNJ_API_KEY = st.secrets.get("CNJ_API_KEY", "DEMO_KEY")
 
-    # --- TOP NAV CORPORATIVA ---
-    c_nav_left, c_nav_right = st.columns([4, 1])
+    # --- TOP NAV & TOGGLE THEME ---
+    c_nav_left, c_nav_right = st.columns([3, 1])
     with c_nav_left:
         st.markdown(f"""
-            <div class="top-nav-os" style="border:none; padding:0; margin-bottom:20px;">
+            <div class="top-nav-os" style="border:none; padding:0;">
                 <div class="os-brand">
-                    <h1>AETHER KARV</h1><span>WORKPACE | {st.session_state.username.upper()}</span>
+                    <h1>AETHER KARV</h1><span>Sessão: {st.session_state.username.upper()}</span>
                 </div>
             </div>
         """, unsafe_allow_html=True)
     with c_nav_right:
-        if st.button("Sair da Sessão", use_container_width=True, type="secondary"):
-            st.session_state.logged_in = False
-            st.session_state.username = ""
-            st.session_state.res_aether = None
-            st.session_state.chat_history = []
-            st.rerun()
+        c_tgg, c_out = st.columns(2)
+        with c_tgg:
+            # ⚠️ V366: TOGGLE DE TEMA (DARK / LIGHT MODE) ⚠️
+            is_dark = st.session_state.theme_mode == "Dark"
+            toggle_label = "🌙 Escuro" if is_dark else "☀️ Claro"
+            if st.button(toggle_label, use_container_width=True, type="secondary"):
+                st.session_state.theme_mode = "Light" if is_dark else "Dark"
+                st.rerun()
+        with c_out:
+            if st.button("🚪 Sair", use_container_width=True, type="secondary"):
+                st.session_state.logged_in = False
+                st.session_state.username = ""
+                st.session_state.res_aether = None
+                st.rerun()
 
-    tab_op, tab_dash, tab_cofre = st.tabs(["CÓRTEX CENTRAL", "KANBAN & KPIS", "EXPORTAÇÃO & COFRE"])
+    tab_op, tab_dash, tab_cofre = st.tabs(["⚡ CÓRTEX DE IA", "📊 GESTÃO (KANBAN)", "🗄️ EXPORTAR & COFRE"])
 
     with tab_op:
         # DESIGN HARVEY: Campo de Prompt Gigante e Centralizado
-        cmd = st.text_input("Comando Legal", placeholder="Descreva o que a IA deve fazer. Ex: Analise os riscos deste contrato...", key="main_cmd")
+        cmd = st.text_input("Instrução Principal", placeholder="O que devo analisar, criar ou pesquisar hoje?", key="main_cmd")
         
-        # Secundários em linha limpa
         c_up, c_jud = st.columns([1.5, 1])
         with c_up:
-            up = st.file_uploader("Documentos", accept_multiple_files=True, label_visibility="collapsed", key=f"up_{st.session_state.uploader_id}")
+            up = st.file_uploader("Arraste os Documentos Aqui", accept_multiple_files=True, label_visibility="collapsed", key=f"up_{st.session_state.uploader_id}")
         with c_jud:
             num_processo_input = st.text_input("DataJud/OAB", placeholder="Captura via Nº Processo ou OAB/SP...", label_visibility="collapsed")
-            
-            # Parâmetros espremidos num expander limpo para não poluir
-            with st.expander("Parâmetros de Fatura e Prazo"):
+            with st.expander("Parâmetros (Fatura e Prazos)"):
                 c_date, c_val = st.columns(2)
                 with c_date: data_intimacao = st.date_input("Data Intimação", value=date.today(), format="DD/MM/YYYY")
                 with c_val: valor_hora = st.number_input("Valor Hora (R$)", min_value=50.0, max_value=5000.0, value=350.0, step=50.0)
 
-        # Botões de Ação Inferiores
-        c_btn_run, c_btn_clean = st.columns([3, 1])
+        c_btn_run, c_btn_clean = st.columns([4, 1])
         with c_btn_run:
-            btn_iniciar = st.button("PROCESSAR DADOS", type="primary", use_container_width=True)
+            btn_iniciar = st.button("PROCESSAR DADOS NA I.A.", type="primary", use_container_width=True)
         with c_btn_clean:
-            st.markdown("<div style='height:25px;'></div>", unsafe_allow_html=True) # Espaçador
-            if st.button("Limpar Inputs", type="secondary", use_container_width=True):
+            st.markdown("<div style='height:23px;'></div>", unsafe_allow_html=True) 
+            if st.button("🧹 Limpar Inputs", type="secondary", use_container_width=True):
                 st.session_state.uploader_id += 1
                 st.rerun()
                 
-        # Selo de Segurança LGPD Exibido na Tela Principal
-        st.markdown('<div class="security-badge">🔒 End-to-End Encrypted & LGPD Compliant Protocol</div>', unsafe_allow_html=True)
+        st.markdown('<div class="security-badge">🔒 LGPD COMPLIANT & END-TO-END ENCRYPTED</div>', unsafe_allow_html=True)
 
         if btn_iniciar:
             if cmd or up or num_processo_input:
                 st.toast("Córtex Ativado...", icon="⚡")
-                progress_bar = st.progress(5, text="Camada de Segurança (LGPD) e Ingestão...")
+                progress_bar = st.progress(5, text="Aplicação de Escudo LGPD e Ingestão...")
                 
                 try: texto_arquivos, num_arquivos, usou_ocr = extrator_nexus_v3(up, GEMINI_KEY) if up else ("", 0, False)
                 except Exception: texto_arquivos, num_arquivos, usou_ocr = "", 0, False
@@ -661,7 +663,7 @@ else:
                 docx_buffer = gerar_docx_aether(resposta)
                 pdf_data = gerar_pdf_aether(resposta)
                 
-                progress_bar.progress(100, text="Processamento Finalizado.")
+                progress_bar.progress(100, text="Finalizado.")
                 st.toast("Dossiê Gerado!", icon="✅")
                 progress_bar.empty()
                 
@@ -674,31 +676,23 @@ else:
             else:
                 st.warning("Forneça contexto (documento, OAB ou instrução) para análise.")
 
-        # --- ÁREA DE RESULTADOS (DOSSIÊ E CHAT) ---
         if st.session_state.res_aether:
-            st.markdown("<hr style='border-color: rgba(255,255,255,0.05); margin: 40px 0;'>", unsafe_allow_html=True)
-            
+            st.markdown("<hr style='border-color: rgba(255,255,255,0.1); margin: 30px 0;'>", unsafe_allow_html=True)
             c_res, c_chat = st.columns([1.8, 1.2], gap="large")
-            
             with c_res:
-                st.markdown("<h3 style='color:#f8fafc; font-size:1.1rem; font-weight:600; margin-bottom:15px;'>📄 Output do Dossiê</h3>", unsafe_allow_html=True)
-                st.markdown('<div style="background: transparent; padding: 0; font-size: 0.95rem; line-height: 1.6; color:#e2e8f0;">', unsafe_allow_html=True)
-                st.markdown(st.session_state.res_aether)
-                st.markdown('</div>', unsafe_allow_html=True)
-                
+                st.markdown("<h3 style='font-size:1rem; font-weight:700; margin-bottom:10px; text-transform:uppercase;'>📄 Output Processado</h3>", unsafe_allow_html=True)
+                st.markdown(f'<div style="background: {input_bg}; padding: 25px; border-radius: 8px; border: 1px solid {border_color}; font-size: 0.95rem; line-height: 1.6;">{st.session_state.res_aether}</div>', unsafe_allow_html=True)
             with c_chat:
-                st.markdown("<h3 style='color:#f8fafc; font-size:1.1rem; font-weight:600; margin-bottom:15px;'>💬 Omni-Chat Interativo</h3>", unsafe_allow_html=True)
+                st.markdown("<h3 style='font-size:1rem; font-weight:700; margin-bottom:10px; text-transform:uppercase;'>💬 Omni-Chat Interativo</h3>", unsafe_allow_html=True)
                 try:
                     valid_history = [m for m in st.session_state.chat_history if isinstance(m, dict) and "role" in m and "content" in m]
                     for msg in valid_history:
                         with st.chat_message(msg["role"]): st.markdown(msg["content"])
                 except Exception: st.session_state.chat_history = [] 
-                    
                 if prompt_chat := st.chat_input("Pergunte algo à IA sobre o documento..."):
                     st.session_state.chat_history.append({"role": "user", "content": prompt_chat})
                     st.session_state.chat_history = st.session_state.chat_history[-6:] 
                     with st.chat_message("user"): st.markdown(prompt_chat)
-                    
                     with st.chat_message("assistant"):
                         with st.spinner("Analisando..."):
                             try:
@@ -716,10 +710,10 @@ else:
 
         st.markdown(f"""
         <div class="custom-kpi-grid">
-            <div class="kpi-box"><span class="kpi-title">Motor Visão (OCR)</span><span class="kpi-value">{t['ocr']}</span></div>
-            <div class="kpi-box"><span class="kpi-title">Nó LLM Ativo</span><span class="kpi-value highlight">{t['motor']}</span></div>
-            <div class="kpi-box"><span class="kpi-title">Auditorias (Cloud)</span><span class="kpi-value" style="color: #f8fafc;">{total_docs}</span></div>
-            <div class="kpi-box"><span class="kpi-title">Status Legal</span><span class="kpi-value highlight" style="color: #22c55e;">{t['risco']}</span></div>
+            <div class="kpi-box"><span class="kpi-title">OCR Engine</span><span class="kpi-value">{t['ocr']}</span></div>
+            <div class="kpi-box"><span class="kpi-title">Nó LLM Ativo</span><span class="kpi-value">{t['motor']}</span></div>
+            <div class="kpi-box"><span class="kpi-title">Auditorias Realizadas</span><span class="kpi-value">{total_docs}</span></div>
+            <div class="kpi-box"><span class="kpi-title">Status de Risco</span><span class="kpi-value" style="color: #22c55e;">{t['risco']}</span></div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -729,43 +723,42 @@ else:
             st.markdown("""
             <div class="kanban-board">
                 <div class="kanban-col">
-                    <div class="kanban-col-title">📥 Triage / Captura</div>
-                    <div class="kanban-card">Automação OAB/SP<br><small style="color:#64748b">Status: Em Fila</small></div>
+                    <div class="kanban-col-title">📥 Em Fila / Captura</div>
+                    <div class="kanban-card">Automação OAB/SP<br><b>Status:</b> Aguardando</div>
                 </div>
                 <div class="kanban-col">
-                    <div class="kanban-col-title">⚙️ Processamento de I.A.</div>
-                    <div class="kanban-card">Revisão Contratual (MoE)<br><small style="color:#64748b">Responsável: Juiz Revisor</small></div>
+                    <div class="kanban-col-title">⚙️ Revisão de I.A.</div>
+                    <div class="kanban-card">Análise Defesa Tributária<br><b>Responsável:</b> Juiz Revisor</div>
                 </div>
                 <div class="kanban-col">
-                    <div class="kanban-col-title">✅ Dossiês Concluídos</div>
-                    <div class="kanban-card" style="border-left-color: #cbd5e1;">Defesa Tributária Finalizada<br><small style="color:#cbd5e1">Faturado no Timesheet</small></div>
+                    <div class="kanban-col-title">✅ Faturado e Entregue</div>
+                    <div class="kanban-card" style="border-left-color: #22c55e;">Dossiê Trabalhista<br><b>Timesheet:</b> Fechado</div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
 
     with tab_cofre:
         if st.session_state.res_aether:
-            st.markdown("<h3 style='color:#f8fafc; font-size:1.1rem; margin-bottom:15px;'>📥 Download Seguro (Anti-Tracker)</h3>", unsafe_allow_html=True)
+            st.markdown("<h3 style='font-size:1rem; margin-bottom:10px;'>📥 Download Seguro (Anti-Tracker)</h3>", unsafe_allow_html=True)
             c1, c2, _c3 = st.columns([1, 1, 2])
-            with c1: st.markdown(gerar_botao_primario(st.session_state.res_docx, "AETHER_Dossie.docx", "Documento Word", "application/octet-stream"), unsafe_allow_html=True)
-            with c2: st.markdown(gerar_botao_primario(st.session_state.res_pdf, "AETHER_Dossie.pdf", "Formato PDF", "application/octet-stream"), unsafe_allow_html=True)
+            with c1: st.markdown(gerar_botao_primario(st.session_state.res_docx, "AETHER_Dossie.docx", "Baixar em Word", "application/octet-stream"), unsafe_allow_html=True)
+            with c2: st.markdown(gerar_botao_primario(st.session_state.res_pdf, "AETHER_Dossie.pdf", "Baixar em PDF", "application/octet-stream"), unsafe_allow_html=True)
             
-            st.markdown("<hr style='border-color: rgba(255,255,255,0.05); margin: 30px 0;'>", unsafe_allow_html=True)
-            st.markdown("<h3 style='color:#f8fafc; font-size:1.1rem; margin-bottom:15px;'>📲 Integração Webhook (WhatsApp)</h3>", unsafe_allow_html=True)
+            st.markdown("<hr style='border-color: rgba(255,255,255,0.05); margin: 25px 0;'>", unsafe_allow_html=True)
+            st.markdown("<h3 style='font-size:1rem; margin-bottom:10px;'>📲 Webhook WhatsApp</h3>", unsafe_allow_html=True)
             col_phone, col_send, _space = st.columns([1.5, 1.5, 2])
-            with col_phone:
-                telefone = st.text_input("Número do Celular", label_visibility="collapsed", placeholder="Ex: 5511999999999")
+            with col_phone: telefone = st.text_input("Número do Cliente", label_visibility="collapsed", placeholder="Ex: 5511999999999")
             with col_send:
-                if st.button("Notificar Cliente", use_container_width=True, type="secondary"):
+                if st.button("Disparar WhatsApp", use_container_width=True, type="secondary"):
                     if telefone:
                         msg_wa = "Prezado(a), a análise jurídica avançada do seu caso foi concluída pela nossa I.A. Enviaremos o documento a seguir."
                         url_msg = urllib.parse.quote(msg_wa)
                         link_wa = f"https://wa.me/{re.sub(r'[^0-9]', '', telefone)}?text={url_msg}"
-                        st.markdown(f'<a href="{link_wa}" target="_blank" style="background: transparent; color: #f8fafc; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 10px; text-align: center; text-decoration: none; display: block; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; margin-top:5px;">Abrir Conversa WhatsApp</a>', unsafe_allow_html=True)
-                    else: st.warning("Insira o contato telefónico.")
-            st.markdown("<hr style='border-color: rgba(255,255,255,0.05); margin: 30px 0;'>", unsafe_allow_html=True)
+                        st.markdown(f'<a href="{link_wa}" target="_blank" style="background: transparent; color: #cbd5e1; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 10px; text-align: center; text-decoration: none; display: block; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; margin-top:5px;">Abrir Conversa WhatsApp</a>', unsafe_allow_html=True)
+                    else: st.warning("Insira o contato.")
+            st.markdown("<hr style='border-color: rgba(255,255,255,0.05); margin: 25px 0;'>", unsafe_allow_html=True)
 
-        st.markdown("<h3 style='color:#f8fafc; font-size:1.1rem; margin-bottom:15px;'>🗄️ Repositório Cloud</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='font-size:1rem; margin-bottom:10px;'>🗄️ Repositório Cloud</h3>", unsafe_allow_html=True)
         historico = load_history(st.session_state.username)
         if len(historico) == 0: st.info("O banco de dados de auditorias está vazio.")
         else:
