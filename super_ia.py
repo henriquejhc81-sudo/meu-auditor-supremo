@@ -1,7 +1,7 @@
 import streamlit as st
 
-# ⚠️ V369 APEX LOCKDOWN: LOGIN MATEMATICAMENTE COMPACTADO (ZERO SCROLL) ⚠️
-st.set_page_config(page_title="AETHER KARV V369", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
+# ⚠️ V370 APEX HORIZON: LOGIN BLINDADO NATIVAMENTE E SCROLL EXTIRPADO ⚠️
+st.set_page_config(page_title="AETHER KARV V370", page_icon="⚖️", layout="wide", initial_sidebar_state="collapsed")
 
 import pandas as pd
 import os, time, base64, io, re
@@ -21,8 +21,8 @@ from PIL import Image
 # ==========================================
 def lgpd_anonymizer(texto):
     if not texto: return texto
-    texto_seguro = re.sub(r'\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b', '[CPF PROTEGIDO LGPD]', texto)
-    texto_seguro = re.sub(r'\b\d{2}\.?\d{3}\.?\d{3}/?\d{4}-?\d{2}\b', '[CNPJ PROTEGIDO LGPD]', texto_seguro)
+    texto_seguro = re.sub(r'\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b', '[CPF PROTEGIDO]', texto)
+    texto_seguro = re.sub(r'\b\d{2}\.?\d{3}\.?\d{3}/?\d{4}-?\d{2}\b', '[CNPJ PROTEGIDO]', texto_seguro)
     return texto_seguro
 
 # ==========================================
@@ -459,7 +459,7 @@ def gerar_pdf_aether(texto_markdown):
         return bytes(emergencia.output())
 
 # ==========================================
-# 🎨 CSS APEX V369 (O MOTOR CAMALEÃO E ANIQUILAÇÃO DE SCROLL)
+# 🎨 CSS APEX V370 (O MOTOR CAMALEÃO E ANIQUILAÇÃO DE SCROLL)
 # ==========================================
 back_apex_b64 = get_base64_image("back_apex.png")
 
@@ -485,11 +485,11 @@ html, body {{ overflow: hidden !important; width: 100vw !important; height: 100v
 /* REMOVER SIDEBAR TOTALMENTE */
 [data-testid="stSidebar"], [data-testid="collapsedControl"] {{ display: none !important; }} 
 
-/* ⚠️ V369: FIM DO SCROLL GLOBAL NO CONTAINER ⚠️ */
+/* ⚠️ V370: FIM DO SCROLL GLOBAL NO CONTAINER PRINCIPAL ⚠️ */
 [data-testid="block-container"] {{ padding-top: 1rem !important; padding-bottom: 0rem !important; max-width: 100% !important; height: 100vh !important; overflow: hidden !important; margin: 0; }}
 
-/* ⚠️ V369: ANIQUILAÇÃO TOTAL DO FOCUS NATIVO ⚠️ */
-[data-baseweb="input"], [data-baseweb="base-input"] {{ background-color: transparent !important; border: none !important; padding: 0 !important; width: 100% !important; height: auto !important; }}
+/* ⚠️ V370: ANIQUILAÇÃO TOTAL DO FOCUS NATIVO (O Bug do Login) ⚠️ */
+[data-baseweb="input"], [data-baseweb="base-input"] {{ background-color: transparent !important; border: none !important; padding: 0 !important; width: 100% !important; height: auto !important; box-shadow: none !important; }}
 [data-baseweb="input"]:focus-within, [data-baseweb="base-input"]:focus-within {{ box-shadow: none !important; outline: none !important; border: none !important; }}
 
 /* INPUTS SIMÉTRICOS E CORPORATIVOS */
@@ -497,14 +497,20 @@ html, body {{ overflow: hidden !important; width: 100vw !important; height: 100v
 input {{ background-color: {input_bg} !important; border: 1px solid {border_color} !important; color: {text_primary} !important; font-size: 0.90rem !important; border-radius: 8px !important; padding: 10px 15px !important; transition: 0.2s; width: 100% !important; box-sizing: border-box !important; height: 42px !important; }}
 input:focus {{ border-color: {accent_color} !important; box-shadow: 0 0 0 1px {accent_color} !important; outline: none !important; }}
 
-/* ⚠️ V369: COMPRESSÃO DO LOGIN PARA MATAR O SCROLL DEFINITIVO ⚠️ */
-[data-testid="stForm"] {{ border: none !important; padding: 0 !important; background: transparent !important; box-shadow: none !important; width: 100%; }}
-.login-wrapper {{ display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 85vh; width: 100%; }}
-.login-box {{ background: {panel_bg}; padding: 30px; border-radius: 12px; border: 1px solid {border_color}; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; width: 100%; max-width: 360px; backdrop-filter: blur(20px); margin-top: -5vh; }}
-.login-title {{ color: {text_primary}; font-size: 1.6rem; font-weight: 800; margin-bottom: 2px; letter-spacing: 1px; }}
-.login-subtitle {{ color: {accent_color}; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; font-weight: 700; }}
+/* ⚠️ V370: O LOGIN BLINDADO (DIRETO NO st.form PARA EVITAR HTML QUEBRADO) ⚠️ */
+[data-testid="stForm"] {{ 
+    background: {panel_bg} !important; 
+    padding: 30px !important; 
+    border-radius: 12px !important; 
+    border: 1px solid {border_color} !important; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important; 
+    text-align: center; 
+    backdrop-filter: blur(20px); 
+}}
+.login-title {{ color: {text_primary}; font-size: 1.8rem; font-weight: 800; margin-bottom: 2px; letter-spacing: 1px; text-align: center; }}
+.login-subtitle {{ color: {accent_color}; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; font-weight: 700; text-align: center; }}
 
-/* ⚠️ V369: LAYOUT SPLIT-SCREEN TRAVADO ⚠️ */
+/* ⚠️ V370: LAYOUT SPLIT-SCREEN TRAVADO ⚠️ */
 .split-layout {{ display: flex; height: calc(100vh - 65px); gap: 15px; }}
 .control-panel {{ width: 320px; background: {panel_bg}; padding: 15px; border-radius: 12px; height: 100%; display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid {border_color}; }}
 .stage-panel {{ flex: 1; padding: 0px 15px 15px 5px; height: 100%; overflow-y: auto; }}
@@ -547,47 +553,48 @@ input:focus {{ border-color: {accent_color} !important; box-shadow: 0 0 0 1px {a
 st.markdown(css_code, unsafe_allow_html=True)
 
 # ==========================================
-# 🔐 MURALHA DE GELO (LOGIN V369 - COMPACTO E LIMPO)
+# 🔐 MURALHA DE GELO (LOGIN V370 - NATIVO E SIMÉTRICO)
 # ==========================================
 if not st.session_state.logged_in:
-    st.markdown('<div class="login-wrapper">', unsafe_allow_html=True)
-    st.markdown("""
-        <div class="login-box">
-            <div class="login-title">AETHER KARV</div>
-            <div class="login-subtitle">SECURE CLOUD</div>
-    """, unsafe_allow_html=True)
-    
-    with st.form("login_form"):
-        login_user = st.text_input("ID Corporativo", placeholder="advogado@dominio.com")
-        login_pass = st.text_input("Chave Mestra", type="password", placeholder="Sua senha...")
-        submit_log = st.form_submit_button("AUTENTICAR SESSÃO", use_container_width=True)
+    # Utilizamos as colunas nativas do Streamlit para forçar o formulário ao centro e matar o scroll!
+    col_l, col_m, col_r = st.columns([1, 1.2, 1])
+    with col_m:
+        # Espaçador natural em vez de HTML absoluto
+        st.markdown("<br><br><br><br>", unsafe_allow_html=True)
         
-        if submit_log:
-            conn = sqlite3.connect('aether_fortknox.db')
-            c = conn.cursor()
-            c.execute("SELECT * FROM users WHERE username=? AND password=?", (login_user, login_pass))
-            user = c.fetchone()
-            if user:
-                st.session_state.logged_in = True
-                st.session_state.username = login_user
-                st.toast(f"Acesso Seguro: {login_user.upper()}", icon="✅")
-                st.rerun()
-            else:
-                if login_user and login_pass:
-                    c.execute("SELECT * FROM users WHERE username=?", (login_user,))
-                    if c.fetchone(): st.error("Falha na Autenticação.")
-                    else:
-                        c.execute("INSERT INTO users (username, password) VALUES (?, ?)", (login_user, login_pass))
-                        conn.commit()
-                        st.success("Sessão criada. Entre novamente.")
-                else: st.warning("Preencha todos os campos.")
-            conn.close()
-
-    # O botão secundário fica isolado fora do form, evitando conflito de submit
-    if st.button("Esqueci a Senha", use_container_width=True, type="secondary"):
-        st.toast("Instruções de recuperação enviadas ao administrador.", icon="ℹ️")
+        with st.form("login_form"):
+            st.markdown('<div class="login-title">AETHER KARV</div><div class="login-subtitle">ENTERPRISE EDITION</div>', unsafe_allow_html=True)
             
-    st.markdown('</div></div>', unsafe_allow_html=True)
+            login_user = st.text_input("ID Corporativo", placeholder="OAB ou E-mail")
+            login_pass = st.text_input("Chave Mestra", type="password", placeholder="Sua senha secreta...")
+            submit_log = st.form_submit_button("AUTENTICAR SESSÃO", use_container_width=True)
+            
+            if submit_log:
+                conn = sqlite3.connect('aether_fortknox.db')
+                c = conn.cursor()
+                c.execute("SELECT * FROM users WHERE username=? AND password=?", (login_user, login_pass))
+                user = c.fetchone()
+                if user:
+                    st.session_state.logged_in = True
+                    st.session_state.username = login_user
+                    st.toast(f"Acesso Seguro: {login_user.upper()}", icon="✅")
+                    st.rerun()
+                else:
+                    if login_user and login_pass:
+                        c.execute("SELECT * FROM users WHERE username=?", (login_user,))
+                        if c.fetchone(): st.error("Falha na Autenticação.")
+                        else:
+                            c.execute("INSERT INTO users (username, password) VALUES (?, ?)", (login_user, login_pass))
+                            conn.commit()
+                            st.success("Sessão criada. Entre novamente.")
+                    else: st.warning("Preencha todos os campos.")
+                conn.close()
+
+        # O botão Esqueci a senha, centralizado perfeitamente usando colunas e fora do form.
+        c_btn_forget = st.columns([1])
+        with c_btn_forget[0]:
+            if st.button("Esqueci a Senha", use_container_width=True, type="secondary"):
+                st.toast("Instruções de recuperação enviadas ao administrador.", icon="ℹ️")
 
 # ==========================================
 # INTERFACE PRINCIPAL (SPLIT-SCREEN TRAVADA)
@@ -597,7 +604,7 @@ else:
     GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", "")
     CNJ_API_KEY = st.secrets.get("CNJ_API_KEY", "DEMO_KEY")
 
-    # --- TOP NAV & TOGGLE THEME (V369) ---
+    # --- TOP NAV & TOGGLE THEME (V370) ---
     c_nav_left, c_nav_right = st.columns([4, 1])
     with c_nav_left:
         st.markdown(f"""
@@ -684,7 +691,6 @@ else:
 
                 st.markdown(f"<h3 style='font-size:0.9rem; font-weight:700; color:{text_primary}; margin-bottom:10px;'>💬 Omni-Chat Interativo</h3>", unsafe_allow_html=True)
                 
-                # Prevenção Blindada de KeyError na troca de tema
                 valid_history = []
                 if isinstance(st.session_state.chat_history, list):
                     for msg in st.session_state.chat_history:
@@ -772,4 +778,4 @@ else:
                     with st.expander(f"Processo: {titulo} | Data: {data_hora}"):
                         st.markdown(conteudo)
                         st.markdown(gerar_botao_secundario(conteudo.encode('utf-8'), f"Backup_{idx}.txt", "Descarregar Base Textual", "application/octet-stream"), unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True) # Fim Stage Panel
+        st.markdown('</div>', unsafe_allow_html=True)
